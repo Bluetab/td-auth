@@ -13,6 +13,8 @@ defmodule TdAuth.DataCase do
   """
 
   use ExUnit.CaseTemplate
+  alias Ecto.Changeset
+  alias Ecto.Adapters.SQL.Sandbox
 
   using do
     quote do
@@ -26,10 +28,10 @@ defmodule TdAuth.DataCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(TdAuth.Repo)
+    :ok = Sandbox.checkout(TdAuth.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(TdAuth.Repo, {:shared, self()})
+      Sandbox.mode(TdAuth.Repo, {:shared, self()})
     end
 
     :ok
@@ -44,7 +46,7 @@ defmodule TdAuth.DataCase do
 
   """
   def errors_on(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+    Changeset.traverse_errors(changeset, fn {message, opts} ->
       Enum.reduce(opts, message, fn {key, value}, acc ->
         String.replace(acc, "%{#{key}}", to_string(value))
       end)

@@ -1,5 +1,7 @@
 defmodule TdAuth.Application do
+  @moduledoc false
   use Application
+  alias TdAuthWeb.Endpoint
 
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
@@ -25,7 +27,7 @@ defmodule TdAuth.Application do
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
-    TdAuthWeb.Endpoint.config_change(changed, removed)
+    Endpoint.config_change(changed, removed)
     :ok
   end
 end

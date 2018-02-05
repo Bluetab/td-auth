@@ -14,6 +14,7 @@ defmodule TdAuthWeb.ChannelCase do
   """
 
   use ExUnit.CaseTemplate
+  alias Ecto.Adapters.SQL.Sandbox
 
   using do
     quote do
@@ -25,11 +26,10 @@ defmodule TdAuthWeb.ChannelCase do
     end
   end
 
-
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(TdAuth.Repo)
+    :ok = Sandbox.checkout(TdAuth.Repo)
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(TdAuth.Repo, {:shared, self()})
+      Sandbox.mode(TdAuth.Repo, {:shared, self()})
     end
     :ok
   end
