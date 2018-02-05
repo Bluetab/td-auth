@@ -42,6 +42,12 @@ defmodule TdAuth.Mixfile do
       {:credo, "~> 0.9.0-rc1", only: [:dev, :test], runtime: false},
       {:edeliver, "~> 1.4.5"},
       {:distillery, ">= 0.8.0", warn_missing: false},
+      {:guardian, "~> 1.0"},
+      {:comeonin, "~> 4.0"},
+      {:bcrypt_elixir, "~> 1.0"},
+      {:ex_machina, "~> 2.1", only: :test},
+      {:cors_plug, "~> 1.2"},
+      {:httpoison, "~> 1.0"},
     ]
   end
 

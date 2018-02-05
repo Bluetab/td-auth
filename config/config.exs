@@ -9,6 +9,9 @@ use Mix.Config
 config :td_auth,
   ecto_repos: [TdAuth.Repo]
 
+# Hashing algorithm
+config :td_auth, hashing_module: Comeonin.Bcrypt
+
 # Configures the endpoint
 config :td_auth, TdAuthWeb.Endpoint,
   url: [host: "localhost"],
@@ -21,6 +24,12 @@ config :td_auth, TdAuthWeb.Endpoint,
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
+
+config :td_auth, TdAuth.Auth.Guardian,
+  allowed_algos: ["HS512"], # optional
+  issuer: "tdauth",
+  ttl: { 1, :hours },
+  secret_key: "SuperSecretTruedat"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

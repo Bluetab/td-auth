@@ -14,8 +14,10 @@ defmodule TdAuthWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
-  alias Phoenix.ConnTest
+  alias TdAuth.Accounts
   alias Ecto.Adapters.SQL.Sandbox
+  alias Phoenix.ConnTest
+  import TdAuthWeb.Authentication, only: :functions
 
   using do
     quote do
@@ -28,12 +30,23 @@ defmodule TdAuthWeb.ConnCase do
     end
   end
 
+  @admin_user_name "app-admin"
+
   setup tags do
     :ok = Sandbox.checkout(TdAuth.Repo)
     unless tags[:async] do
       Sandbox.mode(TdAuth.Repo, {:shared, self()})
     end
-    {:ok, conn: ConnTest.build_conn()}
-  end
 
+    cond do
+      tags[:admin_authenticated] ->
+        user = Accounts.get_user_by_name(@admin_user_name)
+        create_user_auth_conn(user)
+      tags[:authenticated_user] ->
+        user = Accounts.get_user_by_name(tags[:authenticated_user])
+        create_user_auth_conn(user)
+       true ->
+         {:ok, conn: ConnTest.build_conn()}
+    end
+  end
 end
