@@ -20,7 +20,10 @@ defmodule TdAuth.Mixfile do
   def application do
     [
       mod: {TdAuth.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools],
+      applications: [
+        :edeliver,
+      ],
     ]
   end
 
@@ -41,7 +44,7 @@ defmodule TdAuth.Mixfile do
       {:cowboy, "~> 1.0"},
       {:credo, "~> 0.9.0-rc1", only: [:dev, :test], runtime: false},
       {:edeliver, "~> 1.4.5"},
-      {:distillery, ">= 0.8.0", warn_missing: false},
+      {:distillery, "~> 1.0.0", warn_missing: false},
       {:guardian, "~> 1.0"},
       {:comeonin, "~> 4.0"},
       {:bcrypt_elixir, "~> 1.0"},
