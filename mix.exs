@@ -20,10 +20,7 @@ defmodule TdAuth.Mixfile do
   def application do
     [
       mod: {TdAuth.Application, []},
-      extra_applications: [:logger, :runtime_tools],
-      applications: [
-        :edeliver,
-      ],
+      extra_applications: [:logger, :runtime_tools, :edeliver],
     ]
   end
 
