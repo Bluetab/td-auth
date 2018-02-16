@@ -48,6 +48,7 @@ defmodule TdAuth.Mixfile do
       {:ex_machina, "~> 2.1", only: :test},
       {:cors_plug, "~> 1.2"},
       {:httpoison, "~> 1.0"},
+      {:cabbage, "~> 0.3.0"},
     ]
   end
 

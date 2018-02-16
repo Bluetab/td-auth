@@ -49,11 +49,11 @@ defmodule TdAuthWeb.Authentication do
     {:ok, status_code}
   end
 
-  def change_password(token, old_password, new_password) do
+  def session_change_password(token, old_password, new_password) do
     headers = get_header(token)
     body = %{old_passord: old_password, new_password: new_password} |> JSON.encode!
     %HTTPoison.Response{status_code: status_code, body: _resp} =
-      HTTPoison.put!(session_url(@endpoint, :change_password), body, headers, [])
+      HTTPoison.put!(user_url(@endpoint, :change_password), body, headers, [])
       {:ok, status_code}
   end
 end
