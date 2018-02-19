@@ -1,3 +1,3 @@
 #!/bin/sh
 
-bin/trueBG command Elixir.TdAuth.ReleaseTasks seed
+bin/tdAuth command Elixir.TdAuth.ReleaseTasks seed

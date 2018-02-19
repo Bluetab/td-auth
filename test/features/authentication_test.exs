@@ -1,4 +1,4 @@
-defmodule TrueBG.AuthenticationTest do
+defmodule TdAuth.AuthenticationTest do
   use Cabbage.Feature, async: false, file: "authentication.feature"
   use TdAuthWeb.ConnCase
   import TdAuthWeb.ResponseCode
