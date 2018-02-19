@@ -36,6 +36,8 @@ defmodule TdAuthWeb.Endpoint do
     key: "_td_auth_key",
     signing_salt: "FxJxojPa"
 
+  plug CORSPlug, origin: ["*"]
+
   plug TdAuthWeb.Router
 
   @doc """

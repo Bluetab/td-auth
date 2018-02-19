@@ -23,6 +23,7 @@ environment :prod do
   set include_erts: true
   set include_src: false
   set cookie: :"PHpCfQ1{`)2_hNK8~<@YVAuggE$fg<z=.m,_am{IBstH:oA)VrW0,zo]hrU)ZNPT"
+  set pre_start_hook: "rel/hooks/pre-start"
 end
 
 # You may define one or more releases in this file.
@@ -32,4 +33,10 @@ end
 
 release :tdAuth do
   set version: current_version(:td_auth)
+  set applications: [
+    :runtime_tools
+  ]
+  set commands: [
+    "migrate": "rel/commands/migrate.sh"
+  ]
 end
