@@ -1,8 +1,16 @@
+# Import all plugins from `rel/plugins`
+# They can then be used by adding `plugin MyPlugin` to
+# either an environment, or release definition, where
+# `MyPlugin` is the name of the plugin module.
+Path.join(["rel", "plugins", "*.exs"])
+|> Path.wildcard()
+|> Enum.map(&Code.eval_file(&1))
+
 use Mix.Releases.Config,
     # This sets the default release built by `mix release`
     default_release: :default,
     # This sets the default environment used by `mix release`
-    default_environment: Mix.env
+    default_environment: Mix.env()
 
 # For a full list of config options for both releases
 # and environments, visit https://hexdocs.pm/distillery/configuration.html
@@ -14,17 +22,21 @@ use Mix.Releases.Config,
 # and environment configuration is called a profile
 
 environment :dev do
+  # If you are running Phoenix, you should make sure that
+  # server: true is set and the code reloader is disabled,
+  # even in dev mode.
+  # It is recommended that you build with MIX_ENV=prod and pass
+  # the --env flag to Distillery explicitly if you want to use
+  # dev mode.
   set dev_mode: true
   set include_erts: false
-  set include_system_libs: false
-  set cookie: :"/2*`P,=O^!o,gn:E>IHwK@?u:}E2`YIEb=|7dH6)WSC;d%jrG*B2QU|RUErF9i69"
+  set cookie: :"eQ0nwKZyo`Mr$Ai]M!P~>tI7CC$>npH,Wp6}zv1MLfI{F0j!yO(K`SzF^j>]uJMZ"
 end
 
 environment :prod do
   set include_erts: true
-  set include_system_libs: true
-  set cookie: :"PHpCfQ1{`)2_hNK8~<@YVAuggE$fg<z=.m,_am{IBstH:oA)VrW0,zo]hrU)ZNPT"
-  set pre_start_hook: "rel/hooks/pre-start"
+  set include_src: false
+  set cookie: :"k>qX&B,;f%I/y7;il|zcYkAXvc7L0]jd8,4)wp:jns]O.a397e_8<TG96>tBLU=8"
 end
 
 # You may define one or more releases in this file.

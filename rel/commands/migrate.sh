@@ -1,3 +1,3 @@
 #!/bin/sh
 
-bin/tdAuth command Elixir.TdAuth.ReleaseTasks seed
+$RELEASE_ROOT_DIR/bin/tdAuth command Elixir.TdAuth.ReleaseTasks migrate
