@@ -17,16 +17,16 @@ defmodule TdAuth.ReleaseTasks do
     ]
 
     def seed do
-      #IO.puts "Loading tdAuth.."
+      IO.puts "Loading tdAuth.."
       # Load the code for tdAuth, but don't start it
       :ok = Application.load(:td_auth)
 
-      #IO.puts "Starting dependencies.."
+      IO.puts "Starting dependencies.."
       # Start apps necessary for executing migrations
       Enum.each(@start_apps, &Application.ensure_all_started/1)
 
       # Start the Repo(s) for tdAuth
-      #IO.puts "Starting repos.."
+      IO.puts "Starting repos.."
       Enum.each(@repos, &(&1.start_link(pool_size: 1)))
 
       # Run migrations
