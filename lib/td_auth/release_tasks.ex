@@ -1,4 +1,6 @@
 defmodule TdAuth.ReleaseTasks do
+  @moduledoc false
+  alias Ecto.Migrator
 
   @start_apps [
     :crypto,
@@ -49,7 +51,7 @@ defmodule TdAuth.ReleaseTasks do
   defp run_migrations_for(repo) do
     app = Keyword.get(repo.config, :otp_app)
     IO.puts "Running migrations for #{app}"
-    Ecto.Migrator.run(repo, migrations_path(repo), :up, all: true)
+    Migrator.run(repo, migrations_path(repo), :up, all: true)
   end
 
   def run_seeds_for(repo) do
