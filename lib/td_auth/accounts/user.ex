@@ -6,6 +6,7 @@ defmodule TdAuth.Accounts.User do
   alias TdAuth.Accounts.User
   @hash Application.get_env(:td_auth, :hashing_module)
 
+  @derive {Poison.Encoder, only: [:id, :user_name, :is_admin]}
   schema "users" do
     field :password_hash, :string
     field :user_name, :string
