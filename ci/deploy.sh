@@ -10,8 +10,6 @@ chsh -s /bin/bash deliver
 localedef -c -f UTF-8 -i en_US en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-cat /etc/ssh/sshd_config | sed "s/PasswordAuthentication no/PasswordAuthentication yes/g" > /etc/ssh/sshd_config
-chkconfig sshd on
 service sshd start
 
 cp -R /code /working_code
