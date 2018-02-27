@@ -1,15 +1,24 @@
 defmodule TdAuthWeb.UserController do
   use TdAuthWeb, :controller
-
-  @hash Application.get_env(:td_auth, :hashing_module)
+  use PhoenixSwagger
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
   alias Guardian.Plug
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
-
+  alias TdAuthWeb.SwaggerDefinitions
   alias TdAuthWeb.ErrorView
   action_fallback TdAuthWeb.FallbackController
+
+  def swagger_definitions do
+    SwaggerDefinitions.user_swagger_definitions()
+  end
+
+  swagger_path :index do
+    get "/users"
+    description "List Users"
+    response 200, "OK", Schema.ref(:UsersResponseData)
+  end
 
   def index(conn, _params) do
     users = Accounts.list_users()
@@ -18,6 +27,17 @@ defmodule TdAuthWeb.UserController do
 
   defp create_user(user_params) do
     Accounts.create_user(user_params)
+  end
+
+  swagger_path :create do
+    post "/users"
+    description "Creates a User"
+    produces "application/json"
+    parameters do
+      user :body, Schema.ref(:UserCreate), "User create attrs"
+    end
+    response 200, "OK", Schema.ref(:UserResponse)
+    response 400, "Client Error"
   end
 
   def create(conn, %{"user" => user_params}) do
@@ -33,9 +53,32 @@ defmodule TdAuthWeb.UserController do
     end
   end
 
+  swagger_path :show do
+    get "/users/{id}"
+    description "Show User"
+    produces "application/json"
+    parameters do
+      id :path, :integer, "User ID", required: true
+    end
+    response 200, "OK", Schema.ref(:UserResponse)
+    response 400, "Client Error"
+  end
+
   def show(conn, %{"id" => id}) do
     user = Accounts.get_user!(id)
     render(conn, "show.json", user: user)
+  end
+
+  swagger_path :update do
+    put "/users/{id}"
+    description "Updates User"
+    produces "application/json"
+    parameters do
+      user :body, Schema.ref(:UserUpdate), "User update attrs"
+      id :path, :integer, "User ID", required: true
+    end
+    response 200, "OK", Schema.ref(:UserResponse)
+    response 400, "Client Error"
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
@@ -46,6 +89,17 @@ defmodule TdAuthWeb.UserController do
     end
   end
 
+  swagger_path :delete do
+    delete "/users/{id}"
+    description "Delete User"
+    produces "application/json"
+    parameters do
+      id :path, :integer, "User ID", required: true
+    end
+    response 200, "OK"
+    response 400, "Client Error"
+  end
+
   def delete(conn, %{"id" => id}) do
     user = Accounts.get_user!(id)
     with {:ok, %User{}} <- Accounts.delete_user(user) do
@@ -53,23 +107,27 @@ defmodule TdAuthWeb.UserController do
     end
   end
 
+  swagger_path :change_password do
+    put "/users"
+    description "Updates User password"
+    produces "application/json"
+    parameters do
+      data_domain :body, Schema.ref(:UserChangePassword), "User change password attrs"
+    end
+    response 200, "OK"
+    response 400, "Client Error"
+  end
+
   def change_password(conn, %{"new_password" => new_password,
-                              "old_passord" => old_password}) do
+                              "old_password" => old_password}) do
     user = get_current_user(conn)
-    case check_password(user, old_password) do
+    case User.check_password(user, old_password) do
       true ->
         conn
           |> do_change_password(user, new_password)
       _ ->
         conn
           |> send_resp(:unprocessable_entity, "")
-    end
-  end
-
-  def check_password(user, password) do
-    case user do
-      nil -> @hash.dummy_checkpw()
-      _ -> @hash.checkpw(password, user.password_hash)
     end
   end
 

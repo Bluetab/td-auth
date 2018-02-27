@@ -1,4 +1,4 @@
-defmodule TdAuth.PingController do
+defmodule TdAuthWeb.PingController do
   use TdAuthWeb, :controller
 
   action_fallback TdAuthWeb.FallbackController

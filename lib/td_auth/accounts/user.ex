@@ -38,4 +38,11 @@ defmodule TdAuth.Accounts.User do
     |> put_pass_hash()
   end
 
+  def check_password(user, password) do
+    case user do
+      nil -> @hash.dummy_checkpw()
+      _ -> @hash.checkpw(password, user.password_hash)
+    end
+  end
+
 end

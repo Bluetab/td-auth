@@ -49,6 +49,8 @@ defmodule TdAuth.Mixfile do
       {:cors_plug, "~> 1.2"},
       {:httpoison, "~> 1.0"},
       {:cabbage, "~> 0.3.0"},
+      {:phoenix_swagger, "~> 0.7.0"},
+      {:ex_json_schema, "~> 0.5"}
     ]
   end
 

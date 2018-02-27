@@ -5,7 +5,7 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Auth.Guardian
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuthWeb.ErrorView
-  alias TdAuthWeb.UserController
+  alias TdAuth.Accounts.User
 
   defp handle_sign_in(conn, user) do
     custom_claims = %{"user_name": user.user_name,
@@ -18,7 +18,7 @@ defmodule TdAuthWeb.SessionController do
                      "password" => password}}) do
     user = Accounts.get_user_by_name(user_name)
 
-    case UserController.check_password(user, password) do
+    case User.check_password(user, password) do
       true ->
         conn = handle_sign_in(conn, user)
         token = GuardianPlug.current_token(conn)

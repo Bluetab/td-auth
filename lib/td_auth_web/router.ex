@@ -23,4 +23,29 @@ defmodule TdAuthWeb.Router do
     resources "/users", UserController, except: [:new, :edit]
     put "/users", UserController, :change_password
   end
+
+  def swagger_info do
+    %{
+      schemes: ["http"],
+      info: %{
+        version: "1.0",
+        title: "TDAuth"
+      },
+      "basePath": "/api",
+      "securityDefinitions":
+      %{
+        bearer:
+        %{
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+        }
+      },
+      "security": [
+        %{
+          bearer: []
+        }
+      ]
+    }
+  end
 end

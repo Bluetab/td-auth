@@ -19,4 +19,5 @@ config :td_auth, TdAuth.Repo,
   password: "postgres",
   database: "td_auth_test",
   hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: 1

@@ -1,0 +1,372 @@
+{
+  "swagger": "2.0",
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/users/{id}": {
+      "put": {
+        "tags": [
+          "User"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/UserResponse"
+            },
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/UserUpdate"
+            },
+            "required": false,
+            "name": "user",
+            "in": "body",
+            "description": "User update attrs"
+          },
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "User ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.UserController.update",
+        "description": "Updates User"
+      },
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/UserResponse"
+            },
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "User ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.UserController.show",
+        "description": "Show User"
+      },
+      "delete": {
+        "tags": [
+          "User"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "User ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.UserController.delete",
+        "description": "Delete User"
+      }
+    },
+    "/users": {
+      "put": {
+        "tags": [
+          "User"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/UserChangePassword"
+            },
+            "required": false,
+            "name": "data_domain",
+            "in": "body",
+            "description": "User change password attrs"
+          }
+        ],
+        "operationId": "TdAuthWeb.UserController.change_password",
+        "description": "Updates User password"
+      },
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/UserResponse"
+            },
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/UserCreate"
+            },
+            "required": false,
+            "name": "user",
+            "in": "body",
+            "description": "User create attrs"
+          }
+        ],
+        "operationId": "TdAuthWeb.UserController.create",
+        "description": "Creates a User"
+      },
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "",
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/UsersResponseData"
+            },
+            "description": "OK"
+          }
+        },
+        "parameters": [],
+        "operationId": "TdAuthWeb.UserController.index",
+        "description": "List Users"
+      }
+    }
+  },
+  "info": {
+    "version": "1.0",
+    "title": "TDAuth"
+  },
+  "host": "localhost:4000",
+  "definitions": {
+    "UsersResponseData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/UsersResponse"
+        }
+      }
+    },
+    "UsersResponse": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/UserResponseAttrs"
+      }
+    },
+    "Users": {
+      "type": "array",
+      "title": "Users",
+      "items": {
+        "$ref": "#/definitions/User"
+      },
+      "description": "A collection of Users"
+    },
+    "UserUpdateProps": {
+      "type": "object",
+      "required": [
+        "password",
+        "user_name"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "password": {
+          "type": "string",
+          "description": "user password"
+        },
+        "is_admin": {
+          "type": "boolean",
+          "description": "is admin flag"
+        }
+      }
+    },
+    "UserUpdate": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/UserUpdateProps"
+        }
+      }
+    },
+    "UserResponseAttrs": {
+      "type": "object",
+      "required": [
+        "is_admin",
+        "user_name",
+        "id"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "is_admin": {
+          "type": "boolean",
+          "description": "flag is admin"
+        },
+        "id": {
+          "type": "integer",
+          "description": "unique identifier"
+        }
+      }
+    },
+    "UserResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/UserResponseAttrs"
+        }
+      }
+    },
+    "UserCreateProps": {
+      "type": "object",
+      "required": [
+        "password",
+        "user_name"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "password": {
+          "type": "string",
+          "description": "user password"
+        },
+        "is_admin": {
+          "type": "boolean",
+          "description": "is admin flag"
+        }
+      }
+    },
+    "UserCreate": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/UserCreateProps"
+        }
+      }
+    },
+    "UserChangePassword": {
+      "type": "object",
+      "required": [
+        "new_password",
+        "old_password"
+      ],
+      "properties": {
+        "old_password": {
+          "type": "string",
+          "description": "current password"
+        },
+        "new_password": {
+          "type": "string",
+          "description": "new password"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "title": "User",
+      "required": [
+        "is_admin",
+        "user_name",
+        "id"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "password": {
+          "type": "string",
+          "description": "user password"
+        },
+        "is_admin": {
+          "type": "boolean",
+          "description": "flag is admin"
+        },
+        "id": {
+          "type": "integer",
+          "description": "unique identifier"
+        }
+      },
+      "example": {
+        "user_name": "myuser",
+        "password": "myuserpass",
+        "is_admin": false,
+        "id": 123
+      },
+      "description": "User entity"
+    }
+  },
+  "basePath": "/api"
+}
