@@ -4,6 +4,33 @@ defmodule TdAuthWeb.SwaggerDefinitions do
   """
   import PhoenixSwagger
 
+  def session_swagger_definitions do
+    %{
+      Token: swagger_schema do
+        title "Auth Token"
+        properties do
+          token :string, "token"
+        end
+      end,
+      Session: swagger_schema do
+        properties do
+          user_name :string, "user name", required: true
+          password :string, "password", required: true
+        end
+      end,
+      SessionCreate: swagger_schema do
+        properties do
+          user Schema.ref(:Session)
+        end
+      end,
+      SessionResponse: swagger_schema do
+        properties do
+          data Schema.ref(:Token)
+        end
+      end
+    }
+  end
+
   def user_swagger_definitions do
     %{
       User: swagger_schema do

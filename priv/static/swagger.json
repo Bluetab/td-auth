@@ -157,11 +157,11 @@
           "400": {
             "description": "Client Error"
           },
-          "200": {
+          "201": {
             "schema": {
               "$ref": "#/definitions/UserResponse"
             },
-            "description": "OK"
+            "description": "Created"
           }
         },
         "produces": [
@@ -197,6 +197,41 @@
         "parameters": [],
         "operationId": "TdAuthWeb.UserController.index",
         "description": "List Users"
+      }
+    },
+    "/sessions": {
+      "post": {
+        "tags": [
+          "Session"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/SessionResponse"
+            },
+            "description": "Created"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/SessionCreate"
+            },
+            "required": false,
+            "name": "user",
+            "in": "body",
+            "description": "User session create attrs"
+          }
+        ],
+        "operationId": "TdAuthWeb.SessionController.create",
+        "description": "Creates a user session"
       }
     }
   },
@@ -366,6 +401,49 @@
         "id": 123
       },
       "description": "User entity"
+    },
+    "Token": {
+      "type": "object",
+      "title": "Auth Token",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "token"
+        }
+      }
+    },
+    "SessionResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Token"
+        }
+      }
+    },
+    "SessionCreate": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/Session"
+        }
+      }
+    },
+    "Session": {
+      "type": "object",
+      "required": [
+        "password",
+        "user_name"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "password": {
+          "type": "string",
+          "description": "password"
+        }
+      }
     }
   },
   "basePath": "/api"

@@ -36,7 +36,7 @@ defmodule TdAuthWeb.UserController do
     parameters do
       user :body, Schema.ref(:UserCreate), "User create attrs"
     end
-    response 200, "OK", Schema.ref(:UserResponse)
+    response 201, "Created", Schema.ref(:UserResponse)
     response 400, "Client Error"
   end
 
