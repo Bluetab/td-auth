@@ -37,7 +37,7 @@ defmodule TdAuth.DataCase do
     :ok
   end
 
-  @doc """
+  @doc ~S"""
   A helper that transform changeset errors to a map of messages.
 
       assert {:error, changeset} = Accounts.create_user(%{password: "short"})
