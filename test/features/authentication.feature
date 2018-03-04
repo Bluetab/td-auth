@@ -20,6 +20,13 @@ Feature: User Authentication
     Then the system returns a result with code "Created"
     And user "newuser" can be authenticated with password "new-password"
 
+  # Scenario: Check whether user is superadmin when creating new user
+  #   Given an existing user "johndoe" with password "secret" without "super-admin" permission
+  #   And user "johndoe" is logged in the application with password "secret"
+  #   When "johndoe" tries to create a user "newuser" with password "new-password"
+  #   Then the system returns a result with code "Forbidden
+  #   And user "newuser" can not be authenticated with password "new-password"
+
   Scenario: Error when creating a new user in the application by a non admin user
     Given an existing user "nobody" with password "inventedpass" without "super-admin" permission
     And user "nobody" is logged in the application with password "inventedpass"
@@ -60,6 +67,24 @@ Feature: User Authentication
     And user "johndoe" can not be authenticated with password "secret"
     And user "johndoe" can be authenticated with password "newsecret"
 
+
+  # Scenario Outline: Check whether user is superadmin when modifying useron
+  #   Given an existing user <user> with password "secret" with super-admin property <isadmin>
+  #   And an existing user "user" with password "userpass" without "super-admin" permission
+  #   And user <user> is logged in the application with password "secret"
+  #   When user <user> tries to modify the password for user "user" with following data:
+  #     | old_password | new_password |
+  #     | userpass     | newsecret    |
+  #   Then the system returns a result with code <result>
+  #   And user "user" can be authenticated with password <okpass>
+  #   And user "user" can not be authenticated with password <kopass>
+  #
+  #   Examples:
+  #     | user      | isadmin   | result    | okpass    | kopass    |
+  #     | superad   | yes       | Ok        | newsecret | userpass  |
+  #     | johndoe   | no        | Forbidden | userpass  | newsecret |
+
+
   Scenario: Password modification error
     Given an existing user "johndoe" with password "secret" without "super-admin" permission
     And user "johndoe" is logged in the application with password "secret"
@@ -69,3 +94,17 @@ Feature: User Authentication
     Then the system returns a result with code "Unprocessable Entity"
     And user "johndoe" can not be authenticated with password "newsecret"
     And user "johndoe" can be authenticated with password "secret"
+
+  # Scenario Outline: Delete user only when user is superadmin
+  #   Given an existing user <user> with password "secret" with super-admin property <isadmin>
+  #   And an existing user "user" with password "userpass" without "super-admin" permission
+  #   And user <user> is logged in the application with password "secret"
+  #   When user <user> tries to delete user "user"
+  #   Then the system returns a result with code <result>
+  #   And if result <result> is "Ok" user "user" can not be authenticated with password "secret"
+  #   And if result <result> is not "Ok" user "user" can be authenticated with password "secret"
+  #
+  #   Examples:
+  #     | user      | isadmin   | result    |
+  #     | superad   | yes       | Ok        |
+  #     | johndoe   | no        | Forbidden |
