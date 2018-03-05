@@ -20,12 +20,12 @@ Feature: User Authentication
     Then the system returns a result with code "Created"
     And user "newuser" can be authenticated with password "new-password"
 
-  # Scenario: Check whether user is superadmin when creating new user
-  #   Given an existing user "johndoe" with password "secret" without "super-admin" permission
-  #   And user "johndoe" is logged in the application with password "secret"
-  #   When "johndoe" tries to create a user "newuser" with password "new-password"
-  #   Then the system returns a result with code "Forbidden
-  #   And user "newuser" can not be authenticated with password "new-password"
+   Scenario: Check whether user is superadmin when creating new user
+     Given an existing user "johndoe" with password "secret" without "super-admin" permission
+     And user "johndoe" is logged in the application with password "secret"
+     When "johndoe" tries to create a user "newuser" with password "new-password"
+     Then the system returns a result with code "Forbidden"
+     And user "newuser" can not be authenticated with password "new-password"
 
   Scenario: Error when creating a new user in the application by a non admin user
     Given an existing user "nobody" with password "inventedpass" without "super-admin" permission
