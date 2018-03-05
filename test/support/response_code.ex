@@ -7,6 +7,7 @@ defmodule TdAuthWeb.ResponseCode do
   @unauthorized "Unauthorized"
   @not_found "NotFound"
   @unprocessable_entity "Unprocessable Entity"
+  @deleted "Deleted"
 
   def rc_ok, do: @ok
   def rc_created, do: @created
@@ -19,6 +20,7 @@ defmodule TdAuthWeb.ResponseCode do
     case http_status_code do
       200 -> @ok
       201 -> @created
+      204 -> @deleted
       401 -> @forbidden
       403 -> @unauthorized
       404 -> @not_found

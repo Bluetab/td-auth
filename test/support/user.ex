@@ -22,6 +22,13 @@ defmodule TdAuthWeb.User do
     {:ok, status_code, resp |> JSON.decode!}
   end
 
+  def user_delete(token, target_user_id) do
+    headers = get_header(token)
+    %HTTPoison.Response{status_code: status_code, body: resp} =
+      HTTPoison.delete!(user_url(@endpoint, :delete, target_user_id), headers, [])
+    {:ok, status_code, resp}
+  end
+
   def user_list(token) do
     headers = get_header(token)
     %HTTPoison.Response{status_code: status_code, body: resp} =

@@ -81,8 +81,6 @@ Feature: User Authentication
        | superad   | yes       | Ok        |
        | johndoe   | no        | Forbidden |
 
-
-
   Scenario: Password modification error
     Given an existing user "johndoe" with password "secret" without "super-admin" permission
     And user "johndoe" is logged in the application with password "secret"
@@ -93,16 +91,16 @@ Feature: User Authentication
     And user "johndoe" can not be authenticated with password "newsecret"
     And user "johndoe" can be authenticated with password "secret"
 
-  # Scenario Outline: Delete user only when user is superadmin
-  #   Given an existing user <user> with password "secret" with super-admin property <isadmin>
-  #   And an existing user "user" with password "userpass" without "super-admin" permission
-  #   And user <user> is logged in the application with password "secret"
-  #   When user <user> tries to delete user "user"
-  #   Then the system returns a result with code <result>
-  #   And if result <result> is "Ok" user "user" can not be authenticated with password "secret"
-  #   And if result <result> is not "Ok" user "user" can be authenticated with password "secret"
-  #
-  #   Examples:
-  #     | user      | isadmin   | result    |
-  #     | superad   | yes       | Ok        |
-  #     | johndoe   | no        | Forbidden |
+   Scenario Outline: Delete user only when user is superadmin
+     Given an existing user "<user>" with password "secret" with super-admin property <isadmin>
+     And an existing user "user" with password "userpass" without "super-admin" permission
+     And user "<user>" is logged in the application with password "secret"
+     When user "<user>" tries to delete user "user"
+     Then the system returns a result with code "<result>"
+     And if result "<result>" is "Deleted" user "user" does not exist
+     And if result "<result>" is not "Deleted" user "user" can be authenticated with password "userpass"
+
+     Examples:
+       | user      | isadmin   | result    |
+       | superad   | yes       | Deleted   |
+       | johndoe   | no        | Forbidden |

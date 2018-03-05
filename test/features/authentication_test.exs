@@ -86,4 +86,28 @@ defmodule TdAuth.AuthenticationTest do
     {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
+  defwhen ~r/^user "(?<user_name>[^"]+)" tries to delete user "(?<target_user_name>[^"]+)"$/,
+    %{user_name: _user_name, target_user_name: target_user_name}, state do
+    target_user = get_user_by_name(state[:token], target_user_name)
+    {:ok, status_code, _resp} = user_delete(state[:token], target_user["id"])
+    {:ok, Map.merge(state, %{status_code: status_code})}
+  end
+
+  defand ~r/^if result "(?<actual_result>[^"]+)" is "(?<expected_result>[^"]+)" user "(?<user_name>[^"]+)" does not exist$/,
+    %{actual_result: actual_result, expected_result: expected_result, user_name: user_name}, state do
+    if actual_result == expected_result do
+      user = get_user_by_name(state[:token], user_name)
+      assert !user
+    end
+  end
+
+  defand ~r/^if result "(?<actual_result>[^"]+)" is not "(?<expected_result>[^"]+)" user "(?<user_name>[^"]+)" can be authenticated with password "(?<password>[^"]+)"$/,
+    %{actual_result: actual_result, expected_result: expected_result, user_name: user_name, password: password}, _state do
+    if actual_result != expected_result do
+      {_, status_code, json_resp} = session_create(user_name, password)
+      assert rc_created() == to_response_code(status_code)
+      assert json_resp["token"] != nil
+    end
+  end
+
 end

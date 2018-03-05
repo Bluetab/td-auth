@@ -113,6 +113,19 @@ defmodule TdAuthWeb.UserController do
   end
 
   def delete(conn, %{"id" => id}) do
+    current_user = Plug.current_resource(conn)
+    case current_user.is_admin do
+      true ->
+        conn
+        |> do_delete(id)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, :"401.json")
+    end
+  end
+
+  defp do_delete(conn, id) do
     user = Accounts.get_user!(id)
     with {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")
