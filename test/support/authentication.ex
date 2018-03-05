@@ -6,6 +6,7 @@ defmodule TdAuthWeb.Authentication do
   alias Phoenix.ConnTest
   alias TdAuth.Auth.Guardian
   alias Poison, as: JSON
+  alias TdAuth.Accounts
   import Plug.Conn
   import TdAuthWeb.Router.Helpers
   @endpoint TdAuthWeb.Endpoint
@@ -27,6 +28,13 @@ defmodule TdAuthWeb.Authentication do
   def create_user_auth_conn(user) do
     {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
     conn = ConnTest.build_conn()
+    conn = put_auth_headers(conn, jwt)
+    {:ok, %{conn: conn, jwt: jwt, claims: full_claims}}
+  end
+
+  def create_user_auth_conn(conn, user_name) do
+    user = Accounts.get_user_by_name(user_name)
+    {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
     conn = put_auth_headers(conn, jwt)
     {:ok, %{conn: conn, jwt: jwt, claims: full_claims}}
   end

@@ -8,6 +8,7 @@ defmodule TdAuthWeb.UserControllerTest do
   alias TdAuth.Accounts.User
 
   @create_attrs %{password: "some password_hash", user_name: "some user_name", is_admin: false}
+  @create_second_attrs %{password: "some password_hash", user_name: "some user_name 2", is_admin: false}
   @update_attrs %{password: "some updated password_hash", user_name: "some updated user_name"}
   @update_is_admin %{user_name: "some updated user_name", is_admin: true}
   @invalid_attrs %{password: nil, user_name: nil}
@@ -38,7 +39,18 @@ defmodule TdAuthWeb.UserControllerTest do
     end
   end
 
+  describe "try to create user by a non admin" do
+    setup [:create_user]
+
+    test "create user with a non admin user renders error", %{conn: conn} do
+      {:ok, %{conn: conn, jwt: _jwt, claims: _full_claims}} = create_user_auth_conn(conn, @create_attrs.user_name)
+      conn = post conn, user_path(conn, :create), user: @create_second_attrs
+      assert response(conn, 401)
+    end
+  end
+
   describe "create user" do
+
     @tag :admin_authenticated
     test "renders user when data is valid", %{conn: conn, swagger_schema: schema} do
       conn = post conn, user_path(conn, :create), user: @create_attrs

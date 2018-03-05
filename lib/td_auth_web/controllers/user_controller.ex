@@ -112,7 +112,7 @@ defmodule TdAuthWeb.UserController do
     description "Updates User password"
     produces "application/json"
     parameters do
-      data_domain :body, Schema.ref(:UserChangePassword), "User change password attrs"
+      user :body, Schema.ref(:UserChangePassword), "User change password attrs"
     end
     response 200, "OK"
     response 400, "Client Error"
