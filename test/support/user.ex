@@ -14,6 +14,14 @@ defmodule TdAuthWeb.User do
     {:ok, status_code, resp |> JSON.decode!}
   end
 
+  def user_update(token, target_user_id, user_params) do
+    headers = get_header(token)
+    body = %{user: user_params} |> JSON.encode!
+    %HTTPoison.Response{status_code: status_code, body: resp} =
+      HTTPoison.put!(user_url(@endpoint, :update, target_user_id), body, headers, [])
+    {:ok, status_code, resp |> JSON.decode!}
+  end
+
   def user_list(token) do
     headers = get_header(token)
     %HTTPoison.Response{status_code: status_code, body: resp} =

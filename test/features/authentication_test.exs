@@ -22,12 +22,14 @@ defmodule TdAuth.AuthenticationTest do
     {:ok, Map.merge(state, %{status_code: status_code, resp: json_resp})}
   end
 
-  defwhen ~r/^"(?<user_name>[^"]+)" tries to create a user "(?<new_user_name>[^"]+)" with password "(?<new_password>[^"]+)"$/, %{user_name: _user_name, new_user_name: new_user_name, new_password: new_password}, state do
+  defwhen ~r/^"(?<user_name>[^"]+)" tries to create a user "(?<new_user_name>[^"]+)" with password "(?<new_password>[^"]+)"$/,
+    %{user_name: _user_name, new_user_name: new_user_name, new_password: new_password}, state do
     {_, status_code, json_resp} = user_create(state[:token], %{user_name: new_user_name, password: new_password})
     {:ok, Map.merge(state, %{status_code: status_code, resp: json_resp})}
   end
 
-  defand ~r/^user "(?<new_user_name>[^"]+)" can be authenticated with password "(?<new_password>[^"]+)"$/, %{new_user_name: new_user_name, new_password: new_password}, _state do
+  defand ~r/^user "(?<new_user_name>[^"]+)" can be authenticated with password "(?<new_password>[^"]+)"$/,
+     %{new_user_name: new_user_name, new_password: new_password}, _state do
     {_, status_code, json_resp} = session_create(new_user_name, new_password)
       assert rc_created() == to_response_code(status_code)
       assert json_resp["token"] != nil
@@ -67,4 +69,21 @@ defmodule TdAuth.AuthenticationTest do
     {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: true})
     {:ok, Map.merge(state, %{status_code: status_code, token: json_resp["token"]})}
   end
+
+  defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" with super-admin property (?<is_super_admin>[^"]+)/,
+    %{user_name: user_name, password: password, is_super_admin: is_super_admin}, state do
+    {_, _status_code, json_resp} = session_create("app-admin", "mypass")
+    token = json_resp["token"]
+    {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: is_super_admin == "yes"})
+    assert json_resp["data"]["is_admin"] == (is_super_admin == "yes")
+    {:ok, Map.merge(state, %{status_code: status_code, token: json_resp["token"]})}
+  end
+
+  defwhen ~r/^user "(?<user_name>[^"]+)" tries to modify user "(?<target_user_name>[^"]+)" with following data:$/,
+    %{user_name: _user_name, target_user_name: target_user_name, table: [%{is_admin: is_admin}]}, state do
+    target_user = get_user_by_name(state[:token], target_user_name)
+    {:ok, status_code, _json_resp} = user_update(state[:token], target_user["id"], %{is_admin: is_admin != "false"})
+    {:ok, Map.merge(state, %{status_code: status_code})}
+  end
+
 end

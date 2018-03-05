@@ -67,22 +67,20 @@ Feature: User Authentication
     And user "johndoe" can not be authenticated with password "secret"
     And user "johndoe" can be authenticated with password "newsecret"
 
+   Scenario Outline: Check whether user is superadmin when modifying another user
+     Given an existing user "<user>" with password "secret" with super-admin property <isadmin>
+     And an existing user "user" with password "userpass" without "super-admin" permission
+     And user "<user>" is logged in the application with password "secret"
+     When user "<user>" tries to modify user "user" with following data:
+       | is_admin |
+       | false    |
+     Then the system returns a result with code "<result>"
 
-  # Scenario Outline: Check whether user is superadmin when modifying useron
-  #   Given an existing user <user> with password "secret" with super-admin property <isadmin>
-  #   And an existing user "user" with password "userpass" without "super-admin" permission
-  #   And user <user> is logged in the application with password "secret"
-  #   When user <user> tries to modify the password for user "user" with following data:
-  #     | old_password | new_password |
-  #     | userpass     | newsecret    |
-  #   Then the system returns a result with code <result>
-  #   And user "user" can be authenticated with password <okpass>
-  #   And user "user" can not be authenticated with password <kopass>
-  #
-  #   Examples:
-  #     | user      | isadmin   | result    | okpass    | kopass    |
-  #     | superad   | yes       | Ok        | newsecret | userpass  |
-  #     | johndoe   | no        | Forbidden | userpass  | newsecret |
+     Examples:
+       | user      | isadmin   | result    |
+       | superad   | yes       | Ok        |
+       | johndoe   | no        | Forbidden |
+
 
 
   Scenario: Password modification error

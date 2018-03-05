@@ -82,8 +82,20 @@ defmodule TdAuthWeb.UserController do
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
-    user = Accounts.get_user!(id)
+    current_user = Plug.current_resource(conn)
+    case current_user.is_admin do
+      true ->
+        conn
+        |> do_update(id, user_params)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, :"401.json")
+    end
+  end
 
+  defp do_update(conn, id, user_params) do
+    user = Accounts.get_user!(id)
     with {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user)
     end
