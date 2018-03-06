@@ -12,14 +12,14 @@ defmodule TdAuth.Accounts.User do
     field :user_name, :string
     field :password, :string, virtual: true
     field :is_admin, :boolean, default: false
-
+    field :is_protected, :boolean, default: false
     timestamps()
   end
 
   @doc false
   def changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:user_name, :password, :is_admin])
+    |> cast(attrs, [:user_name, :password, :is_admin, :is_protected])
     |> validate_required([:user_name])
     |> unique_constraint(:user_name)
     |> put_pass_hash()
