@@ -186,4 +186,15 @@ defmodule TdAuthWeb.UserController do
   defp get_current_user(conn) do
     GuardianPlug.current_resource(conn)
   end
+
+  def search(conn, %{"data" => %{"ids" => ids}}) do
+    users = Accounts.list_users(ids)
+    render(conn, "index.json", users: users)
+  end
+
+  def search(conn, %{"data" => _}) do
+    conn
+    |> send_resp(:unprocessable_entity, "")
+  end
+
 end

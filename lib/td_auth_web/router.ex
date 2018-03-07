@@ -20,6 +20,7 @@ defmodule TdAuthWeb.Router do
     pipe_through [:api, :api_secure]
     get "/sessions", SessionController, :ping
     delete "/sessions", SessionController, :destroy
+    post "/users/search", UserController, :search
     resources "/users", UserController, except: [:new, :edit]
     put "/users", UserController, :change_password
   end

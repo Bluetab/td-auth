@@ -21,6 +21,10 @@ defmodule TdAuth.Accounts do
     Repo.all(from u in User, where: u.is_protected == false)
   end
 
+  def list_users(ids) do
+    Repo.all(from u in User, where: u.id in ^ids)
+  end
+
   @doc """
   Gets a single user.
 
