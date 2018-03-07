@@ -18,7 +18,7 @@ config :td_auth, TdAuth.Repo,
   password: "postgres",
   database: "td_auth_prod",
   hostname: "localhost",
-  pool_size: 15
+  pool_size: 10
 
 config :td_auth, TdAuth.Auth.Guardian,
   allowed_algos: ["HS512"], # optional
