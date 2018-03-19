@@ -36,7 +36,7 @@ defmodule TdAuthWeb.Router do
         version: "1.0",
         title: "TDAuth"
       },
-      "host": "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:host]}:#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:http][:port]}",
+      #"host": "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint, :url)[:host]}:#{Application.get_env(:td_auth, TdAuthWeb.Endpoint, :http)[:port]}",
       "basePath": "/api",
       "securityDefinitions":
       %{
