@@ -31,6 +31,11 @@ config :td_auth, TdAuth.Auth.Guardian,
   ttl: { 1, :hours },
   secret_key: "SuperSecretTruedat"
 
+config :td_auth, :phoenix_swagger,
+  swagger_files: %{
+   "priv/static/swagger.json" => [router: TdAuthWeb.Router]
+  }
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"

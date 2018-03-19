@@ -10,6 +10,10 @@ defmodule TdAuthWeb.Router do
     plug TdAuth.Auth.Pipeline.Secure
   end
 
+  scope "/api/swagger" do
+    forward "/", PhoenixSwagger.Plug.SwaggerUI, otp_app: :td_auth, swagger_file: "swagger.json"
+  end
+
   scope "/api", TdAuthWeb do
     pipe_through :api
     get "/ping", PingController, :ping
@@ -32,6 +36,7 @@ defmodule TdAuthWeb.Router do
         version: "1.0",
         title: "TDAuth"
       },
+      "host": "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:host]}:#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:http][:port]}",
       "basePath": "/api",
       "securityDefinitions":
       %{

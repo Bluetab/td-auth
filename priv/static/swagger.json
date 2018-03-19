@@ -140,7 +140,7 @@
               "$ref": "#/definitions/UserChangePassword"
             },
             "required": false,
-            "name": "data_domain",
+            "name": "user",
             "in": "body",
             "description": "User change password attrs"
           }
@@ -239,7 +239,7 @@
     "version": "1.0",
     "title": "TDAuth"
   },
-  "host": "localhost:4000",
+  "host": "localhost:4001",
   "definitions": {
     "UsersResponseData": {
       "type": "object",
