@@ -1,6 +1,8 @@
 defmodule TdAuthWeb.Router do
   use TdAuthWeb, :router
 
+  @endpoint_url "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:host]}:#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:http][:port]}"
+
   pipeline :api do
     plug TdAuth.Auth.Pipeline.Unsecure
     plug :accepts, ["json"]
@@ -36,7 +38,7 @@ defmodule TdAuthWeb.Router do
         version: "1.0",
         title: "TDAuth"
       },
-      #"host": "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint, :url)[:host]}:#{Application.get_env(:td_auth, TdAuthWeb.Endpoint, :http)[:port]}",
+      "host": @endpoint_url,
       "basePath": "/api",
       "securityDefinitions":
       %{
