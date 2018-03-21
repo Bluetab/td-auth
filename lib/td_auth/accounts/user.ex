@@ -14,7 +14,7 @@ defmodule TdAuth.Accounts.User do
     field :is_admin, :boolean, default: false
     field :is_protected, :boolean, default: false
     field :email, :string
-    field :full_name, :string
+    field :full_name, :string, default: ""
     timestamps()
   end
 

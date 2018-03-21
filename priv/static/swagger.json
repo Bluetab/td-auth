@@ -266,6 +266,7 @@
     "UserUpdateProps": {
       "type": "object",
       "required": [
+        "email",
         "password",
         "user_name"
       ],
@@ -281,6 +282,10 @@
         "is_admin": {
           "type": "boolean",
           "description": "is admin flag"
+        },
+        "email": {
+          "type": "string",
+          "description": "some@email.com"
         }
       }
     },
@@ -295,6 +300,7 @@
     "UserResponseAttrs": {
       "type": "object",
       "required": [
+        "email",
         "is_admin",
         "user_name",
         "id"
@@ -311,6 +317,14 @@
         "id": {
           "type": "integer",
           "description": "unique identifier"
+        },
+        "full_name": {
+          "type": "string",
+          "description": "full name"
+        },
+        "email": {
+          "type": "string",
+          "description": "email"
         }
       }
     },
@@ -325,6 +339,7 @@
     "UserCreateProps": {
       "type": "object",
       "required": [
+        "email",
         "password",
         "user_name"
       ],
@@ -340,6 +355,10 @@
         "is_admin": {
           "type": "boolean",
           "description": "is admin flag"
+        },
+        "email": {
+          "type": "string",
+          "description": "some@email.com"
         }
       }
     },
@@ -372,6 +391,7 @@
       "type": "object",
       "title": "User",
       "required": [
+        "email",
         "is_admin",
         "user_name",
         "id"
@@ -392,13 +412,23 @@
         "id": {
           "type": "integer",
           "description": "unique identifier"
+        },
+        "full_name": {
+          "type": "string",
+          "description": "full name"
+        },
+        "email": {
+          "type": "string",
+          "description": "email"
         }
       },
       "example": {
         "user_name": "myuser",
         "password": "myuserpass",
         "is_admin": false,
-        "id": 123
+        "id": 123,
+        "full_name": "My User",
+        "email": "some@email.com"
       },
       "description": "User entity"
     },

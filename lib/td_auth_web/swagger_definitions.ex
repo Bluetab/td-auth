@@ -41,12 +41,16 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           user_name :string, "user name", required: true
           is_admin :boolean, "flag is admin", required: true
           password :string, "user password"
+          email :string, "email", required: true
+          full_name :string, "full name"
         end
         example %{
           id: 123,
           user_name: "myuser",
           is_admin: false,
-          password: "myuserpass"
+          password: "myuserpass",
+          email: "some@email.com",
+          full_name: "My User"
         }
       end,
       UserCreateProps: swagger_schema do
@@ -54,6 +58,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           user_name :string, "user name", required: true
           is_admin :boolean, "is admin flag"
           password :string, "user password", required: true
+          email :string, "some@email.com", required: true
         end
       end,
       UserCreate: swagger_schema do
@@ -66,6 +71,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           user_name :string, "user name", required: true
           is_admin :boolean, "is admin flag"
           password :string, "user password", required: true
+          email :string, "some@email.com", required: true
         end
       end,
       UserUpdate: swagger_schema do
@@ -90,6 +96,8 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           id :integer, "unique identifier", required: true
           user_name :string, "user name", required: true
           is_admin :boolean, "flag is admin", required: true
+          email :string, "email", required: true
+          full_name :string, "full name"
         end
       end,
       UserResponse: swagger_schema do
