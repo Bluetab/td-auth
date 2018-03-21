@@ -6,9 +6,9 @@ defmodule TdAuth.AccountsTest do
   describe "users" do
     alias TdAuth.Accounts.User
 
-    @valid_attrs %{password: "some password", user_name: "some user_name"}
-    @update_attrs %{password: "some updated password", user_name: "some updated user_name"}
-    @invalid_attrs %{password: nil, user_name: nil}
+    @valid_attrs %{password: "some password", user_name: "some user_name", email: "some@email.com"}
+    @update_attrs %{password: "some updated password", user_name: "some updated user_name", email: "someupdated@email.com"}
+    @invalid_attrs %{password: nil, user_name: nil, email: nil}
 
     def user_fixture(attrs \\ %{}) do
       {:ok, user} =
@@ -70,6 +70,16 @@ defmodule TdAuth.AccountsTest do
       user = user_fixture()
       #assert Accounts.get_user_by_name(user.user_name) == user
       assert Accounts.get_user_by_name(user.user_name).id == user.id
+    end
+
+    test "create user always downcase" do
+      downcase_name = "downcasename"
+      uppercase_name = "DownCaseName"
+
+      {:ok, user} =
+        %{password: "some password", user_name: uppercase_name, email: "some@email.com"}
+        |> Accounts.create_user()
+      assert user.user_name == downcase_name
     end
   end
 end

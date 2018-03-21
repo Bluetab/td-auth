@@ -7,11 +7,11 @@ defmodule TdAuthWeb.UserControllerTest do
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
 
-  @create_attrs %{password: "some password_hash", user_name: "some user_name", is_admin: false}
+  @create_attrs %{password: "some password_hash", user_name: "some user_name", is_admin: false, email: "some@email.com"}
   @create_second_attrs %{password: "some password_hash", user_name: "some user_name 2", is_admin: false}
   @update_attrs %{password: "some updated password_hash", user_name: "some updated user_name"}
   @update_is_admin %{user_name: "some updated user_name", is_admin: true}
-  @invalid_attrs %{password: nil, user_name: nil}
+  @invalid_attrs %{password: nil, user_name: nil, email: nil}
   @admin_user_name "app-admin"
 
   def fixture(:user) do

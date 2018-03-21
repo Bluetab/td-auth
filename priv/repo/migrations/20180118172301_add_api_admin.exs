@@ -3,7 +3,11 @@ defmodule TdAuth.Repo.Migrations.AddApiAdmin do
 
   alias TdAuth.Accounts
 
-  @user_attrs %{password: "apipass", user_name: "api-admin", is_admin: true, is_protected: true}
+  @user_attrs %{password: "apipass",
+                user_name: "api-admin",
+                email: "truedat.api@bluetab.net",
+                is_admin: true,
+                is_protected: true}
 
   def change do
     Accounts.create_user(@user_attrs)

@@ -4,7 +4,8 @@ defmodule TdAuth.Repo.Migrations.AddSuperuser do
   alias TdAuth.Accounts
 
   @valid_attrs %{password: "mypass",
-                 user_name: "app-admin"}
+                 user_name: "app-admin",
+                 email: "truedat@bluetab.net"}
 
   def change do
     Accounts.create_user(@valid_attrs)

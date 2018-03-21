@@ -13,14 +13,17 @@ defmodule TdAuth.Accounts.User do
     field :password, :string, virtual: true
     field :is_admin, :boolean, default: false
     field :is_protected, :boolean, default: false
+    field :email, :string
+    field :full_name, :string
     timestamps()
   end
 
   @doc false
   def changeset(%User{} = user, attrs) do
     user
-    |> cast(attrs, [:user_name, :password, :is_admin, :is_protected])
-    |> validate_required([:user_name])
+    |> cast(attrs, [:user_name, :password, :is_admin, :is_protected, :email, :full_name])
+    |> validate_required([:user_name, :email])
+    |> downcase_value
     |> unique_constraint(:user_name)
     |> put_pass_hash()
   end
@@ -43,6 +46,10 @@ defmodule TdAuth.Accounts.User do
       nil -> @hash.dummy_checkpw()
       _ -> @hash.checkpw(password, user.password_hash)
     end
+  end
+
+  def downcase_value(changeset) do
+    update_change(changeset, :user_name, &String.downcase/1)
   end
 
 end

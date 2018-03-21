@@ -24,7 +24,7 @@ defmodule TdAuth.AuthenticationTest do
 
   defwhen ~r/^"(?<user_name>[^"]+)" tries to create a user "(?<new_user_name>[^"]+)" with password "(?<new_password>[^"]+)"$/,
     %{user_name: _user_name, new_user_name: new_user_name, new_password: new_password}, state do
-    {_, status_code, json_resp} = user_create(state[:token], %{user_name: new_user_name, password: new_password})
+    {_, status_code, json_resp} = user_create(state[:token], %{user_name: new_user_name, password: new_password, email: "some@email.com"})
     {:ok, Map.merge(state, %{status_code: status_code, resp: json_resp})}
   end
 
@@ -46,7 +46,7 @@ defmodule TdAuth.AuthenticationTest do
   defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" without "super-admin" permission$/, %{user_name: user_name, password: password}, state do
     {_, _status_code, json_resp} = session_create("app-admin", "mypass")
     token = json_resp["token"]
-    {_, _status_code, _json_resp} = user_create(token, %{user_name: user_name, password: password})
+    {_, _status_code, _json_resp} = user_create(token, %{user_name: user_name, password: password, email: "some@email.com"})
     {:ok, state}
   end
 
@@ -66,7 +66,7 @@ defmodule TdAuth.AuthenticationTest do
   defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" with "super-admin" permission$/, %{user_name: user_name, password: password}, state do
     {_, _status_code, json_resp} = session_create("app-admin", "mypass")
     token = json_resp["token"]
-    {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: true})
+    {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: true, email: "some@email.com"})
     {:ok, Map.merge(state, %{status_code: status_code, token: json_resp["token"]})}
   end
 
@@ -74,7 +74,7 @@ defmodule TdAuth.AuthenticationTest do
     %{user_name: user_name, password: password, is_super_admin: is_super_admin}, state do
     {_, _status_code, json_resp} = session_create("app-admin", "mypass")
     token = json_resp["token"]
-    {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: is_super_admin == "yes"})
+    {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: is_super_admin == "yes", email: "some@email.com"})
     assert json_resp["data"]["is_admin"] == (is_super_admin == "yes")
     {:ok, Map.merge(state, %{status_code: status_code, token: json_resp["token"]})}
   end

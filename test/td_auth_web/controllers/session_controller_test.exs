@@ -4,7 +4,8 @@ defmodule TdAuthWeb.SessionControllerTest do
   alias TdAuth.Accounts
 
   @create_attrs %{password: "temporal",
-                 user_name: "usuariotemporal"}
+                 user_name: "usuariotemporal",
+                 email: "some@email.com"}
   @valid_attrs %{password: "temporal",
                  user_name: "usuariotemporal"}
   @invalid_attrs %{password: "invalido",
