@@ -139,5 +139,7 @@ Feature: User Authentication
      Examples:
        | user      | isadmin   | property   | new_value      | result    |
        | superad   | yes       | full_name  | New Super Ad   | Ok        |
+       | superad   | yes       | password   | newsecret      | Ok        |
        | dashelle  | no        | full_name  | New John Doe   | Ok        |
        | dashelle  | no        | email      | john@email.com | Ok        |
+       | dashelle  | no        | password   | newsecret      | Forbidden |
