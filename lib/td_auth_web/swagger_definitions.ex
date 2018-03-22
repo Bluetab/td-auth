@@ -97,7 +97,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           user_name :string, "user name", required: true
           is_admin :boolean, "flag is admin", required: true
           email :string, "email", required: true
-          full_name :string, "full name"
+          full_name [:string, :null], "full name"
         end
       end,
       UserResponse: swagger_schema do

@@ -19,7 +19,7 @@ defmodule TdAuth.AuthenticationTest do
   defgiven ~r/^user "(?<user_name>[^"]+)" is logged in the application with password "(?<password>[^"]+)"$/, %{user_name: user_name, password: password}, state do
     {_, status_code, json_resp} = session_create(user_name, password)
     assert rc_created() == to_response_code(status_code)
-    {:ok, Map.merge(state, %{status_code: status_code, resp: json_resp})}
+    {:ok, Map.merge(state, %{status_code: status_code, token: json_resp["token"]})}
   end
 
   defwhen ~r/^"(?<user_name>[^"]+)" tries to create a user "(?<new_user_name>[^"]+)" with password "(?<new_password>[^"]+)"$/,
@@ -36,9 +36,15 @@ defmodule TdAuth.AuthenticationTest do
   end
 
   # Scenario: logging error for non existing user
-  defwhen ~r/^"johndoe" tries to modify his password with following data:$/,
-          %{table: [%{old_password: old_password, new_password: new_password}]}, state do
-      {_, status_code} = session_change_password(state[:token], old_password, new_password)
+  defwhen ~r/^"(?<user_name>[^"]+)" tries to modify his password with following data:$/,
+          %{user_name: user_name, table: [%{old_password: old_password, new_password: new_password}]}, state do
+      {_, status_code} = change_password(state[:token], get_user_by_name(state[:token], user_name)["id"], old_password, new_password)
+      {:ok, Map.merge(state, %{status_code: status_code})}
+  end
+
+  defwhen ~r/^"(?<user_name>[^"]+)" tries to modify "(?<other_user_name>[^"]+)" password with following data:$/,
+          %{user_name: _user_name, other_user_name: other_user_name, table: [%{old_password: old_password, new_password: new_password}]}, state do
+      {_, status_code} = change_password(state[:token], get_user_by_name(state[:token], other_user_name)["id"], old_password, new_password)
       {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
@@ -66,8 +72,8 @@ defmodule TdAuth.AuthenticationTest do
   defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" with "super-admin" permission$/, %{user_name: user_name, password: password}, state do
     {_, _status_code, json_resp} = session_create("app-admin", "mypass")
     token = json_resp["token"]
-    {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: true, email: "some@email.com"})
-    {:ok, Map.merge(state, %{status_code: status_code, token: json_resp["token"]})}
+    {_, status_code, _json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: true, email: "some@email.com"})
+    {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
   defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" with super-admin property (?<is_super_admin>[^"]+)/,
@@ -76,7 +82,16 @@ defmodule TdAuth.AuthenticationTest do
     token = json_resp["token"]
     {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: is_super_admin == "yes", email: "some@email.com"})
     assert json_resp["data"]["is_admin"] == (is_super_admin == "yes")
-    {:ok, Map.merge(state, %{status_code: status_code, token: json_resp["token"]})}
+    {:ok, Map.merge(state, %{status_code: status_code})}
+  end
+
+  defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" with super-admin property "(?<is_super_admin>[^"]+)"/,
+    %{user_name: user_name, password: password, is_super_admin: is_super_admin}, state do
+    {_, _status_code, json_resp} = session_create("app-admin", "mypass")
+    token = json_resp["token"]
+    {_, status_code, json_resp} = user_create(token, %{user_name: user_name, password: password, is_admin: is_super_admin == "true", email: "some@email.com"})
+    assert json_resp["data"]["is_admin"] == (is_super_admin == "true")
+    {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
   defwhen ~r/^user "(?<user_name>[^"]+)" tries to modify user "(?<target_user_name>[^"]+)" with following data:$/,
@@ -108,6 +123,20 @@ defmodule TdAuth.AuthenticationTest do
       assert rc_created() == to_response_code(status_code)
       assert json_resp["token"] != nil
     end
+  end
+
+  defwhen ~r/^"(?<user_name>[^"]+)" tries to reset "(?<other_user_name>[^"]+)" password with new_password "(?<new_password>[^"]+)"$/,
+          %{user_name: _user_name, other_user_name: other_user_name, new_password: new_password}, state do
+      target_user = get_user_by_name(state[:token], other_user_name)
+      {:ok, status_code, _json_resp} = user_update(state[:token], target_user["id"], %{password: new_password})
+      {:ok, Map.merge(state, %{status_code: status_code})}
+  end
+
+  defwhen ~r/^"(?<user_name>[^"]+)" tries to reset his "(?<property>[^"]+)" with new property value "(?<new_value>[^"]+)"$/,
+          %{user_name: user_name, property: property, new_value: new_value}, state do
+      target_user = get_user_by_name(state[:token], user_name)
+      {:ok, status_code, _json_resp} = user_update(state[:token], target_user["id"], Map.put(%{}, property, new_value))
+      {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
 end

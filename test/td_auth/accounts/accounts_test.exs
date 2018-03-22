@@ -45,6 +45,7 @@ defmodule TdAuth.AccountsTest do
       assert %User{} = user
       assert user.password == "some updated password"
       assert user.user_name == "some updated user_name"
+      assert user.email == "someupdated@email.com"
     end
 
     test "update_user/2 with invalid data returns error changeset" do

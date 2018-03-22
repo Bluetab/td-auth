@@ -27,8 +27,9 @@ defmodule TdAuthWeb.Router do
     get "/sessions", SessionController, :ping
     delete "/sessions", SessionController, :destroy
     post "/users/search", UserController, :search
-    resources "/users", UserController, except: [:new, :edit]
-    put "/users", UserController, :change_password
+    resources "/users", UserController, except: [:new, :edit] do
+      patch "/change_password", UserController, :change_password
+    end
   end
 
   def swagger_info do

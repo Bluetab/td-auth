@@ -91,6 +91,17 @@ Feature: User Authentication
     And user "johndoe" can not be authenticated with password "newsecret"
     And user "johndoe" can be authenticated with password "secret"
 
+  Scenario: Password modification error
+    Given an existing user "johndoe" with password "secret" without "super-admin" permission
+    Given an existing user "dashelle" with password "secret" without "super-admin" permission
+    And user "johndoe" is logged in the application with password "secret"
+    When "johndoe" tries to modify "dashelle" password with following data:
+      | old_password | new_password |
+      | secret     | newsecret    |
+    Then the system returns a result with code "Unprocessable Entity"
+    And user "dashelle" can not be authenticated with password "newsecret"
+    And user "dashelle" can be authenticated with password "secret"
+
    Scenario Outline: Delete user only when user is superadmin
      Given an existing user "<user>" with password "secret" with super-admin property <isadmin>
      And an existing user "user" with password "userpass" without "super-admin" permission
@@ -104,3 +115,29 @@ Feature: User Authentication
        | user      | isadmin   | result    |
        | superad   | yes       | Deleted   |
        | johndoe   | no        | Forbidden |
+
+   Scenario Outline: Reset password when user is superadmin
+     Given an existing user "johndoe" with password "secret" without "super-admin" permission
+     And an existing user "<user>" with password "secret" with super-admin property <isadmin>
+     And user "<user>" is logged in the application with password "secret"
+     When "<user>" tries to reset "johndoe" password with new_password "newsecret"
+     Then the system returns a result with code "<result>"
+     And if result "<result>" is not "Ok" user "johndoe" can be authenticated with password "secret"
+     And if result "<result>" is not "Forbidden" user "johndoe" can be authenticated with password "newsecret"
+
+     Examples:
+       | user      | isadmin   | result    |
+       | superad   | yes       | Ok        |
+       | dashelle  | no        | Forbidden |
+
+   Scenario Outline: User updates own properties
+     Given an existing user "<user>" with password "secret" with super-admin property <isadmin>
+     And user "<user>" is logged in the application with password "secret"
+     When "<user>" tries to reset his "<property>" with new property value "<new_value"
+     Then the system returns a result with code "<result>"
+
+     Examples:
+       | user      | isadmin   | property   | new_value      | result    |
+       | superad   | yes       | full_name  | New Super Ad   | Ok        |
+       | dashelle  | no        | full_name  | New John Doe   | Ok        |
+       | dashelle  | no        | email      | john@email.com | Ok        |

@@ -16,6 +16,45 @@
     "http"
   ],
   "paths": {
+    "/users/{id}/change_password": {
+      "patch": {
+        "tags": [
+          "User"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "User ID"
+          },
+          {
+            "schema": {
+              "$ref": "#/definitions/UserChangePassword"
+            },
+            "required": false,
+            "name": "user",
+            "in": "body",
+            "description": "User change password attrs"
+          }
+        ],
+        "operationId": "TdAuthWeb.UserController.change_password",
+        "description": "Updates User password"
+      }
+    },
     "/users/{id}": {
       "put": {
         "tags": [
@@ -118,36 +157,6 @@
       }
     },
     "/users": {
-      "put": {
-        "tags": [
-          "User"
-        ],
-        "summary": "",
-        "responses": {
-          "400": {
-            "description": "Client Error"
-          },
-          "200": {
-            "description": "OK"
-          }
-        },
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "$ref": "#/definitions/UserChangePassword"
-            },
-            "required": false,
-            "name": "user",
-            "in": "body",
-            "description": "User change password attrs"
-          }
-        ],
-        "operationId": "TdAuthWeb.UserController.change_password",
-        "description": "Updates User password"
-      },
       "post": {
         "tags": [
           "User"
@@ -319,7 +328,10 @@
           "description": "unique identifier"
         },
         "full_name": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "full name"
         },
         "email": {

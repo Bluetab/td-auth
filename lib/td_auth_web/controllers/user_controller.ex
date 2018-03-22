@@ -81,17 +81,20 @@ defmodule TdAuthWeb.UserController do
     response 400, "Client Error"
   end
 
+  def update(conn, %{"id" => id, "user" => %{"password" => _password} = user_params}) do
+    current_user = Plug.current_resource(conn)
+    update?(conn, id, user_params, current_user.is_admin)
+  end
   def update(conn, %{"id" => id, "user" => user_params}) do
     current_user = Plug.current_resource(conn)
-    case current_user.is_admin do
-      true ->
-        conn
-        |> do_update(id, user_params)
-      _ ->
-        conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
-    end
+    update?(conn, id, user_params, current_user.is_admin || current_user.id == String.to_integer(id))
+  end
+
+  defp update?(conn, id, user_params, true), do: do_update(conn, id, user_params)
+  defp update?(conn, _id, _user_params, _) do
+    conn
+    |> put_status(:unauthorized)
+    |> render(ErrorView, :"401.json")
   end
 
   defp do_update(conn, id, user_params) do
@@ -133,27 +136,38 @@ defmodule TdAuthWeb.UserController do
   end
 
   swagger_path :change_password do
-    put "/users"
+    patch "/users/{id}/change_password"
     description "Updates User password"
     produces "application/json"
     parameters do
+      id :path, :integer, "User ID", required: true
       user :body, Schema.ref(:UserChangePassword), "User change password attrs"
     end
     response 200, "OK"
     response 400, "Client Error"
   end
 
-  def change_password(conn, %{"new_password" => new_password,
-                              "old_password" => old_password}) do
-    user = get_current_user(conn)
-    case User.check_password(user, old_password) do
-      true ->
-        conn
-          |> do_change_password(user, new_password)
-      _ ->
+  def change_password(conn, %{"user_id" => id, "new_password" => new_password,
+                                          "old_password" => old_password}) do
+    with {:ok, user} <- check_user_conn(conn, id),
+         true <- User.check_password(user, old_password),
+         {:ok, %User{} = _user} <- Accounts.update_user(user, %{password: new_password})
+    do
+      send_resp(conn, :ok, "")
+    else
+      _error ->
         conn
           |> send_resp(:unprocessable_entity, "")
     end
+  end
+
+  def search(conn, %{"data" => %{"ids" => ids}}) do
+    users = Accounts.list_users(ids)
+    render(conn, "index.json", users: users)
+  end
+  def search(conn, %{"data" => _}) do
+    conn
+    |> send_resp(:unprocessable_entity, "")
   end
 
   defp do_create(conn, user_params) do
@@ -173,28 +187,16 @@ defmodule TdAuthWeb.UserController do
 
   end
 
-  defp do_change_password(conn, user, new_password) do
-    with {:ok, %User{} = _user} <- Accounts.update_user(user, %{password: new_password}) do
-      send_resp(conn, :ok, "")
-    else
-      _error ->
-        conn
-          |> send_resp(:unprocessable_entity, "")
-    end
-  end
-
   defp get_current_user(conn) do
     GuardianPlug.current_resource(conn)
   end
 
-  def search(conn, %{"data" => %{"ids" => ids}}) do
-    users = Accounts.list_users(ids)
-    render(conn, "index.json", users: users)
-  end
-
-  def search(conn, %{"data" => _}) do
-    conn
-    |> send_resp(:unprocessable_entity, "")
+  defp check_user_conn(conn, user_id) do
+    user_conn = get_current_user(conn)
+    case Accounts.get_user!(user_id) == user_conn  do
+      true -> {:ok, user_conn}
+      false -> {:error, "You are not the user conn"}
+    end
   end
 
 end
