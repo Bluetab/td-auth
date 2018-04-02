@@ -54,6 +54,18 @@ defmodule TdAuthWeb.SessionController do
       |> send_resp(:ok, "")
   end
 
+# TOFIX: A la espera de que actualicen la versión de la librería
+  # def refresh(conn, _params) do
+  #   resource = GuardianPlug.current_resource(conn)
+  #   token =
+  #     conn
+  #       |> GuardianPlug.remember_me(resource)
+  #       |> GuardianPlug.current_token(conn)
+  #   conn
+  #     |> put_status(:created)
+  #     |> render("show.json", token: token)
+  # end
+
   def destroy(conn, _params) do
     token = GuardianPlug.current_token(conn)
     Guardian.revoke(token)
