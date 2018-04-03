@@ -27,7 +27,7 @@ defmodule TdAuthWeb.SessionController do
     parameters do
       user :body, Schema.ref(:SessionCreate), "User session create attrs"
     end
-    response 201, "Created", Schema.ref(:SessionResponse)
+    response 201, "Created", Schema.ref(:Token)
     response 400, "Client Error"
   end
 
@@ -39,9 +39,10 @@ defmodule TdAuthWeb.SessionController do
       true ->
         conn = handle_sign_in(conn, user)
         token = GuardianPlug.current_token(conn)
+        {:ok, refresh_token, _full_claims} = Guardian.encode_and_sign(user, %{}, token_type: "refresh")
         conn
           |> put_status(:created)
-          |> render("show.json", token: token)
+          |> render("show.json", token: %{token: token, refresh_token: refresh_token})
       _ ->
         conn
           |> put_status(:unauthorized)
@@ -54,17 +55,23 @@ defmodule TdAuthWeb.SessionController do
       |> send_resp(:ok, "")
   end
 
-# TOFIX: A la espera de que actualicen la versión de la librería
-  # def refresh(conn, _params) do
-  #   resource = GuardianPlug.current_resource(conn)
-  #   token =
-  #     conn
-  #       |> GuardianPlug.remember_me(resource)
-  #       |> GuardianPlug.current_token(conn)
-  #   conn
-  #     |> put_status(:created)
-  #     |> render("show.json", token: token)
-  # end
+  swagger_path :refresh do
+    post "/sessions/refresh"
+    description "Returns new token"
+    produces "application/json"
+    parameters do
+      user :body, Schema.ref(:RefreshSessionCreate), "User token"
+    end
+    response 201, "Created", Schema.ref(:Token)
+    response 400, "Client Error"
+  end
+  def refresh(conn, params) do
+    refresh_token = params["refresh_token"]
+    {:ok, _old_stuff, {token, _new_claims}} = Guardian.exchange(refresh_token, "refresh", "access")
+     conn
+       |> put_status(:created)
+       |> render("show.json", token: %{token: token, refresh_token: refresh_token})
+   end
 
   def destroy(conn, _params) do
     token = GuardianPlug.current_token(conn)

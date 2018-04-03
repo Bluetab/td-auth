@@ -10,6 +10,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         title "Auth Token"
         properties do
           token :string, "token"
+          refresh_token :string, "refresh token", required: true
         end
       end,
       Session: swagger_schema do
@@ -18,14 +19,14 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           password :string, "password", required: true
         end
       end,
+      RefreshSessionCreate: swagger_schema do
+        properties do
+          refresh_token :string, "refresh token", required: true
+        end
+      end,
       SessionCreate: swagger_schema do
         properties do
           user Schema.ref(:Session)
-        end
-      end,
-      SessionResponse: swagger_schema do
-        properties do
-          data Schema.ref(:Token)
         end
       end
     }

@@ -208,6 +208,41 @@
         "description": "List Users"
       }
     },
+    "/sessions/refresh": {
+      "post": {
+        "tags": [
+          "Session"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/Token"
+            },
+            "description": "Created"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/RefreshSessionCreate"
+            },
+            "required": false,
+            "name": "user",
+            "in": "body",
+            "description": "User token"
+          }
+        ],
+        "operationId": "TdAuthWeb.SessionController.refresh",
+        "description": "Returns new token"
+      }
+    },
     "/sessions": {
       "post": {
         "tags": [
@@ -220,7 +255,7 @@
           },
           "201": {
             "schema": {
-              "$ref": "#/definitions/SessionResponse"
+              "$ref": "#/definitions/Token"
             },
             "description": "Created"
           }
@@ -447,18 +482,17 @@
     "Token": {
       "type": "object",
       "title": "Auth Token",
+      "required": [
+        "refresh_token"
+      ],
       "properties": {
         "token": {
           "type": "string",
           "description": "token"
-        }
-      }
-    },
-    "SessionResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/Token"
+        },
+        "refresh_token": {
+          "type": "string",
+          "description": "refresh token"
         }
       }
     },
@@ -484,6 +518,18 @@
         "password": {
           "type": "string",
           "description": "password"
+        }
+      }
+    },
+    "RefreshSessionCreate": {
+      "type": "object",
+      "required": [
+        "refresh_token"
+      ],
+      "properties": {
+        "refresh_token": {
+          "type": "string",
+          "description": "refresh token"
         }
       }
     }

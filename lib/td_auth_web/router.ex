@@ -19,6 +19,7 @@ defmodule TdAuthWeb.Router do
   scope "/api", TdAuthWeb do
     pipe_through :api
     get "/ping", PingController, :ping
+    post "/sessions/refresh", SessionController, :refresh
     post "/sessions", SessionController, :create
   end
 
