@@ -1,7 +1,7 @@
 defmodule TdAuthWeb.Router do
   use TdAuthWeb, :router
 
-  @endpoint_url "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:host]}:#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:http][:port]}"
+  @endpoint_url "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:host]}:#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:port]}"
 
   pipeline :api do
     plug TdAuth.Auth.Pipeline.Unsecure
