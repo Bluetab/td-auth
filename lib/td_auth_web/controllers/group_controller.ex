@@ -109,7 +109,10 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def user_groups(conn, %{"user_id" => user_id}) do
-    user = Accounts.get_user!(user_id) |> Repo.preload(:groups)
+    user =
+      user_id
+      |> Accounts.get_user!()
+      |> Repo.preload(:groups)
     render(conn, "index.json", groups: user.groups)
   end
 
@@ -126,7 +129,10 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def add_user_groups(conn, %{"user_id" => user_id, "group" => group_params}) do
-    user = Accounts.get_user!(user_id) |> Repo.preload(:groups)
+    user =
+      user_id
+      |> Accounts.get_user!()
+      |> Repo.preload(:groups)
     {:ok, group} = Accounts.get_or_create_group(group_params)
     with {:ok, %User{} = _updateduser} <- Accounts.add_group_to_user(user, group) do
       conn
@@ -148,7 +154,10 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def delete_user_groups(conn, %{"user_id" => user_id, "id" => group_id}) do
-    user = Accounts.get_user!(user_id) |> Repo.preload(:groups)
+    user =
+      user_id
+      |> Accounts.get_user!()
+      |> Repo.preload(:groups)
     group = Accounts.get_group!(group_id)
     with {:ok, %User{}} <- Accounts.delete_group_from_user(user, group) do
       send_resp(conn, :no_content, "")

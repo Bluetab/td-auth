@@ -623,7 +623,9 @@
         },
         "groups": {
           "type": "array",
-          "description": []
+          "items": {
+            "$ref": "#/definitions/Group"
+          }
         },
         "full_name": {
           "type": [

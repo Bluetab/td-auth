@@ -62,7 +62,10 @@ defmodule TdAuthWeb.UserController do
   end
 
   def show(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id) |> Repo.preload(:groups)
+    user =
+      id
+      |> Accounts.get_user!()
+      |> Repo.preload(:groups)
     render(conn, "show.json", user: user)
   end
 
@@ -138,7 +141,10 @@ defmodule TdAuthWeb.UserController do
   end
 
   def search(conn, %{"data" => %{"ids" => ids}}) do
-    users = Accounts.list_users(ids) |> Repo.preload(:groups)
+    users =
+      ids
+      |> Accounts.list_users()
+      |> Repo.preload(:groups)
     render(conn, "index.json", users: users)
   end
   def search(conn, %{"data" => _}) do

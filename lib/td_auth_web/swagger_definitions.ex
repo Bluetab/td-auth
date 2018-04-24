@@ -108,7 +108,10 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           is_admin :boolean, "flag is admin", required: true
           email :string, "email", required: true
           full_name [:string, :null], "full name"
-          groups :array, []
+          groups (Schema.new do
+                      type :array
+                      items Schema.ref(:Group)
+                    end)
         end
       end,
       UserResponse: swagger_schema do
