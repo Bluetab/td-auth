@@ -4,6 +4,8 @@ defmodule TdAuth.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias TdAuth.Accounts.User
+  alias TdAuth.Accounts.Group
+
   @hash Application.get_env(:td_auth, :hashing_module)
 
   @derive {Poison.Encoder, only: [:id, :user_name, :is_admin]}
@@ -15,6 +17,8 @@ defmodule TdAuth.Accounts.User do
     field :is_protected, :boolean, default: false
     field :email, :string
     field :full_name, :string, default: ""
+    many_to_many :groups, Group, join_through: "users_groups", on_replace: :delete
+
     timestamps()
   end
 
@@ -50,6 +54,20 @@ defmodule TdAuth.Accounts.User do
 
   def downcase_value(changeset) do
     update_change(changeset, :user_name, &String.downcase/1)
+  end
+
+  def add_group_changeset(user, group) do
+    groups = user.groups ++ [group]
+    user
+    |> change()
+    |> put_assoc(:groups, groups)
+  end
+
+  def delete_group_changeset(user, group) do
+    groups = Enum.filter(user.groups, &(&1.name != group.name))
+    user
+    |> change()
+    |> put_assoc(:groups, groups)
   end
 
 end
