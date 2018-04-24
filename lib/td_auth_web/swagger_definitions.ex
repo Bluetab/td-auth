@@ -44,6 +44,10 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           password :string, "user password"
           email :string, "email", required: true
           full_name :string, "full name"
+          groups (Schema.new do
+                      type :array
+                      items Schema.ref(:Group)
+                    end)
         end
         example %{
           id: 123,
@@ -51,7 +55,12 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           is_admin: false,
           password: "myuserpass",
           email: "some@email.com",
-          full_name: "My User"
+          full_name: "My User",
+          groups: [%{
+            id: 321,
+            name: "group1"
+          }
+          ]
         }
       end,
       UserCreateProps: swagger_schema do
@@ -99,6 +108,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           is_admin :boolean, "flag is admin", required: true
           email :string, "email", required: true
           full_name [:string, :null], "full name"
+          groups :array, []
         end
       end,
       UserResponse: swagger_schema do
@@ -113,6 +123,69 @@ defmodule TdAuthWeb.SwaggerDefinitions do
       UsersResponseData: swagger_schema do
         properties do
           data Schema.ref(:UsersResponse)
+        end
+      end
+    }
+  end
+
+  def group_swagger_definitions do
+    %{
+      Group: swagger_schema do
+        title "Group"
+        description "Group entity"
+        properties do
+          id :integer, "unique identifier", required: true
+          name :string, "name", required: true
+        end
+        example %{
+          id: 123,
+          name: "mygroup"
+        }
+      end,
+      GroupCreateProps: swagger_schema do
+        properties do
+          name :string, "name", required: true
+        end
+      end,
+      GroupCreate: swagger_schema do
+        properties do
+          group Schema.ref(:GroupCreateProps)
+        end
+      end,
+      GroupUpdateProps: swagger_schema do
+        properties do
+          name :string, "name", required: true
+        end
+      end,
+      GroupUpdate: swagger_schema do
+        properties do
+          group Schema.ref(:GroupUpdateProps)
+        end
+      end,
+      Groups: swagger_schema do
+        title "Groups"
+        description "A collection of Groups"
+        type :array
+        items Schema.ref(:Group)
+      end,
+      GroupResponseAttrs: swagger_schema do
+        properties do
+          id :integer, "unique identifier", required: true
+          name :string, "name", required: true
+        end
+      end,
+      GroupResponse: swagger_schema do
+        properties do
+          data Schema.ref(:GroupResponseAttrs)
+        end
+      end,
+      GroupsResponse: swagger_schema do
+        type :array
+        items Schema.ref(:GroupResponseAttrs)
+      end,
+      GroupsResponseData: swagger_schema do
+        properties do
+          data Schema.ref(:GroupsResponse)
         end
       end
     }

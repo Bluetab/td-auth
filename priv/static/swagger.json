@@ -16,6 +16,112 @@
     "http"
   ],
   "paths": {
+    "/users/{user_id}/groups/{id}": {
+      "delete": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "204": {
+            "description": ""
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "required": true,
+            "name": "user_id",
+            "in": "path",
+            "description": "User ID"
+          },
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "Group ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.GroupController.delete_user_groups",
+        "description": "Create a group"
+      }
+    },
+    "/users/{user_id}/groups": {
+      "post": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/GroupResponse"
+            },
+            "description": "Created"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/GroupCreate"
+            },
+            "required": false,
+            "name": "group",
+            "in": "body",
+            "description": "Group create attrs"
+          },
+          {
+            "type": "integer",
+            "required": true,
+            "name": "user_id",
+            "in": "path",
+            "description": "User ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.GroupController.add_user_groups",
+        "description": "Create a group"
+      }
+    },
+    "/users/{id}/groups": {
+      "get": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/GroupsResponseData"
+            },
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "User ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.GroupController.user_groups",
+        "description": "User Groups"
+      }
+    },
     "/users/{id}/change_password": {
       "patch": {
         "tags": [
@@ -277,6 +383,159 @@
         "operationId": "TdAuthWeb.SessionController.create",
         "description": "Creates a user session"
       }
+    },
+    "/groups/{id}": {
+      "put": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/GroupResponse"
+            },
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/GroupUpdate"
+            },
+            "required": false,
+            "name": "group",
+            "in": "body",
+            "description": "Group update attrs"
+          },
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "Group ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.GroupController.update",
+        "description": "Update Group"
+      },
+      "get": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/GroupResponse"
+            },
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "Group ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.GroupController.show",
+        "description": "Show group"
+      },
+      "delete": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "204": {
+            "description": ""
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "Group ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.GroupController.delete",
+        "description": "Delete Group"
+      }
+    },
+    "/groups": {
+      "post": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "201": {
+            "schema": {
+              "$ref": "#/definitions/GroupResponse"
+            },
+            "description": "Created"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/GroupCreate"
+            },
+            "required": false,
+            "name": "user",
+            "in": "body",
+            "description": "Group create attrs"
+          }
+        ],
+        "operationId": "TdAuthWeb.GroupController.create",
+        "description": "Create a group"
+      },
+      "get": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/GroupsResponseData"
+            },
+            "description": "OK"
+          }
+        },
+        "parameters": [],
+        "operationId": "TdAuthWeb.GroupController.index",
+        "description": "List groups"
+      }
     }
   },
   "info": {
@@ -361,6 +620,10 @@
         "id": {
           "type": "integer",
           "description": "unique identifier"
+        },
+        "groups": {
+          "type": "array",
+          "description": []
         },
         "full_name": {
           "type": [
@@ -460,6 +723,12 @@
           "type": "integer",
           "description": "unique identifier"
         },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Group"
+          }
+        },
         "full_name": {
           "type": "string",
           "description": "full name"
@@ -474,6 +743,12 @@
         "password": "myuserpass",
         "is_admin": false,
         "id": 123,
+        "groups": [
+          {
+            "name": "group1",
+            "id": 321
+          }
+        ],
         "full_name": "My User",
         "email": "some@email.com"
       },
@@ -532,6 +807,116 @@
           "description": "refresh token"
         }
       }
+    },
+    "GroupsResponseData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/GroupsResponse"
+        }
+      }
+    },
+    "GroupsResponse": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GroupResponseAttrs"
+      }
+    },
+    "Groups": {
+      "type": "array",
+      "title": "Groups",
+      "items": {
+        "$ref": "#/definitions/Group"
+      },
+      "description": "A collection of Groups"
+    },
+    "GroupUpdateProps": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "name"
+        }
+      }
+    },
+    "GroupUpdate": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/GroupUpdateProps"
+        }
+      }
+    },
+    "GroupResponseAttrs": {
+      "type": "object",
+      "required": [
+        "name",
+        "id"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "name"
+        },
+        "id": {
+          "type": "integer",
+          "description": "unique identifier"
+        }
+      }
+    },
+    "GroupResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/GroupResponseAttrs"
+        }
+      }
+    },
+    "GroupCreateProps": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "name"
+        }
+      }
+    },
+    "GroupCreate": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/GroupCreateProps"
+        }
+      }
+    },
+    "Group": {
+      "type": "object",
+      "title": "Group",
+      "required": [
+        "name",
+        "id"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "name"
+        },
+        "id": {
+          "type": "integer",
+          "description": "unique identifier"
+        }
+      },
+      "example": {
+        "name": "mygroup",
+        "id": 123
+      },
+      "description": "Group entity"
     }
   },
   "basePath": "/api"
