@@ -8,14 +8,17 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuthWeb.ErrorView
   alias TdAuth.Accounts.User
   alias TdAuthWeb.SwaggerDefinitions
+  alias TdAuth.Repo
 
   def swagger_definitions do
     SwaggerDefinitions.session_swagger_definitions()
   end
 
   defp handle_sign_in(conn, user) do
+    user = user |> Repo.preload(:groups)
     custom_claims = %{"user_name": user.user_name,
-                      "is_admin": user.is_admin}
+                      "is_admin": user.is_admin,
+                      "groups": user.groups}
     conn
       |> GuardianPlug.sign_in(user, custom_claims)
   end
