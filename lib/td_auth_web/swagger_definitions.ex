@@ -155,6 +155,14 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           group Schema.ref(:GroupCreateProps)
         end
       end,
+      GroupsCreate: swagger_schema do
+        properties do
+          groups (Schema.new do
+                      type :array
+                      items Schema.ref(:GroupCreateProps)
+                    end)
+        end
+      end,
       GroupUpdateProps: swagger_schema do
         properties do
           name :string, "name", required: true

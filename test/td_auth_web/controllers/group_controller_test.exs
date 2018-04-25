@@ -91,10 +91,7 @@ defmodule TdAuthWeb.GroupControllerTest do
 
     @tag authenticated_user: @admin_user_name
     test "renders user groups when data is valid", %{conn: conn, user: %User{id: user_id}} do
-      conn = post conn, user_group_path(conn, :add_user_groups, user_id), group: @create_attrs
-      assert json_response(conn, 201)
-      conn = recycle_and_put_headers(conn)
-      conn = post conn, user_group_path(conn, :add_user_groups, user_id), group: @create_attrs2
+      conn = post conn, user_group_path(conn, :add_groups_to_user, user_id), groups: [@create_attrs, @create_attrs2]
       assert json_response(conn, 201)
     end
   end
@@ -105,10 +102,7 @@ defmodule TdAuthWeb.GroupControllerTest do
 
     @tag :admin_authenticated
     test "deletes chosen group", %{conn: conn, user: %User{id: user_id} = group, group: %Group{id: group_id}} do
-      conn = post conn, user_group_path(conn, :add_user_groups, user_id), group: @create_attrs
-      assert json_response(conn, 201)
-      conn = recycle_and_put_headers(conn)
-      conn = post conn, user_group_path(conn, :add_user_groups, user_id), group: @create_attrs2
+      conn = post conn, user_group_path(conn, :add_groups_to_user, user_id), groups: [@create_attrs, @create_attrs2]
       assert json_response(conn, 201)
       conn = recycle_and_put_headers(conn)
       conn = delete conn, user_group_path(conn, :delete_user_groups, user_id, group_id)

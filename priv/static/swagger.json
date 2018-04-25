@@ -65,7 +65,7 @@
           },
           "201": {
             "schema": {
-              "$ref": "#/definitions/GroupResponse"
+              "$ref": "#/definitions/GroupsResponseData"
             },
             "description": "Created"
           }
@@ -76,12 +76,12 @@
         "parameters": [
           {
             "schema": {
-              "$ref": "#/definitions/GroupCreate"
+              "$ref": "#/definitions/GroupsCreate"
             },
             "required": false,
-            "name": "group",
+            "name": "groups",
             "in": "body",
-            "description": "Group create attrs"
+            "description": "Groups create attrs"
           },
           {
             "type": "integer",
@@ -91,8 +91,8 @@
             "description": "User ID"
           }
         ],
-        "operationId": "TdAuthWeb.GroupController.add_user_groups",
-        "description": "Create a group"
+        "operationId": "TdAuthWeb.GroupController.add_groups_to_user",
+        "description": "Add groups to users"
       }
     },
     "/users/{id}/groups": {
@@ -822,6 +822,17 @@
       "type": "array",
       "items": {
         "$ref": "#/definitions/GroupResponseAttrs"
+      }
+    },
+    "GroupsCreate": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GroupCreateProps"
+          }
+        }
       }
     },
     "Groups": {

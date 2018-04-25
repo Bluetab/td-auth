@@ -56,13 +56,6 @@ defmodule TdAuth.Accounts.User do
     update_change(changeset, :user_name, &String.downcase/1)
   end
 
-  def add_group_changeset(user, group) do
-    groups = user.groups ++ [group]
-    user
-    |> change()
-    |> put_assoc(:groups, groups)
-  end
-
   def delete_group_changeset(user, group) do
     groups = Enum.filter(user.groups, &(&1.name != group.name))
     user

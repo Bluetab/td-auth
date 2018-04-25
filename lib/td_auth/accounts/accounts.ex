@@ -8,6 +8,7 @@ defmodule TdAuth.Accounts do
 
   alias TdAuth.Accounts.User
   alias TdAuth.Accounts.Group
+  alias Ecto.Changeset
 
   @doc """
   Returns the list of users.
@@ -210,25 +211,36 @@ defmodule TdAuth.Accounts do
   end
 
   @doc false
-  def get_or_create_group(%{"name" => name} = attrs \\ %{}) do
-    case Repo.get_by(Group, name: name) do
-      nil  -> create_group(attrs)
-      group -> {:ok, group}
-    end
-  end
-
-  @doc false
-  def add_group_to_user(%User{} = user, %Group{} = group) do
-    user
-    |> User.add_group_changeset(group)
-    |> Repo.update()
-  end
-
-  @doc false
   def delete_group_from_user(%User{} = user, %Group{} = group) do
+    user = Repo.preload(user, :groups)
+    groups = Enum.filter(user.groups, &(&1.name != group.name))
     user
-    |> User.delete_group_changeset(group)
+    |> Changeset.change
+    |> Changeset.put_assoc(:groups, groups)
     |> Repo.update()
+  end
+
+  @doc false
+  def add_groups_to_user(%User{} = user, groups) do
+    user
+    |> Repo.preload(:groups)
+    |> Changeset.change
+    |> Changeset.put_assoc(:groups, parse_groups(groups))
+    |> Repo.update
+  end
+
+  defp parse_groups(groups) do
+    groups
+    |> Enum.map(&get_or_insert_group/1)
+  end
+
+  defp get_or_insert_group(%{"name" => name}) do
+    Repo.get_by(Group, name: name) ||
+      case create_group(%{"name": name}) do
+        {:ok, %Group{} = group} -> group
+        %Group{} = group -> group
+        error -> error
+      end
   end
 
 end

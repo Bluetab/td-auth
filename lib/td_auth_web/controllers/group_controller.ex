@@ -116,28 +116,26 @@ defmodule TdAuthWeb.GroupController do
     render(conn, "index.json", groups: user.groups)
   end
 
-  swagger_path :add_user_groups do
+  swagger_path :add_groups_to_user do
     post "/users/{user_id}/groups"
-    description "Create a group"
+    description "Add groups to users"
     produces "application/json"
     parameters do
-      group :body, Schema.ref(:GroupCreate), "Group create attrs"
+      groups :body, Schema.ref(:GroupsCreate), "Groups create attrs"
       user_id :path, :integer, "User ID", required: true
     end
-    response 201, "Created", Schema.ref(:GroupResponse)
+    response 201, "Created", Schema.ref(:GroupsResponseData)
     response 400, "Client Error"
   end
 
-  def add_user_groups(conn, %{"user_id" => user_id, "group" => group_params}) do
+  def add_groups_to_user(conn, %{"user_id" => user_id, "groups" => groups}) do
     user =
       user_id
       |> Accounts.get_user!()
-      |> Repo.preload(:groups)
-    {:ok, group} = Accounts.get_or_create_group(group_params)
-    with {:ok, %User{} = _updateduser} <- Accounts.add_group_to_user(user, group) do
+    with {:ok, %User{} = updateduser} <- Accounts.add_groups_to_user(user, groups) do
       conn
       |> put_status(:created)
-      |> render("show.json", group: group)
+      |> render("index.json", groups: updateduser.groups)
     end
   end
 
