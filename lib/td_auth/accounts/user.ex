@@ -49,8 +49,8 @@ defmodule TdAuth.Accounts.User do
 
   def update_changeset(%User{} = user, %{"groups" => groups} = attrs) do
     user
-    |> changeset(attrs)
     |> Repo.preload(:groups)
+    |> changeset(attrs)    
     |> put_assoc(:groups, parse_groups(groups))
   end
   def update_changeset(%User{} = user, attrs) do
