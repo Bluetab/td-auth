@@ -83,7 +83,8 @@ defmodule TdAuth.Accounts do
   """
   def update_user(%User{} = user, attrs) do
     user
-    |> User.changeset(attrs)
+    |> Repo.preload(:groups)
+    |> User.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -163,6 +164,10 @@ defmodule TdAuth.Accounts do
     |> Repo.insert()
   end
 
+  def get_group_by_name(name) do
+    Repo.get_by(Group, name: name)
+  end
+
   @doc """
   Updates a group.
 
@@ -224,23 +229,7 @@ defmodule TdAuth.Accounts do
   def add_groups_to_user(%User{} = user, groups) do
     user
     |> Repo.preload(:groups)
-    |> Changeset.change
-    |> Changeset.put_assoc(:groups, parse_groups(groups))
+    |> User.link_to_groups_changeset(groups)
     |> Repo.update
   end
-
-  defp parse_groups(groups) do
-    groups
-    |> Enum.map(&get_or_insert_group/1)
-  end
-
-  defp get_or_insert_group(%{"name" => name}) do
-    Repo.get_by(Group, name: name) ||
-      case create_group(%{"name": name}) do
-        {:ok, %Group{} = group} -> group
-        %Group{} = group -> group
-        error -> error
-      end
-  end
-
 end

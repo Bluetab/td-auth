@@ -5,6 +5,7 @@ defmodule TdAuth.Accounts.User do
   import Ecto.Changeset
   alias TdAuth.Accounts.User
   alias TdAuth.Accounts.Group
+  alias TdAuth.Accounts
 
   @hash Application.get_env(:td_auth, :hashing_module)
 
@@ -40,9 +41,18 @@ defmodule TdAuth.Accounts.User do
   def registration_changeset(model, params \\ :empty) do
     model
     |> changeset(params)
+    |> put_assoc(:groups, parse_groups(params["groups"]))
     |> cast(params, ~w(password))
-    #|> unique_constraint(:user_name, message: "User name must be unique")
     |> put_pass_hash()
+  end
+
+  def update_changeset(%User{} = user, %{"groups" => groups} = attrs) do
+    user
+    |> changeset(attrs)
+    |> put_assoc(:groups, parse_groups(groups))
+  end
+  def update_changeset(%User{} = user, attrs) do
+    changeset(user, attrs)
   end
 
   def check_password(user, password) do
@@ -56,11 +66,35 @@ defmodule TdAuth.Accounts.User do
     update_change(changeset, :user_name, &String.downcase/1)
   end
 
+  def link_to_groups_changeset(user, groups) do
+    user
+    |> change
+    |> put_assoc(:groups, parse_groups(groups))
+  end
+
   def delete_group_changeset(user, group) do
     groups = Enum.filter(user.groups, &(&1.name != group.name))
     user
     |> change()
     |> put_assoc(:groups, groups)
+  end
+
+  defp parse_groups(groups) do
+    case groups do
+      nil -> []
+      [] -> []
+      _ -> groups |> Enum.map(&get_or_insert_group/1)
+    end
+
+  end
+
+  defp get_or_insert_group(%{"name" => name}) do
+    Accounts.get_group_by_name(name) ||
+      case Accounts.create_group(%{"name": name}) do
+        {:ok, %Group{} = group} -> group
+        %Group{} = group -> group
+        error -> error
+      end
   end
 
 end
