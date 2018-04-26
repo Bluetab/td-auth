@@ -6,6 +6,7 @@ defmodule TdAuth.Accounts.User do
   alias TdAuth.Accounts.User
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts
+  alias TdAuth.Repo
 
   @hash Application.get_env(:td_auth, :hashing_module)
 
@@ -49,6 +50,7 @@ defmodule TdAuth.Accounts.User do
   def update_changeset(%User{} = user, %{"groups" => groups} = attrs) do
     user
     |> changeset(attrs)
+    |> Repo.preload(:groups)
     |> put_assoc(:groups, parse_groups(groups))
   end
   def update_changeset(%User{} = user, attrs) do

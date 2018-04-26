@@ -83,7 +83,6 @@ defmodule TdAuth.Accounts do
   """
   def update_user(%User{} = user, attrs) do
     user
-    |> Repo.preload(:groups)
     |> User.update_changeset(attrs)
     |> Repo.update()
   end
