@@ -16,10 +16,10 @@ defmodule TdAuth.AuthenticationTest do
   end
 
   # Scenario: logging error
-  defgiven ~r/^user "(?<user_name>[^"]+)" is logged in the application with password "(?<password>[^"]+)"$/, %{user_name: user_name, password: password}, state do
-    {_, status_code, json_resp} = session_create(user_name, password)
+  defgiven ~r/^a superadmin user logged in the application$/, _, state do
+    {_, status_code, json_resp} = session_create("app-admin", "mypass")
     assert rc_created() == to_response_code(status_code)
-    {:ok, Map.merge(state, %{status_code: status_code, token: json_resp["token"]})}
+    {:ok, Map.merge(state, %{app_token: json_resp["token"]})}
   end
 
   defwhen ~r/^"(?<user_name>[^"]+)" tries to create a user "(?<new_user_name>[^"]+)" with password "(?<new_password>[^"]+)"$/,
@@ -38,13 +38,13 @@ defmodule TdAuth.AuthenticationTest do
   # Scenario: logging error for non existing user
   defwhen ~r/^"(?<user_name>[^"]+)" tries to modify his password with following data:$/,
           %{user_name: user_name, table: [%{old_password: old_password, new_password: new_password}]}, state do
-      {_, status_code} = change_password(state[:token], get_user_by_name(state[:token], user_name)["id"], old_password, new_password)
+      {_, status_code} = change_password(state[:token], get_user_by_name(state[:app_token], user_name)["id"], old_password, new_password)
       {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
   defwhen ~r/^"(?<user_name>[^"]+)" tries to modify "(?<other_user_name>[^"]+)" password with following data:$/,
           %{user_name: _user_name, other_user_name: other_user_name, table: [%{old_password: old_password, new_password: new_password}]}, state do
-      {_, status_code} = change_password(state[:token], get_user_by_name(state[:token], other_user_name)["id"], old_password, new_password)
+      {_, status_code} = change_password(state[:token], get_user_by_name(state[:app_token], other_user_name)["id"], old_password, new_password)
       {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
@@ -96,14 +96,14 @@ defmodule TdAuth.AuthenticationTest do
 
   defwhen ~r/^user "(?<user_name>[^"]+)" tries to modify user "(?<target_user_name>[^"]+)" with following data:$/,
     %{user_name: _user_name, target_user_name: target_user_name, table: [%{is_admin: is_admin}]}, state do
-    target_user = get_user_by_name(state[:token], target_user_name)
+    target_user = get_user_by_name(state[:app_token], target_user_name)
     {:ok, status_code, _json_resp} = user_update(state[:token], target_user["id"], %{is_admin: is_admin != "false"})
     {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
   defwhen ~r/^user "(?<user_name>[^"]+)" tries to delete user "(?<target_user_name>[^"]+)"$/,
     %{user_name: _user_name, target_user_name: target_user_name}, state do
-    target_user = get_user_by_name(state[:token], target_user_name)
+    target_user = get_user_by_name(state[:app_token], target_user_name)
     {:ok, status_code, _resp} = user_delete(state[:token], target_user["id"])
     {:ok, Map.merge(state, %{status_code: status_code})}
   end
@@ -127,14 +127,14 @@ defmodule TdAuth.AuthenticationTest do
 
   defwhen ~r/^"(?<user_name>[^"]+)" tries to reset "(?<other_user_name>[^"]+)" password with new_password "(?<new_password>[^"]+)"$/,
           %{user_name: _user_name, other_user_name: other_user_name, new_password: new_password}, state do
-      target_user = get_user_by_name(state[:token], other_user_name)
+      target_user = get_user_by_name(state[:app_token], other_user_name)
       {:ok, status_code, _json_resp} = user_update(state[:token], target_user["id"], %{password: new_password})
       {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
   defwhen ~r/^"(?<user_name>[^"]+)" tries to reset his "(?<property>[^"]+)" with new property value "(?<new_value>[^"]+)"$/,
           %{user_name: user_name, property: property, new_value: new_value}, state do
-      target_user = get_user_by_name(state[:token], user_name)
+      target_user = get_user_by_name(state[:app_token], user_name)
       {:ok, status_code, _json_resp} = user_update(state[:token], target_user["id"], Map.put(%{}, property, new_value))
       {:ok, Map.merge(state, %{status_code: status_code})}
   end

@@ -49,7 +49,7 @@ defmodule TdAuth.Mixfile do
       {:ex_machina, "~> 2.1", only: :test},
       {:cors_plug, "~> 1.2"},
       {:httpoison, "~> 1.0"},
-      {:cabbage, "~> 0.3.0"},
+      {:cabbage, git: "https://github.com/eriosv/cabbage.git"},
       {:phoenix_swagger, "~> 0.7.0"},
       {:ex_json_schema, "~> 0.5"}
     ]

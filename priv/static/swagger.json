@@ -586,6 +586,12 @@
           "type": "boolean",
           "description": "is admin flag"
         },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Group"
+          }
+        },
         "email": {
           "type": "string",
           "description": "some@email.com"
@@ -667,6 +673,12 @@
         "is_admin": {
           "type": "boolean",
           "description": "is admin flag"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Group"
+          }
         },
         "email": {
           "type": "string",

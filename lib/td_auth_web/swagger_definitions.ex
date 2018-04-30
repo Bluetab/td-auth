@@ -69,6 +69,10 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           is_admin :boolean, "is admin flag"
           password :string, "user password", required: true
           email :string, "some@email.com", required: true
+          groups (Schema.new do
+                      type :array
+                      items Schema.ref(:Group)
+                    end)
         end
       end,
       UserCreate: swagger_schema do
@@ -82,6 +86,10 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           is_admin :boolean, "is admin flag"
           password :string, "user password", required: true
           email :string, "some@email.com", required: true
+          groups (Schema.new do
+                      type :array
+                      items Schema.ref(:Group)
+                    end)
         end
       end,
       UserUpdate: swagger_schema do

@@ -2,6 +2,9 @@ Feature: User Authentication
   This feature will allow to create and identify users of the application granting them default access
   without any permission
 
+  Background:
+  Given a superadmin user logged in the application
+
   Scenario: logging
     When user "app-admin" tries to log into the application with password "mypass"
     Then the system returns a result with code "Created"
@@ -15,7 +18,7 @@ Feature: User Authentication
     Then the system returns a result with code "Forbidden"
 
   Scenario: Creating a New user in the application
-    Given user "app-admin" is logged in the application with password "mypass"
+    And user "app-admin" is logged in the application with password "mypass"
     When "app-admin" tries to create a user "newuser" with password "new-password"
     Then the system returns a result with code "Created"
     And user "newuser" can be authenticated with password "new-password"
