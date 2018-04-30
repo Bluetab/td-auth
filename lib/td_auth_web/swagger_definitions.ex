@@ -44,10 +44,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           password :string, "user password"
           email :string, "email", required: true
           full_name :string, "full name"
-          groups (Schema.new do
-                      type :array
-                      items Schema.ref(:Group)
-                    end)
+          groups Schema.array(:string)
         end
         example %{
           id: 123,
@@ -56,11 +53,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           password: "myuserpass",
           email: "some@email.com",
           full_name: "My User",
-          groups: [%{
-            id: 321,
-            name: "group1"
-          }
-          ]
+          groups: ["group1"]
         }
       end,
       UserCreateProps: swagger_schema do
@@ -69,10 +62,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           is_admin :boolean, "is admin flag"
           password :string, "user password", required: true
           email :string, "some@email.com", required: true
-          groups (Schema.new do
-                      type :array
-                      items Schema.ref(:Group)
-                    end)
+          groups Schema.array(:string)
         end
       end,
       UserCreate: swagger_schema do
@@ -86,10 +76,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           is_admin :boolean, "is admin flag"
           password :string, "user password", required: true
           email :string, "some@email.com", required: true
-          groups (Schema.new do
-                      type :array
-                      items Schema.ref(:Group)
-                    end)
+          groups Schema.array(:string)
         end
       end,
       UserUpdate: swagger_schema do
@@ -116,10 +103,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           is_admin :boolean, "flag is admin", required: true
           email :string, "email", required: true
           full_name [:string, :null], "full name"
-          groups (Schema.new do
-                      type :array
-                      items Schema.ref(:Group)
-                    end)
+          groups Schema.array(:string)
         end
       end,
       UserResponse: swagger_schema do

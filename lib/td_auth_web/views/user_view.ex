@@ -17,7 +17,7 @@ defmodule TdAuthWeb.UserView do
       email: user.email,
       full_name: user.full_name,
       is_admin: user.is_admin,
-      groups: render_many(user.groups, GroupView, "group.json")
+      groups: render_many(user.groups, GroupView, "name.json")
     }
   end
 end
