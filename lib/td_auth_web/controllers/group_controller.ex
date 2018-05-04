@@ -29,7 +29,7 @@ defmodule TdAuthWeb.GroupController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -56,7 +56,7 @@ defmodule TdAuthWeb.GroupController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -79,7 +79,7 @@ defmodule TdAuthWeb.GroupController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -106,7 +106,7 @@ defmodule TdAuthWeb.GroupController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -131,7 +131,7 @@ defmodule TdAuthWeb.GroupController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -155,7 +155,7 @@ defmodule TdAuthWeb.GroupController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -185,7 +185,7 @@ defmodule TdAuthWeb.GroupController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -215,7 +215,7 @@ defmodule TdAuthWeb.GroupController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 

@@ -1,8 +1,16 @@
 defmodule TdAuthWeb.ErrorView do
   use TdAuthWeb, :view
 
+  def render("401.json", _assigns) do
+    %{errors: %{detail: "Invalid credentials"}}
+  end
+
   def render("404.json", _assigns) do
     %{errors: %{detail: "Page not found"}}
+  end
+
+  def render("422.json", _assigns) do
+    %{errors: %{detail: "Unprocessable Entity"}}
   end
 
   def render("500.json", _assigns) do

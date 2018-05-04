@@ -29,7 +29,7 @@ defmodule TdAuthWeb.UserController do
       _ ->
         conn
           |> put_status(:unauthorized)
-          |> render(ErrorView, :"401.json")
+          |> render(ErrorView, "401.json")
     end
   end
 
@@ -52,7 +52,7 @@ defmodule TdAuthWeb.UserController do
       _ ->
         conn
           |> put_status(:unauthorized)
-          |> render(ErrorView, :"401.json")
+          |> render(ErrorView, "401.json")
     end
   end
 
@@ -78,7 +78,7 @@ defmodule TdAuthWeb.UserController do
       _ ->
         conn
           |> put_status(:unauthorized)
-          |> render(ErrorView, :"401.json")
+          |> render(ErrorView, "401.json")
     end
   end
 
@@ -122,7 +122,7 @@ defmodule TdAuthWeb.UserController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -163,7 +163,7 @@ defmodule TdAuthWeb.UserController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
   def search(conn, %{"data" => _}) do
@@ -184,10 +184,10 @@ defmodule TdAuthWeb.UserController do
       |> render("show.json", user: user |> Repo.preload(:groups))
 
     else
-      _error ->
+      error ->
         conn
           |> put_status(:unprocessable_entity)
-          |> render(ErrorView, :"422.json")
+          |> render(ErrorView, "422.json")
     end
 
   end
@@ -215,7 +215,7 @@ defmodule TdAuthWeb.UserController do
   defp update?(conn, _id, _user_params, _) do
     conn
     |> put_status(:unauthorized)
-    |> render(ErrorView, :"401.json")
+    |> render(ErrorView, "401.json")
   end
 
   defp do_update(conn, id, user_params) do
