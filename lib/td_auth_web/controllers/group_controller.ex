@@ -219,6 +219,24 @@ defmodule TdAuthWeb.GroupController do
     end
   end
 
+  def search(conn, %{"data" => %{"ids" => ids}}) do
+    case is_admin?(conn) do
+      true ->
+        groups =
+          ids
+          |> Accounts.list_groups()
+        render(conn, "index.json", groups: groups)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
+  end
+  def search(conn, %{"data" => _}) do
+    conn
+    |> send_resp(:unprocessable_entity, "")
+  end
+
   defp is_admin?(conn) do
     current_user = Plug.current_resource(conn)
     current_user.is_admin

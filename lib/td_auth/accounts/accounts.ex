@@ -129,6 +129,10 @@ defmodule TdAuth.Accounts do
     Repo.all(Group)
   end
 
+  def list_groups(ids) do
+    Repo.all(from u in Group, where: u.id in ^ids)
+  end
+
   @doc """
   Gets a single group.
 

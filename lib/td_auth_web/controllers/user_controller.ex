@@ -184,7 +184,7 @@ defmodule TdAuthWeb.UserController do
       |> render("show.json", user: user |> Repo.preload(:groups))
 
     else
-      error ->
+      _ ->
         conn
           |> put_status(:unprocessable_entity)
           |> render(ErrorView, "422.json")

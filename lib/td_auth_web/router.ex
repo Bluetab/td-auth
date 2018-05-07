@@ -27,14 +27,15 @@ defmodule TdAuthWeb.Router do
     pipe_through [:api, :api_secure]
     get "/sessions", SessionController, :ping
     delete "/sessions", SessionController, :destroy
-    post "/users/search", UserController, :search
     resources "/users", UserController, except: [:new, :edit] do
       patch "/change_password", UserController, :change_password
       get "/groups", GroupController, :user_groups
       post "/groups", GroupController, :add_groups_to_user
       delete "/groups/:id", GroupController, :delete_user_groups
     end
+    post "/users/search", UserController, :search
     resources "/groups", GroupController, except: [:new, :edit]
+    post "/groups/search", GroupController, :search
   end
 
   def swagger_info do
