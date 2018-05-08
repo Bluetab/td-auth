@@ -28,7 +28,7 @@ config :logger, :console,
 config :td_auth, TdAuth.Auth.Guardian,
   allowed_algos: ["HS512"], # optional
   issuer: "tdauth",
-  token_ttl: %{"access" => { 1, :hours }, "refresh" => {12, :hours}},
+  token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
 
 config :td_auth, :phoenix_swagger,

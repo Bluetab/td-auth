@@ -23,5 +23,5 @@ config :td_auth, TdAuth.Repo,
 config :td_auth, TdAuth.Auth.Guardian,
   allowed_algos: ["HS512"], # optional
   issuer: "tdauth",
-  ttl: { 24, :hours },
+  token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"

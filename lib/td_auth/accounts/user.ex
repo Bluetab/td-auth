@@ -99,4 +99,13 @@ defmodule TdAuth.Accounts.User do
       end
   end
 
+  defp get_or_insert_group(name) do
+    Accounts.get_group_by_name(name) ||
+      case Accounts.create_group(%{"name": name}) do
+        {:ok, %Group{} = group} -> group
+        %Group{} = group -> group
+        error -> error
+      end
+  end
+
 end

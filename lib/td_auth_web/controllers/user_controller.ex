@@ -22,8 +22,15 @@ defmodule TdAuthWeb.UserController do
   end
 
   def index(conn, _params) do
-    users = Accounts.list_users() |> Repo.preload(:groups)
-    render(conn, "index.json", users: users)
+    case is_admin?(conn) do
+      true ->
+        users = Accounts.list_users() |> Repo.preload(:groups)
+        render(conn, "index.json", users: users)
+      _ ->
+        conn
+          |> put_status(:unauthorized)
+          |> render(ErrorView, "401.json")
+    end
   end
 
   swagger_path :create do
@@ -38,15 +45,14 @@ defmodule TdAuthWeb.UserController do
   end
 
   def create(conn, %{"user" => user_params}) do
-    current_user = Plug.current_resource(conn)
-    case current_user.is_admin do
+    case is_admin?(conn) do
       true ->
         conn
           |> do_create(user_params)
       _ ->
         conn
           |> put_status(:unauthorized)
-          |> render(ErrorView, :"401.json")
+          |> render(ErrorView, "401.json")
     end
   end
 
@@ -62,11 +68,18 @@ defmodule TdAuthWeb.UserController do
   end
 
   def show(conn, %{"id" => id}) do
-    user =
-      id
-      |> Accounts.get_user!()
-      |> Repo.preload(:groups)
-    render(conn, "show.json", user: user)
+    case is_admin?(conn) do
+      true ->
+        user =
+          id
+          |> Accounts.get_user!()
+          |> Repo.preload(:groups)
+        render(conn, "show.json", user: user)
+      _ ->
+        conn
+          |> put_status(:unauthorized)
+          |> render(ErrorView, "401.json")
+    end
   end
 
   swagger_path :update do
@@ -102,15 +115,14 @@ defmodule TdAuthWeb.UserController do
   end
 
   def delete(conn, %{"id" => id}) do
-    current_user = Plug.current_resource(conn)
-    case current_user.is_admin do
+    case is_admin?(conn) do
       true ->
         conn
         |> do_delete(id)
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, :"401.json")
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -141,11 +153,18 @@ defmodule TdAuthWeb.UserController do
   end
 
   def search(conn, %{"data" => %{"ids" => ids}}) do
-    users =
-      ids
-      |> Accounts.list_users()
-      |> Repo.preload(:groups)
-    render(conn, "index.json", users: users)
+    case is_admin?(conn) do
+      true ->
+        users =
+          ids
+          |> Accounts.list_users()
+          |> Repo.preload(:groups)
+        render(conn, "index.json", users: users)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
   end
   def search(conn, %{"data" => _}) do
     conn
@@ -165,10 +184,10 @@ defmodule TdAuthWeb.UserController do
       |> render("show.json", user: user |> Repo.preload(:groups))
 
     else
-      _error ->
+      _ ->
         conn
           |> put_status(:unprocessable_entity)
-          |> render(ErrorView, :"422.json")
+          |> render(ErrorView, "422.json")
     end
 
   end
@@ -196,7 +215,7 @@ defmodule TdAuthWeb.UserController do
   defp update?(conn, _id, _user_params, _) do
     conn
     |> put_status(:unauthorized)
-    |> render(ErrorView, :"401.json")
+    |> render(ErrorView, "401.json")
   end
 
   defp do_update(conn, id, user_params) do
@@ -204,6 +223,11 @@ defmodule TdAuthWeb.UserController do
     with {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user |> Repo.preload(:groups))
     end
+  end
+
+  defp is_admin?(conn) do
+    current_user = Plug.current_resource(conn)
+    current_user.is_admin
   end
 
 end

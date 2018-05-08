@@ -7,6 +7,7 @@ defmodule TdAuthWeb.GroupController do
   alias TdAuth.Accounts.User
   alias TdAuth.Repo
   alias TdAuthWeb.SwaggerDefinitions
+  alias Guardian.Plug
 
   action_fallback TdAuthWeb.FallbackController
 
@@ -21,8 +22,15 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def index(conn, _params) do
-    groups = Accounts.list_groups()
-    render(conn, "index.json", groups: groups)
+    case is_admin?(conn) do
+      true ->
+        groups = Accounts.list_groups()
+        render(conn, "index.json", groups: groups)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
   end
 
   swagger_path :create do
@@ -37,11 +45,18 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def create(conn, %{"group" => group_params}) do
-    with {:ok, %Group{} = group} <- Accounts.create_group(group_params) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", group_path(conn, :show, group))
-      |> render("show.json", group: group)
+    case is_admin?(conn) do
+      true ->
+        with {:ok, %Group{} = group} <- Accounts.create_group(group_params) do
+          conn
+          |> put_status(:created)
+          |> put_resp_header("location", group_path(conn, :show, group))
+          |> render("show.json", group: group)
+        end
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -57,8 +72,15 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def show(conn, %{"id" => id}) do
-    group = Accounts.get_group!(id)
-    render(conn, "show.json", group: group)
+    case is_admin?(conn) do
+      true ->
+        group = Accounts.get_group!(id)
+        render(conn, "show.json", group: group)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
   end
 
   swagger_path :update do
@@ -74,10 +96,17 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def update(conn, %{"id" => id, "group" => group_params}) do
-    group = Accounts.get_group!(id)
+    case is_admin?(conn) do
+      true ->
+        group = Accounts.get_group!(id)
 
-    with {:ok, %Group{} = group} <- Accounts.update_group(group, group_params) do
-      render(conn, "show.json", group: group)
+        with {:ok, %Group{} = group} <- Accounts.update_group(group, group_params) do
+          render(conn, "show.json", group: group)
+        end
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -93,9 +122,16 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def delete(conn, %{"id" => id}) do
-    group = Accounts.get_group!(id)
-    with {:ok, %Group{}} <- Accounts.delete_group(group) do
-      send_resp(conn, :no_content, "")
+    case is_admin?(conn) do
+      true ->
+        group = Accounts.get_group!(id)
+        with {:ok, %Group{}} <- Accounts.delete_group(group) do
+          send_resp(conn, :no_content, "")
+        end
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -109,11 +145,18 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def user_groups(conn, %{"user_id" => user_id}) do
-    user =
-      user_id
-      |> Accounts.get_user!()
-      |> Repo.preload(:groups)
-    render(conn, "index.json", groups: user.groups)
+    case is_admin?(conn) do
+      true ->
+        user =
+          user_id
+          |> Accounts.get_user!()
+          |> Repo.preload(:groups)
+        render(conn, "index.json", groups: user.groups)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
   end
 
   swagger_path :add_groups_to_user do
@@ -129,13 +172,20 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def add_groups_to_user(conn, %{"user_id" => user_id, "groups" => groups}) do
-    user =
-      user_id
-      |> Accounts.get_user!()
-    with {:ok, %User{} = updateduser} <- Accounts.add_groups_to_user(user, groups) do
-      conn
-      |> put_status(:created)
-      |> render("index.json", groups: updateduser.groups)
+    case is_admin?(conn) do
+      true ->
+        user =
+          user_id
+          |> Accounts.get_user!()
+        with {:ok, %User{} = updateduser} <- Accounts.add_groups_to_user(user, groups) do
+          conn
+          |> put_status(:created)
+          |> render("index.json", groups: updateduser.groups)
+        end
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
     end
   end
 
@@ -152,13 +202,43 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def delete_user_groups(conn, %{"user_id" => user_id, "id" => group_id}) do
-    user =
-      user_id
-      |> Accounts.get_user!()
-      |> Repo.preload(:groups)
-    group = Accounts.get_group!(group_id)
-    with {:ok, %User{}} <- Accounts.delete_group_from_user(user, group) do
-      send_resp(conn, :no_content, "")
+    case is_admin?(conn) do
+      true ->
+        user =
+          user_id
+          |> Accounts.get_user!()
+          |> Repo.preload(:groups)
+        group = Accounts.get_group!(group_id)
+        with {:ok, %User{}} <- Accounts.delete_group_from_user(user, group) do
+          send_resp(conn, :no_content, "")
+        end
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
     end
+  end
+
+  def search(conn, %{"data" => %{"ids" => ids}}) do
+    case is_admin?(conn) do
+      true ->
+        groups =
+          ids
+          |> Accounts.list_groups()
+        render(conn, "index.json", groups: groups)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
+  end
+  def search(conn, %{"data" => _}) do
+    conn
+    |> send_resp(:unprocessable_entity, "")
+  end
+
+  defp is_admin?(conn) do
+    current_user = Plug.current_resource(conn)
+    current_user.is_admin
   end
 end

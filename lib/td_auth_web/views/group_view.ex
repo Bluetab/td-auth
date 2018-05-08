@@ -14,4 +14,9 @@ defmodule TdAuthWeb.GroupView do
     %{id: group.id,
       name: group.name}
   end
+
+  def render("name.json", %{group: group}) do
+    group.name
+  end
+
 end
