@@ -50,6 +50,14 @@ defmodule TdAuthWeb.GroupControllerTest do
       conn = post conn, group_path(conn, :create), group: @invalid_attrs
       assert json_response(conn, 422)["errors"] != %{}
     end
+
+    @tag authenticated_user: @admin_user_name
+    test "renders errors when group is duplicated", %{conn: conn} do
+      conn = post conn, group_path(conn, :create), group: @create_attrs
+      conn = recycle_and_put_headers(conn)
+      conn = post conn, group_path(conn, :create), group: @create_attrs
+      assert json_response(conn, 422)["errors"] != %{}
+    end
   end
 
   describe "update group" do
