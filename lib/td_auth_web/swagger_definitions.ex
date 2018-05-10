@@ -131,15 +131,18 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         properties do
           id :integer, "unique identifier", required: true
           name :string, "name", required: true
+          description :string, "description"
         end
         example %{
           id: 123,
-          name: "mygroup"
+          name: "mygroup",
+          description: "mydescription"
         }
       end,
       GroupCreateProps: swagger_schema do
         properties do
           name :string, "name", required: true
+          description :string, "description"
         end
       end,
       GroupCreate: swagger_schema do
@@ -158,6 +161,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
       GroupUpdateProps: swagger_schema do
         properties do
           name :string, "name", required: true
+          description :string, "description"
         end
       end,
       GroupUpdate: swagger_schema do
@@ -175,6 +179,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         properties do
           id :integer, "unique identifier", required: true
           name :string, "name", required: true
+          description :string, "description"
         end
       end,
       GroupResponse: swagger_schema do

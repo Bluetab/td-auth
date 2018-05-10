@@ -87,8 +87,8 @@ defmodule TdAuth.AccountsTest do
   describe "groups" do
     alias TdAuth.Accounts.Group
 
-    @valid_attrs %{name: "some name"}
-    @update_attrs %{name: "some updated name"}
+    @valid_attrs %{name: "some name", description: "some description"}
+    @update_attrs %{name: "some updated name", description: "some updated description"}
     @invalid_attrs %{name: nil}
 
     def group_fixture(attrs \\ %{}) do

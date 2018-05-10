@@ -6,9 +6,9 @@ defmodule TdAuthWeb.GroupControllerTest do
   alias TdAuth.Accounts.User
   import TdAuthWeb.Authentication, only: :functions
 
-  @create_attrs %{name: "some name"}
-  @create_attrs2 %{name: "some name2"}
-  @update_attrs %{name: "some updated name"}
+  @create_attrs %{name: "some name", description: "some description"}
+  @create_attrs2 %{name: "some name2", description: "some description2"}
+  @update_attrs %{name: "some updated name", description: "some updated description"}
   @invalid_attrs %{name: nil}
   @create_user_attrs %{password: "some password_hash", user_name: "some user_name", is_admin: false, email: "some@email.com"}
   @admin_user_name "app-admin"

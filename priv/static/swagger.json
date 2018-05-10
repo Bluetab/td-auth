@@ -861,6 +861,10 @@
         "name": {
           "type": "string",
           "description": "name"
+        },
+        "description": {
+          "type": "string",
+          "description": "description"
         }
       }
     },
@@ -886,6 +890,10 @@
         "id": {
           "type": "integer",
           "description": "unique identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "description"
         }
       }
     },
@@ -906,6 +914,10 @@
         "name": {
           "type": "string",
           "description": "name"
+        },
+        "description": {
+          "type": "string",
+          "description": "description"
         }
       }
     },
@@ -932,11 +944,16 @@
         "id": {
           "type": "integer",
           "description": "unique identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "description"
         }
       },
       "example": {
         "name": "mygroup",
-        "id": 123
+        "id": 123,
+        "description": "mydescription"
       },
       "description": "Group entity"
     }

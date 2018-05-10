@@ -8,6 +8,7 @@ defmodule TdAuth.Accounts.Group do
 
   schema "groups" do
     field :name, :string
+    field :description, :string
     # many_to_many :users, User, join_through: "users_groups"
 
     timestamps()
@@ -16,7 +17,7 @@ defmodule TdAuth.Accounts.Group do
   @doc false
   def changeset(%Group{} = group, attrs) do
     group
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :description])
     |> validate_required([:name])
     |> unique_constraint(:name)
   end
