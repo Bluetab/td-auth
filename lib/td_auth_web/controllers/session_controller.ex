@@ -18,7 +18,7 @@ defmodule TdAuthWeb.SessionController do
     user = user |> Repo.preload(:groups)
     custom_claims = %{"user_name": user.user_name,
                       "is_admin": user.is_admin,
-                      "groups": user.groups}
+                      "groups": Enum.map(user.groups, &(&1.name))}
     conn
       |> GuardianPlug.sign_in(user, custom_claims)
   end
