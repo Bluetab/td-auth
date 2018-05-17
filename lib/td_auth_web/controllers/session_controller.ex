@@ -1,4 +1,6 @@
 defmodule TdAuthWeb.SessionController do
+  require Logger
+
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
@@ -9,6 +11,9 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Accounts.User
   alias TdAuthWeb.SwaggerDefinitions
   alias TdAuth.Repo
+  alias Poison, as: JSON
+
+  @auth_service Application.get_env(:td_auth, :auth)[:auth_service]
 
   def swagger_definitions do
     SwaggerDefinitions.session_swagger_definitions()
@@ -34,22 +39,92 @@ defmodule TdAuthWeb.SessionController do
     response 400, "Client Error"
   end
 
-  def create(conn, %{"user" => %{"user_name" => user_name,
-                     "password" => password}}) do
+  def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}}) do
+    create_username_password_session(conn, user_name, password)
+  end
+  def create(conn, _parmas) do
+    create_access_token_session(conn, get_req_header(conn, "authorization"))
+  end
+
+  defp create_session(conn, user) do
+    conn = handle_sign_in(conn, user)
+    token = GuardianPlug.current_token(conn)
+    {:ok, refresh_token, _full_claims} = Guardian.encode_and_sign(user, %{}, token_type: "refresh")
+    conn
+      |> put_status(:created)
+      |> render("show.json", token: %{token: token, refresh_token: refresh_token})
+  end
+
+  defp create_username_password_session(conn, user_name, password) do
     user = Accounts.get_user_by_name(user_name)
 
     case User.check_password(user, password) do
-      true ->
-        conn = handle_sign_in(conn, user)
-        token = GuardianPlug.current_token(conn)
-        {:ok, refresh_token, _full_claims} = Guardian.encode_and_sign(user, %{}, token_type: "refresh")
-        conn
-          |> put_status(:created)
-          |> render("show.json", token: %{token: token, refresh_token: refresh_token})
+      true -> create_session(conn, user)
       _ ->
         conn
           |> put_status(:unauthorized)
           |> render(ErrorView, "401.json")
+    end
+  end
+
+  defp get_profile_path do
+    auth = Application.get_env(:td_auth, :auth)
+    "#{auth[:protocol]}://#{auth[:domain]}#{auth[:userinfo]}"
+  end
+
+  defp get_profile_mapping do
+    auth = Application.get_env(:td_auth, :auth)
+    auth[:profile_mapping]
+  end
+
+  defp get_profile(access_token) do
+    headers = ["Content-Type": "application/json",
+               "Accept": "Application/json; Charset=utf-8",
+               "Authorization": "Bearer #{access_token}"]
+
+    {status_code, user_info} = @auth_service.get_user_info(get_profile_path(), headers)
+
+    case status_code do
+      200 ->
+          profile = user_info |> JSON.decode!
+          mapping = get_profile_mapping()
+          Enum.reduce(mapping, %{}, &Map.put(&2, elem(&1, 0), Map.get(profile, elem(&1, 1), nil)))
+
+      _ -> {:error, status_code}
+        Logger.info "Unable to get user profile... status_code '#{status_code}'"
+        nil
+    end
+  end
+
+  defp create_or_update_user(user, attrs) do
+    case user do
+      nil ->  Accounts.create_user(attrs)
+      u ->  Accounts.update_user(u, attrs)
+    end
+  end
+
+  defp create_profile_session(conn, profile) do
+    user_name = profile[:user_name]
+    user = Accounts.get_user_by_name(user_name)
+    with {:ok, user} <- create_or_update_user(user, profile) do
+       create_session(conn, user)
+    else
+      error ->
+        Logger.info "Unable to create or update user '#{user_name}'... #{error}"
+        conn
+          |> put_status(:unauthorized)
+          |> render(ErrorView, "401.json")
+    end
+  end
+
+  defp create_access_token_session(conn, access_token) do
+    case get_profile(access_token) do
+      nil ->
+        conn
+          |> put_status(:unauthorized)
+          |> render(ErrorView, "401.json")
+
+      profile -> create_profile_session(conn, profile)
     end
   end
 
