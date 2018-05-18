@@ -28,6 +28,20 @@ defmodule TdAuthWeb.SessionController do
       |> GuardianPlug.sign_in(user, custom_claims)
   end
 
+  defp fetch_access_token(conn) do
+    headers = get_req_header(conn, "authorization")
+    fetch_access_token_from_header(headers)
+  end
+
+  defp fetch_access_token_from_header([]), do: :no_access_token_found
+  defp fetch_access_token_from_header([token | tail]) do
+    trimmed_token = String.trim(token)
+    case Regex.run(~r/^Bearer (.*)$/, trimmed_token) do
+      [_, match] -> {:ok, String.trim(match)}
+      _ -> fetch_access_token_from_header(tail)
+    end
+  end
+
   swagger_path :create do
     post "/sessions"
     description "Creates a user session"
@@ -43,7 +57,18 @@ defmodule TdAuthWeb.SessionController do
     create_username_password_session(conn, user_name, password)
   end
   def create(conn, _parmas) do
-    create_access_token_session(conn, get_req_header(conn, "authorization"))
+    # ["Bearer" | access_token] = case get_req_header(conn, "authorization") do
+    #   [header] -> String.split(header, " ", parts: 2, trim: true)
+    # end
+    case fetch_access_token(conn) do
+      {:ok, access_token} -> create_access_token_session(conn, access_token)
+      _ ->
+        Logger.info "Unable to get fetch access token"
+        conn
+          |> put_status(:unauthorized)
+          |> render(ErrorView, "401.json")
+    end
+
   end
 
   defp create_session(conn, user) do
