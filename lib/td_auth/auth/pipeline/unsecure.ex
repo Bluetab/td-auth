@@ -9,5 +9,5 @@ defmodule TdAuth.Auth.Pipeline.Unsecure do
   # If there is an authorization header, validate it
   #plug Guardian.Plug.VerifyHeader, claims: %{"typ" => "access"}
   # Load the user if either of the verifications worked
-  plug Guardian.Plug.VerifyHeader
+  # plug Guardian.Plug.VerifyHeader
 end

@@ -5,7 +5,7 @@ defmodule TdAuthWeb.SessionController do
   use PhoenixSwagger
 
   alias TdAuth.Accounts
-  alias TdAuth.Auth.Auth.Plug, as: AuthPlug
+  #alias TdAuth.Auth.Auth.Plug, as: AuthPlug
   alias TdAuth.Auth.Guardian
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuthWeb.ErrorView
@@ -29,37 +29,37 @@ defmodule TdAuthWeb.SessionController do
       |> GuardianPlug.sign_in(user, custom_claims)
   end
 
-  defp get_audience do
-    auth = Application.get_env(:td_auth, :auth)
-    auth[:audience]
-  end
-
-  defp check_audience(conn) do
-    audience = get_audience()
-    case audience do
-      nil -> true
-      _ ->
-        conn
-        |> AuthPlug.current_claims
-        |> Map.get("aud")
-        |> Enum.member?(audience)
-    end
-  end
-
-  defp fetch_access_token(conn) do
-    case check_audience(conn) do
-      true ->
-         {:ok, AuthPlug.current_token(conn)}
-      false ->
-        Logger.info "Unable to validate token audience"
-        {:missing_audience}
-    end
-  end
+  # defp get_audience do
+  #   auth = Application.get_env(:td_auth, :auth)
+  #   auth[:audience]
+  # end
+  #
+  # defp check_audience(conn) do
+  #   audience = get_audience()
+  #   case audience do
+  #     nil -> true
+  #     _ ->
+  #       conn
+  #       |> AuthPlug.current_claims
+  #       |> Map.get("aud")
+  #       |> Enum.member?(audience)
+  #   end
+  # end
 
   # defp fetch_access_token(conn) do
-  #   headers = get_req_header(conn, "authorization")
-  #   fetch_access_token_from_header(headers)
+  #   case check_audience(conn) do
+  #     true ->
+  #        {:ok, AuthPlug.current_token(conn)}
+  #     false ->
+  #       Logger.info "Unable to validate token audience"
+  #       {:missing_audience}
+  #   end
   # end
+
+  defp fetch_access_token(conn) do
+    headers = get_req_header(conn, "authorization")
+    fetch_access_token_from_header(headers)
+  end
 
   defp fetch_access_token_from_header([]), do: :no_access_token_found
   defp fetch_access_token_from_header([token | tail]) do
