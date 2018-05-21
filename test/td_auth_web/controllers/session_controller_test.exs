@@ -8,6 +8,8 @@ defmodule TdAuthWeb.SessionControllerTest do
   alias TdAuthWeb.ApiServices.MockAuthService
   alias Poison, as: JSON
 
+  alias TdAuth.Auth.Auth
+
   import TdAuthWeb.Authentication, only: :functions
 
   @create_attrs %{password: "temporal",
@@ -52,7 +54,8 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup [:create_user]
 
     test "create valid non existing user session", %{conn: conn, swagger_schema: schema} do
-      conn = put_auth_headers(conn, "XYZ")
+      {:ok, jwt, _full_claims} = Auth.encode_and_sign(nil)
+      conn = put_auth_headers(conn, jwt)
       profile = %{nickname: "user_name", name: "name", email: "email@xyz.com"}
       MockAuthService.set_user_info(200, profile |> JSON.encode!)
       conn = post conn, session_path(conn, :create)
@@ -65,7 +68,8 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create valid existing user session", %{conn: conn, swagger_schema: schema} do
-      conn = put_auth_headers(conn, "XYZ")
+      {:ok, jwt, _full_claims} = Auth.encode_and_sign(nil)
+      conn = put_auth_headers(conn, jwt)
       profile = %{nickname: "usueariotemporal", name: "Un nombre especial", email: "email@especial.com"}
       MockAuthService.set_user_info(200, profile |> JSON.encode!)
       conn = post conn, session_path(conn, :create)
@@ -78,7 +82,8 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create invalid user session with access token", %{conn: conn} do
-      conn = put_auth_headers(conn, "XYZ")
+      {:ok, jwt, _full_claims} = Auth.encode_and_sign(nil)
+      conn = put_auth_headers(conn, jwt)
       profile = %{nickname: "user_name", name: "name", email: "email@xyz.com"}
       MockAuthService.set_user_info(401, profile |> JSON.encode!)
       conn = post conn, session_path(conn, :create)
@@ -96,12 +101,14 @@ defmodule TdAuthWeb.SessionControllerTest do
       conn = post conn, session_path(conn, :create), user: @valid_attrs
       validate_resp_schema(conn, schema, "Token")
       token_resp = json_response(conn, 201)
+      token = token_resp["token"]
       refresh_token = token_resp["refresh_token"]
 
       assert token_resp["token"] != nil
       assert refresh_token != nil
 
       conn = ConnTest.recycle(conn)
+      conn = put_auth_headers(conn, token)
       conn = post conn, session_path(conn, :refresh), %{refresh_token: refresh_token}
       validate_resp_schema(conn, schema, "Token")
       token_resp = json_response(conn, 201)

@@ -3,12 +3,12 @@ defmodule TdAuthWeb.Router do
 
   @endpoint_url "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:host]}:#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:port]}"
 
-  pipeline :api do
+  pipeline :api_unsecured do
     plug TdAuth.Auth.Pipeline.Unsecure
     plug :accepts, ["json"]
   end
 
-  pipeline :api_secure do
+  pipeline :api_secured do
     plug TdAuth.Auth.Pipeline.Secure
   end
 
@@ -17,14 +17,16 @@ defmodule TdAuthWeb.Router do
   end
 
   scope "/api", TdAuthWeb do
-    pipe_through :api
+    pipe_through :api_unsecured
     get "/ping", PingController, :ping
-    post "/sessions/refresh", SessionController, :refresh
     post "/sessions", SessionController, :create
   end
 
   scope "/api", TdAuthWeb do
-    pipe_through [:api, :api_secure]
+    pipe_through [:api_secured]
+
+    post "/sessions/refresh", SessionController, :refresh
+
     get "/sessions", SessionController, :ping
     delete "/sessions", SessionController, :destroy
     resources "/users", UserController, except: [:new, :edit] do
