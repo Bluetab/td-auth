@@ -24,6 +24,12 @@ export DB_PASSWORD=$DB_PASSWORD
 export DB_HOST=$DB_HOST
 export TERM=$TERM
 export GUARDIAN_SECRET_KEY=$GUARDIAN_SECRET_KEY
+
+export AUTH_DOMAIN=$AUTH_DOMAIN
+export AUTH_AUDIENCE=$AUTH_AUDIENCE
+export AUTH_ISSUER=$AUTH_ISSUER
+export AUTH_SECRET_KEY=$AUTH_SECRET_KEY
+
 export PRODUCTION_PEM=\"$PRODUCTION_PEM\"" >> /working_code/env_vars.sh
 
 chmod +x /working_code/env_vars.sh
