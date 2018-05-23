@@ -1,4 +1,5 @@
 defmodule TdAuthWeb.UserController do
+  require Logger
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
@@ -184,7 +185,8 @@ defmodule TdAuthWeb.UserController do
       |> render("show.json", user: user |> Repo.preload(:groups))
 
     else
-      _ ->
+      error ->
+        Logger.error("#{inspect(error)}")
         conn
           |> put_status(:unprocessable_entity)
           |> render(ErrorView, "422.json")
