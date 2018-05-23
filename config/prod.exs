@@ -21,10 +21,15 @@ config :td_auth, TdAuthWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production
-config :logger, backends: [{LoggerFileBackend, :app_log}], format: "[$level] $message\n"
-config :logger, :app_log, path: "var/log/td_auth.log", level: :info
+config :logger,
+       backends: [{LoggerFileBackend, :app_log}],
+       format: "[$level] $message\n"
 
-
+config :logger,
+       :app_log,
+       path: "var/log/td_auth.log",
+       level: :info,
+       metadata_filter: [application: :td_auth]
 
 # ## SSL Support
 #
