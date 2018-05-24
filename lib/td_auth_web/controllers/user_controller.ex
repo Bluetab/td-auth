@@ -186,15 +186,10 @@ defmodule TdAuthWeb.UserController do
 
     else
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect("Inspect While creating user... #{inspect(changeset)}")
-        IO.puts("Puts While creating user... #{inspect(changeset)}")
-        Logger.error("Logger While creating user... #{inspect(changeset)}")
         conn
         |> put_status(:unprocessable_entity)
         |> render(TdAuthWeb.ChangesetView, "error.json", changeset: changeset)
       error ->
-        IO.inspect("Inspect While creating user... #{inspect(error)}")
-        IO.puts("Puts While creating user... #{inspect(error)}")
         Logger.error("Logger While creating user... #{inspect(error)}")
         conn
           |> put_status(:unprocessable_entity)
