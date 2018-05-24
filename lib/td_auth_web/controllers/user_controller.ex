@@ -185,8 +185,12 @@ defmodule TdAuthWeb.UserController do
       |> render("show.json", user: user |> Repo.preload(:groups))
 
     else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(TdAuthWeb.ChangesetView, "error.json", changeset: changeset)
       error ->
-        Logger.error("#{inspect(error)}")
+        Logger.error("While creating user... #{inspect(error)}")
         conn
           |> put_status(:unprocessable_entity)
           |> render(ErrorView, "422.json")
