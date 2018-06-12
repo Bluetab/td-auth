@@ -10,6 +10,8 @@ defmodule TdAuthWeb.UserController do
   alias TdAuthWeb.SwaggerDefinitions
   alias TdAuthWeb.ErrorView
   alias TdAuth.Repo
+  alias Poison, as: JSON
+
   action_fallback TdAuthWeb.FallbackController
 
   def swagger_definitions do
@@ -168,6 +170,24 @@ defmodule TdAuthWeb.UserController do
     end
   end
   def search(conn, %{"data" => _}) do
+    conn
+    |> send_resp(:unprocessable_entity, "")
+  end
+
+  def get_groups_users(conn, %{"data" => %{"group_ids" => group_ids}}) do
+    case is_admin?(conn) do
+      true ->
+        user_ids = group_ids
+          |> Accounts.list_groups_users()
+          |> JSON.encode!
+        send_resp(conn, :ok, user_ids)
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
+  end
+  def get_groups_users(conn, %{"data" => _}) do
     conn
     |> send_resp(:unprocessable_entity, "")
   end

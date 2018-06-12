@@ -235,4 +235,14 @@ defmodule TdAuth.Accounts do
     |> User.link_to_groups_changeset(groups)
     |> Repo.update
   end
+
+  @doc false
+  def list_groups_users(group_ids) do
+    Repo.all(from u in User,
+      distinct: true,
+      join: g in assoc(u, :groups),
+      where: g.id in ^group_ids,
+      select: u.id)
+  end
+
 end

@@ -29,6 +29,7 @@ defmodule TdAuthWeb.Router do
 
     get "/sessions", SessionController, :ping
     delete "/sessions", SessionController, :destroy
+    post "/groups/users", UserController, :get_groups_users
     resources "/users", UserController, except: [:new, :edit] do
       patch "/change_password", UserController, :change_password
       get "/groups", GroupController, :user_groups
