@@ -5,6 +5,7 @@ defmodule TdAuth.Repo.Migrations.AddSuperuser do
 
   @valid_attrs %{password: "mypass",
                  user_name: "app-admin",
+                 full_name: "App Admin",
                  email: "truedat@bluetab.net"}
 
   def change do
