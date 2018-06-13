@@ -237,12 +237,18 @@ defmodule TdAuth.Accounts do
   end
 
   @doc false
-  def list_groups_users(group_ids) do
-    Repo.all(from u in User,
-      distinct: true,
-      join: g in assoc(u, :groups),
-      where: g.id in ^group_ids,
-      select: u.id)
+  def list_groups_users([], []), do: []
+  def list_groups_users(group_ids, extra_users_ids) do
+    query = from u in User, distinct: true, join: g in assoc(u, :groups)
+    query = case group_ids do
+      [] -> query
+      _ -> from [_u, g] in query, where: g.id in ^group_ids
+    end
+    query = case extra_users_ids do
+      [] -> query
+      _ -> from [u, _g] in query, where: u.id in ^extra_users_ids
+    end
+    query |> Repo.all
   end
 
 end

@@ -10,7 +10,6 @@ defmodule TdAuthWeb.UserController do
   alias TdAuthWeb.SwaggerDefinitions
   alias TdAuthWeb.ErrorView
   alias TdAuth.Repo
-  alias Poison, as: JSON
 
   action_fallback TdAuthWeb.FallbackController
 
@@ -174,22 +173,19 @@ defmodule TdAuthWeb.UserController do
     |> send_resp(:unprocessable_entity, "")
   end
 
-  def get_groups_users(conn, %{"data" => %{"group_ids" => group_ids}}) do
+  def get_groups_users(conn, %{"data" => data_params}) do
+    group_ids      = Map.get(data_params, "group_ids", [])
+    extra_user_ids = Map.get(data_params, "extra_user_ids", [])
     case is_admin?(conn) do
       true ->
-        user_ids = group_ids
-          |> Accounts.list_groups_users()
-          |> JSON.encode!
-        send_resp(conn, :ok, user_ids)
+        users = Accounts.list_groups_users(group_ids, extra_user_ids)
+        users = Repo.preload(users, :groups)
+        render(conn, "index.json", users: users)
       _ ->
         conn
         |> put_status(:unauthorized)
         |> render(ErrorView, "401.json")
     end
-  end
-  def get_groups_users(conn, %{"data" => _}) do
-    conn
-    |> send_resp(:unprocessable_entity, "")
   end
 
   defp create_user(user_params) do
