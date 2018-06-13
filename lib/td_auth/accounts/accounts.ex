@@ -239,7 +239,7 @@ defmodule TdAuth.Accounts do
   @doc false
   def list_groups_users([], []), do: []
   def list_groups_users(group_ids, extra_users_ids) do
-    query = from u in User, distinct: true, join: g in assoc(u, :groups)
+    query = from u in User, distinct: true, left_join: g in assoc(u, :groups)
     query = case group_ids do
       [] -> query
       _ -> from [_u, g] in query, where: g.id in ^group_ids
