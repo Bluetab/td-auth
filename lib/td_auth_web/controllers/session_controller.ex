@@ -26,7 +26,7 @@ defmodule TdAuthWeb.SessionController do
     custom_claims = %{
       user_name: user.user_name,
       is_admin: user.is_admin,
-      groups: Enum.map(user.groups, &Map.take(&1, [:id, :name]))
+      gids: user.groups |> Enum.map(&(&1.id))
     }
 
     conn
