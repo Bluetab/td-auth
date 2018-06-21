@@ -16,7 +16,7 @@
     "http"
   ],
   "paths": {
-    "/users/{user_id}/groups/{id}": {
+    "/api/users/{user_id}/groups/{id}": {
       "delete": {
         "tags": [
           "Group"
@@ -53,7 +53,7 @@
         "description": "Create a group"
       }
     },
-    "/users/{user_id}/groups": {
+    "/api/users/{user_id}/groups": {
       "post": {
         "tags": [
           "Group"
@@ -93,9 +93,7 @@
         ],
         "operationId": "TdAuthWeb.GroupController.add_groups_to_user",
         "description": "Add groups to users"
-      }
-    },
-    "/users/{id}/groups": {
+      },
       "get": {
         "tags": [
           "Group"
@@ -122,7 +120,7 @@
         "description": "User Groups"
       }
     },
-    "/users/{id}/change_password": {
+    "/api/users/{user_id}/change_password": {
       "patch": {
         "tags": [
           "User"
@@ -161,8 +159,48 @@
         "description": "Updates User password"
       }
     },
-    "/users/{id}": {
+    "/api/users/{id}": {
       "put": {
+        "tags": [
+          "User"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/UserResponse"
+            },
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/UserUpdate"
+            },
+            "required": false,
+            "name": "user",
+            "in": "body",
+            "description": "User update attrs"
+          },
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "User ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.UserController.update",
+        "description": "Updates User"
+      },
+      "patch": {
         "tags": [
           "User"
         ],
@@ -262,7 +300,7 @@
         "description": "Delete User"
       }
     },
-    "/users": {
+    "/api/users": {
       "post": {
         "tags": [
           "User"
@@ -314,7 +352,7 @@
         "description": "List Users"
       }
     },
-    "/sessions/refresh": {
+    "/api/sessions/refresh": {
       "post": {
         "tags": [
           "Session"
@@ -349,7 +387,7 @@
         "description": "Returns new token"
       }
     },
-    "/sessions": {
+    "/api/sessions": {
       "post": {
         "tags": [
           "Session"
@@ -384,8 +422,48 @@
         "description": "Creates a user session"
       }
     },
-    "/groups/{id}": {
+    "/api/groups/{id}": {
       "put": {
+        "tags": [
+          "Group"
+        ],
+        "summary": "",
+        "responses": {
+          "400": {
+            "description": "Client Error"
+          },
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/GroupResponse"
+            },
+            "description": "OK"
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/definitions/GroupUpdate"
+            },
+            "required": false,
+            "name": "group",
+            "in": "body",
+            "description": "Group update attrs"
+          },
+          {
+            "type": "integer",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "description": "Group ID"
+          }
+        ],
+        "operationId": "TdAuthWeb.GroupController.update",
+        "description": "Update Group"
+      },
+      "patch": {
         "tags": [
           "Group"
         ],
@@ -485,7 +563,7 @@
         "description": "Delete Group"
       }
     },
-    "/groups": {
+    "/api/groups": {
       "post": {
         "tags": [
           "Group"

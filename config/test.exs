@@ -22,19 +22,19 @@ config :td_auth, TdAuth.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 1
 
-  config :td_auth, :auth,
-    auth_service: TdAuthWeb.ApiServices.MockAuthService,
-    protocol: "https",
-    domain: "icbluetab.eu.auth0.com",
-    audience: nil,
-    userinfo: "/userinfo",
-    profile_mapping: %{user_name: "nickname",
-                       full_name: "name",
-                       email:     "email"}
+config :td_auth, :auth,
+  auth_service: TdAuthWeb.ApiServices.MockAuthService,
+  protocol: "https",
+  domain: "icbluetab.eu.auth0.com",
+  audience: nil,
+  userinfo: "/userinfo",
+  profile_mapping: %{user_name: "nickname",
+                      full_name: "name",
+                      email:     "email"}
 
-   config :td_auth, TdAuth.Auth.Auth,
-     allowed_algos: ["HS512"], # optional
-     issuer: "tdauth",
-     verify_issuer: false,
-     token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
-     secret_key: "SuperSecretTruedat"
+config :td_auth, TdAuth.Auth.Auth,
+  allowed_algos: ["HS512"], # optional
+  issuer: "tdauth",
+  verify_issuer: false,
+  token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
+  secret_key: "SuperSecretTruedat"

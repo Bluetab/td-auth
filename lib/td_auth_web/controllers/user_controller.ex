@@ -18,7 +18,6 @@ defmodule TdAuthWeb.UserController do
   end
 
   swagger_path :index do
-    get "/users"
     description "List Users"
     response 200, "OK", Schema.ref(:UsersResponseData)
   end
@@ -36,7 +35,6 @@ defmodule TdAuthWeb.UserController do
   end
 
   swagger_path :create do
-    post "/users"
     description "Creates a User"
     produces "application/json"
     parameters do
@@ -59,7 +57,6 @@ defmodule TdAuthWeb.UserController do
   end
 
   swagger_path :show do
-    get "/users/{id}"
     description "Show User"
     produces "application/json"
     parameters do
@@ -85,7 +82,6 @@ defmodule TdAuthWeb.UserController do
   end
 
   swagger_path :update do
-    put "/users/{id}"
     description "Updates User"
     produces "application/json"
     parameters do
@@ -106,7 +102,6 @@ defmodule TdAuthWeb.UserController do
   end
 
   swagger_path :delete do
-    delete "/users/{id}"
     description "Delete User"
     produces "application/json"
     parameters do
@@ -129,7 +124,6 @@ defmodule TdAuthWeb.UserController do
   end
 
   swagger_path :change_password do
-    patch "/users/{id}/change_password"
     description "Updates User password"
     produces "application/json"
     parameters do

@@ -16,7 +16,6 @@ defmodule TdAuthWeb.GroupController do
   end
 
   swagger_path :index do
-    get "/groups"
     description "List groups"
     response 200, "OK", Schema.ref(:GroupsResponseData)
   end
@@ -34,7 +33,6 @@ defmodule TdAuthWeb.GroupController do
   end
 
   swagger_path :create do
-    post "/groups"
     description "Create a group"
     produces "application/json"
     parameters do
@@ -61,7 +59,6 @@ defmodule TdAuthWeb.GroupController do
   end
 
   swagger_path :show do
-    get "/groups/{id}"
     description "Show group"
     produces "application/json"
     parameters do
@@ -84,7 +81,6 @@ defmodule TdAuthWeb.GroupController do
   end
 
   swagger_path :update do
-    put "/groups/{id}"
     description "Update Group"
     produces "application/json"
     parameters do
@@ -111,7 +107,6 @@ defmodule TdAuthWeb.GroupController do
   end
 
   swagger_path :delete do
-    delete "/groups/{id}"
     description "Delete Group"
     produces "application/json"
     parameters do
@@ -136,7 +131,6 @@ defmodule TdAuthWeb.GroupController do
   end
 
   swagger_path :user_groups do
-    get "/users/{id}/groups"
     description "User Groups"
     parameters do
       id :path, :integer, "User ID", required: true
@@ -160,7 +154,6 @@ defmodule TdAuthWeb.GroupController do
   end
 
   swagger_path :add_groups_to_user do
-    post "/users/{user_id}/groups"
     description "Add groups to users"
     produces "application/json"
     parameters do
@@ -190,7 +183,6 @@ defmodule TdAuthWeb.GroupController do
   end
 
   swagger_path :delete_user_groups do
-    delete "/users/{user_id}/groups/{id}"
     description "Create a group"
     produces "application/json"
     parameters do

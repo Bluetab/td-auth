@@ -76,7 +76,6 @@ defmodule TdAuthWeb.SessionController do
   end
 
   swagger_path :create do
-    post("/sessions")
     description("Creates a user session")
     produces("application/json")
 
@@ -205,7 +204,6 @@ defmodule TdAuthWeb.SessionController do
   end
 
   swagger_path :refresh do
-    post("/sessions/refresh")
     description("Returns new token")
     produces("application/json")
 
