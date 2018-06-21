@@ -2,12 +2,12 @@ defmodule TdAuthWeb.GroupController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
+  alias Guardian.Plug
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
   alias TdAuth.Repo
   alias TdAuthWeb.SwaggerDefinitions
-  alias Guardian.Plug
 
   action_fallback TdAuthWeb.FallbackController
 

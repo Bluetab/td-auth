@@ -1,7 +1,7 @@
 defmodule TdAuthWeb.UserView do
   use TdAuthWeb, :view
-  alias TdAuthWeb.UserView
   alias TdAuthWeb.GroupView
+  alias TdAuthWeb.UserView
 
   def render("index.json", %{users: users}) do
     %{data: render_many(users, UserView, "user.json")}

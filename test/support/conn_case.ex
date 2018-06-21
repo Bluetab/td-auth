@@ -14,9 +14,9 @@ defmodule TdAuthWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
-  alias TdAuth.Accounts
   alias Ecto.Adapters.SQL.Sandbox
   alias Phoenix.ConnTest
+  alias TdAuth.Accounts
   import TdAuthWeb.Authentication, only: :functions
 
   using do

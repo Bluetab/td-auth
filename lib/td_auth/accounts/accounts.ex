@@ -4,11 +4,11 @@ defmodule TdAuth.Accounts do
   """
 
   import Ecto.Query, warn: false
-  alias TdAuth.Repo
 
-  alias TdAuth.Accounts.User
-  alias TdAuth.Accounts.Group
   alias Ecto.Changeset
+  alias TdAuth.Accounts.Group
+  alias TdAuth.Accounts.User
+  alias TdAuth.Repo
 
   @doc """
   Returns the list of users.

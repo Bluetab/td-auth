@@ -3,13 +3,13 @@ defmodule TdAuthWeb.UserController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
+  alias Guardian.Plug
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
-  alias Guardian.Plug
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
-  alias TdAuthWeb.SwaggerDefinitions
-  alias TdAuthWeb.ErrorView
   alias TdAuth.Repo
+  alias TdAuthWeb.ErrorView
+  alias TdAuthWeb.SwaggerDefinitions
 
   action_fallback TdAuthWeb.FallbackController
 

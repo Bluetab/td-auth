@@ -4,15 +4,14 @@ defmodule TdAuthWeb.SessionController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
+  alias Poison, as: JSON
   alias TdAuth.Accounts
-  # alias TdAuth.Auth.Auth.Plug, as: AuthPlug
+  alias TdAuth.Accounts.User
   alias TdAuth.Auth.Guardian
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
-  alias TdAuthWeb.ErrorView
-  alias TdAuth.Accounts.User
-  alias TdAuthWeb.SwaggerDefinitions
   alias TdAuth.Repo
-  alias Poison, as: JSON
+  alias TdAuthWeb.ErrorView
+  alias TdAuthWeb.SwaggerDefinitions
 
   @auth_service Application.get_env(:td_auth, :auth)[:auth_service]
 

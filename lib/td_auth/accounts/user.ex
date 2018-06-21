@@ -3,23 +3,23 @@ defmodule TdAuth.Accounts.User do
 
   use Ecto.Schema
   import Ecto.Changeset
-  alias TdAuth.Accounts.User
-  alias TdAuth.Accounts.Group
   alias TdAuth.Accounts
+  alias TdAuth.Accounts.Group
+  alias TdAuth.Accounts.User
   alias TdAuth.Repo
 
   @hash Application.get_env(:td_auth, :hashing_module)
 
   @derive {Poison.Encoder, only: [:id, :user_name, :is_admin]}
   schema "users" do
-    field :password_hash, :string
-    field :user_name, :string
-    field :password, :string, virtual: true
-    field :is_admin, :boolean, default: false
-    field :is_protected, :boolean, default: false
-    field :email, :string
-    field :full_name, :string, default: ""
-    many_to_many :groups, Group, join_through: "users_groups", on_replace: :delete
+    field(:password_hash, :string)
+    field(:user_name, :string)
+    field(:password, :string, virtual: true)
+    field(:is_admin, :boolean, default: false)
+    field(:is_protected, :boolean, default: false)
+    field(:email, :string)
+    field(:full_name, :string, default: "")
+    many_to_many(:groups, Group, join_through: "users_groups", on_replace: :delete)
 
     timestamps()
   end
@@ -37,6 +37,7 @@ defmodule TdAuth.Accounts.User do
   defp put_pass_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
     change(changeset, password_hash: @hash.hashpwsalt(password))
   end
+
   defp put_pass_hash(changeset), do: changeset
 
   def registration_changeset(model, params \\ :empty) do
@@ -50,9 +51,10 @@ defmodule TdAuth.Accounts.User do
   def update_changeset(%User{} = user, %{"groups" => groups} = attrs) do
     user
     |> Repo.preload(:groups)
-    |> changeset(attrs)    
+    |> changeset(attrs)
     |> put_assoc(:groups, parse_groups(groups))
   end
+
   def update_changeset(%User{} = user, attrs) do
     changeset(user, attrs)
   end
@@ -76,6 +78,7 @@ defmodule TdAuth.Accounts.User do
 
   def delete_group_changeset(user, group) do
     groups = Enum.filter(user.groups, &(&1.name != group.name))
+
     user
     |> change()
     |> put_assoc(:groups, groups)
@@ -87,12 +90,11 @@ defmodule TdAuth.Accounts.User do
       [] -> []
       _ -> groups |> Enum.map(&get_or_insert_group/1)
     end
-
   end
 
   defp get_or_insert_group(%{"name" => name}) do
     Accounts.get_group_by_name(name) ||
-      case Accounts.create_group(%{"name": name}) do
+      case Accounts.create_group(%{name: name}) do
         {:ok, %Group{} = group} -> group
         %Group{} = group -> group
         error -> error
@@ -101,11 +103,10 @@ defmodule TdAuth.Accounts.User do
 
   defp get_or_insert_group(name) do
     Accounts.get_group_by_name(name) ||
-      case Accounts.create_group(%{"name": name}) do
+      case Accounts.create_group(%{name: name}) do
         {:ok, %Group{} = group} -> group
         %Group{} = group -> group
         error -> error
       end
   end
-
 end
