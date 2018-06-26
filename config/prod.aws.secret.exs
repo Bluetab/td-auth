@@ -40,4 +40,5 @@ config :td_auth, :auth,
    allowed_algos: ["RS256"],
    issuer: "${AUTH_ISSUER}",
    verify_issuer: true,
-   secret_key: "${AUTH_SECRET_KEY}"
+   secret_key:
+   AUTH_SECRET_KEY
