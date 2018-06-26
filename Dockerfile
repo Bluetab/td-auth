@@ -15,9 +15,8 @@ COPY . /build
 ARG MIX_ENV
 ARG APP_VERSION
 ARG APP_NAME
-ARG AUTH_SECRET_KEY
 
-RUN sed -i -e "s/AUTH_SECRET_KEY/$AUTH_SECRET_KEY/g" ./config/prod.aws.secret.exs
+RUN sed -i -e "s/AUTH_SECRET_KEY/$(cat secret)/g" ./config/prod.aws.secret.exs
 RUN sed -i -e 's/prod.secret.exs/prod.aws.secret.exs/g' config/prod.exs
 
 RUN mix local.hex --force
