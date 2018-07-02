@@ -19,7 +19,7 @@ defmodule TdAuth.Permissions.RoleTest do
     end
 
     test "list_roles/0 returns all roles" do
-      assert length(Role.list_roles()) == 0
+      assert Enum.empty?(Role.list_roles())
     end
 
     test "get_role!/1 returns the role with given id" do
