@@ -24,6 +24,7 @@ defmodule TdAuth.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import TdAuth.DataCase
+      import TdAuth.Factory
     end
   end
 
