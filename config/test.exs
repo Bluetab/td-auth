@@ -38,3 +38,6 @@ config :td_auth, TdAuth.Auth.Auth,
   verify_issuer: false,
   token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
+
+# Redis configuration
+config :td_perms, redis_uri: "redis://localhost"
