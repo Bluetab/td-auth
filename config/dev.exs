@@ -45,3 +45,6 @@ config :td_auth, TdAuth.Repo,
   database: "td_auth_dev",
   hostname: "localhost",
   pool_size: 10
+
+# Redis configuration
+config :td_perms, redis_uri: "redis://localhost"

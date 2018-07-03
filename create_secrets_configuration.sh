@@ -9,6 +9,6 @@ sed -i -e "s/AUTH_DOMAIN/$AUTH_DOMAIN/g" ./config/prod.secret.exs
 sed -i -e "s/AUTH_AUDIENCE/$AUTH_AUDIENCE/g" ./config/prod.secret.exs
 sed -i -e "s/AUTH_ISSUER/$AUTH_ISSUER/g" ./config/prod.secret.exs
 sed -i -e "s/AUTH_SECRET_KEY/$AUTH_SECRET_KEY/g" ./config/prod.secret.exs
-
+sed -i -e "s/REDIS_URI/$REDIS_URI/g" ./config/prod.secret.exs
 
 cp ./config/prod.secret.exs ~/tdauth.prod.secret.exs

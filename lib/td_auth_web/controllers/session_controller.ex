@@ -9,6 +9,7 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Accounts.User
   alias TdAuth.Auth.Guardian
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
+  alias TdAuth.Permissions
   alias TdAuth.Repo
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
@@ -28,8 +29,10 @@ defmodule TdAuthWeb.SessionController do
       gids: user.groups |> Enum.map(&(&1.id))
     }
 
+    resource = user |> JSON.encode! |> JSON.decode!
+
     conn
-    |> GuardianPlug.sign_in(user, custom_claims)
+    |> GuardianPlug.sign_in(resource, custom_claims)
   end
 
   # defp get_audience do
@@ -108,6 +111,11 @@ defmodule TdAuthWeb.SessionController do
   defp create_session(conn, user) do
     conn = handle_sign_in(conn, user)
     token = GuardianPlug.current_token(conn)
+
+    # Load permissions cache
+    %{"jti" => jti, "exp" => exp, "gids" => gids} = conn |> GuardianPlug.current_claims
+    %{"id" => user_id} = conn |> GuardianPlug.current_resource
+    Permissions.cache_session_permissions(user_id, gids, jti, exp)
 
     {:ok, refresh_token, _full_claims} =
       Guardian.encode_and_sign(user, %{}, token_type: "refresh")

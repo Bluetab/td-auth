@@ -2,7 +2,6 @@ defmodule TdAuthWeb.GroupController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
-  alias Guardian.Plug
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
@@ -230,7 +229,7 @@ defmodule TdAuthWeb.GroupController do
   end
 
   defp is_admin?(conn) do
-    current_user = Plug.current_resource(conn)
-    current_user.is_admin
+    current_resource = conn.assigns[:current_resource]
+    current_resource.is_admin
   end
 end

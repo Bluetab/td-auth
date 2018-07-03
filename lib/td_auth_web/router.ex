@@ -10,6 +10,7 @@ defmodule TdAuthWeb.Router do
 
   pipeline :api_secured do
     plug TdAuth.Auth.Pipeline.Secure
+    plug :accepts, ["json"]
   end
 
   scope "/api/swagger" do
@@ -39,6 +40,15 @@ defmodule TdAuthWeb.Router do
     post "/users/search", UserController, :search
     resources "/groups", GroupController, except: [:new, :edit]
     post "/groups/search", GroupController, :search
+
+    resources "/acl_entries", AclEntryController, except: [:new, :edit]
+    post "/acl_entries/create_or_update", AclEntryController, :create_or_update
+
+    resources "/roles", RoleController, except: [:new, :edit] do
+      get     "/permissions", PermissionController, :get_role_permissions
+      post    "/permissions", PermissionController, :add_permissions_to_role
+    end
+
   end
 
   def swagger_info do

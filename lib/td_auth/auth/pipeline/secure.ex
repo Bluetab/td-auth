@@ -12,4 +12,5 @@ defmodule TdAuth.Auth.Pipeline.Secure do
   plug Guardian.Plug.VerifyHeader
   plug Guardian.Plug.LoadResource, allow_blank: true
   plug Guardian.Plug.EnsureAuthenticated
+  plug TdAuth.Auth.Pipeline.CurrentResource
 end

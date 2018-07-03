@@ -44,6 +44,7 @@ defmodule TdAuth.Mixfile do
       {:edeliver, "~> 1.4.5"},
       {:distillery, "~> 1.5", runtime: false},
       {:guardian, "~> 1.0"},
+      {:canada, "~> 1.0.1"},
       {:comeonin, "~> 4.0"},
       {:bcrypt_elixir, "~> 1.0"},
       {:ex_machina, "~> 2.1", only: :test},
@@ -51,7 +52,8 @@ defmodule TdAuth.Mixfile do
       {:httpoison, "~> 1.0"},
       {:cabbage, git: "https://github.com/eriosv/cabbage.git"},
       {:phoenix_swagger, "~> 0.8.0"},
-      {:ex_json_schema, "~> 0.5"}
+      {:ex_json_schema, "~> 0.5"},
+      {:td_perms, git: "https://github.com/Bluetab/td-perms.git"}
     ]
   end
 

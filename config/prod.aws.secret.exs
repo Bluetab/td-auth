@@ -42,3 +42,5 @@ config :td_auth, :auth,
    verify_issuer: true,
    secret_key:
    AUTH_SECRET_KEY
+
+config :td_perms, redis_uri: "${REDIS_URI}"

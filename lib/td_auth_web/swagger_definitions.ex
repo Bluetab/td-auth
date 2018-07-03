@@ -198,4 +198,172 @@ defmodule TdAuthWeb.SwaggerDefinitions do
       end
     }
   end
+
+  def acl_entry_swagger_definitions do
+    %{
+      AclEntry:
+        swagger_schema do
+          title("Acl entry")
+          description("An Acl entry")
+
+          properties do
+            id(:integer, "unique identifier", required: true)
+            principal_id(:integer, "id of principal", required: true)
+            principal_type(:string, "type of principal: user", required: true)
+            resource_id(:integer, "id of resource", required: true)
+            resource_type(:string, "type of resource: domain", required: true)
+            role_id(:integer, "id of role", required: true)
+          end
+        end,
+      AclEntryCreateUpdate:
+        swagger_schema do
+          properties do
+            acl_entry(
+              Schema.new do
+                properties do
+                  principal_id(:integer, "id of principal", required: true)
+                  principal_type(:string, "type of principal: user", required: true)
+                  resource_id(:integer, "id of resource", required: true)
+                  resource_type(:string, "type of resource: domain", required: true)
+                  role_id(:integer, "id of role", required: true)
+                end
+              end
+            )
+          end
+        end,
+      AclEntryCreateOrUpdate:
+        swagger_schema do
+          properties do
+            acl_entry(
+              Schema.new do
+                properties do
+                  principal_id(:integer, "id of principal", required: true)
+                  principal_type(:string, "type of principal: user", required: true)
+                  resource_id(:integer, "id of resource", required: true)
+                  resource_type(:string, "type of resource: domain", required: true)
+                  role_name(:string, "role name", required: true)
+                end
+              end
+            )
+          end
+        end,
+      AclEntries:
+        swagger_schema do
+          title("Acl entries")
+          description("A collection of Acl Entry")
+          type(:array)
+          items(Schema.ref(:AclEntry))
+        end,
+      AclEntryResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:AclEntry))
+          end
+        end,
+      AclEntriesResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:AclEntries))
+          end
+        end
+    }
+  end
+
+  def permission_swagger_definitions do
+    %{
+      Permission:
+        swagger_schema do
+          title("Permission")
+          description("Permission")
+
+          properties do
+            id(:integer, "unique identifier", required: true)
+            name(:string, "permission name", required: true)
+          end
+        end,
+      PermissionItem:
+        swagger_schema do
+          properties do
+            id(:integer, "unique identifier", required: true)
+            name(:string, "permission name")
+          end
+        end,
+      PermissionItems:
+        swagger_schema do
+          type(:array)
+          items(Schema.ref(:PermissionItem))
+        end,
+      AddPermissionsToRole:
+        swagger_schema do
+          properties do
+            permissions(Schema.ref(:PermissionItems))
+          end
+        end,
+      Permissions:
+        swagger_schema do
+          title("Roles")
+          description("A collection of Permissions")
+          type(:array)
+          items(Schema.ref(:Role))
+        end,
+      PermissionResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:Permission))
+          end
+        end,
+      PermissionsResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:Permissions))
+          end
+        end
+    }
+  end
+
+  def role_swagger_definitions do
+    %{
+      Role:
+        swagger_schema do
+          title("Role")
+          description("Role")
+
+          properties do
+            id(:integer, "unique identifier", required: true)
+            name(:string, "role name", required: true)
+          end
+        end,
+      Roles:
+        swagger_schema do
+          title("Roles")
+          description("A collection of Roles")
+          type(:array)
+          items(Schema.ref(:Role))
+        end,
+      RoleCreateUpdate:
+        swagger_schema do
+          properties do
+            role(
+              Schema.new do
+                properties do
+                  name(:string, "role name", required: true)
+                end
+              end
+            )
+          end
+        end,
+      RoleResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:Role))
+          end
+        end,
+      RolesResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:Roles))
+          end
+        end
+    }
+  end
 end

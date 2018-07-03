@@ -2,6 +2,8 @@ defmodule TdAuth.Auth.Auth do
   @moduledoc false
   use Guardian, otp_app: :td_auth
 
+  alias TdAuth.Auth.Session
+
   def subject_for_token(_resource, _claims) do
     # You can use any value for the subject of your token but
     # it should be useful in retrieving the resource later, see
@@ -15,6 +17,17 @@ defmodule TdAuth.Auth.Auth do
     # Here we'll look up our resource from the claims, the subject can be
     # found in the `"sub"` key. In `above subject_for_token/2` we returned
     # the resource id so here we'll rely on that to look it up.
-    {:ok,  claims["sub"]}
+    sub = Poison.decode!(claims["sub"])
+
+    resource = %Session{
+      id: sub["id"],
+      is_admin: sub["is_admin"],
+      user_name: sub["user_name"],
+      gids: claims["gids"],
+      jti: claims["jti"],
+      exp: claims["exp"]
+    }
+
+    {:ok, resource}
   end
 end

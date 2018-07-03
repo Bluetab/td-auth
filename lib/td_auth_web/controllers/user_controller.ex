@@ -3,10 +3,8 @@ defmodule TdAuthWeb.UserController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
-  alias Guardian.Plug
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
-  alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuth.Repo
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
@@ -93,12 +91,12 @@ defmodule TdAuthWeb.UserController do
   end
 
   def update(conn, %{"id" => id, "user" => %{"password" => _password} = user_params}) do
-    current_user = Plug.current_resource(conn)
-    update?(conn, id, user_params, current_user.is_admin)
+    current_resource = conn.assigns[:current_resource]
+    update?(conn, id, user_params, current_resource.is_admin)
   end
   def update(conn, %{"id" => id, "user" => user_params}) do
-    current_user = Plug.current_resource(conn)
-    update?(conn, id, user_params, current_user.is_admin || current_user.id == String.to_integer(id))
+    current_resource = conn.assigns[:current_resource]
+    update?(conn, id, user_params, current_resource.is_admin || current_resource.id == String.to_integer(id))
   end
 
   swagger_path :delete do
@@ -215,14 +213,10 @@ defmodule TdAuthWeb.UserController do
     end
   end
 
-  defp get_current_user(conn) do
-    GuardianPlug.current_resource(conn)
-  end
-
   defp check_user_conn(conn, user_id) do
-    user_conn = get_current_user(conn)
-    case Accounts.get_user!(user_id) == user_conn  do
-      true -> {:ok, user_conn}
+    %{id: id} = conn.assigns[:current_resource]
+    case id == String.to_integer(user_id) do
+      true -> {:ok, Accounts.get_user!(id)}
       false -> {:error, "You are not the user conn"}
     end
   end
@@ -242,8 +236,8 @@ defmodule TdAuthWeb.UserController do
   end
 
   defp is_admin?(conn) do
-    current_user = Plug.current_resource(conn)
-    current_user.is_admin
+    current_resource = conn.assigns[:current_resource]
+    current_resource.is_admin
   end
 
 end

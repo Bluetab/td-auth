@@ -5,8 +5,11 @@ defmodule TdAuth.Permissions do
 
   import Ecto.Query, warn: false
 
+  alias TdAuth.Auth.Session
+  alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Permission
   alias TdAuth.Repo
+  alias TdPerms.Permissions, as: Perms
 
   @doc """
   Returns the list of permissions.
@@ -55,4 +58,34 @@ defmodule TdAuth.Permissions do
     |> Repo.insert()
   end
 
+  def cache_session_permissions(user_id, gids, jti, exp) do
+    acl_entries = %{user_id: user_id, gids: gids}
+      |> AclEntry.list_acl_entries_by_user_with_groups
+      |> Enum.map(&(acl_entry_to_permissions/1))
+    cache_session_permissions!(jti, exp, acl_entries)
+  end
+
+  def cache_session_permissions!(_jti, _exp, []), do: []
+  def cache_session_permissions!(jti, exp, acl_entries) when is_list(acl_entries) do
+    Perms.cache_session_permissions!(jti, exp, acl_entries)
+  end
+
+  defp acl_entry_to_permissions(%{resource_type: resource_type, resource_id: resource_id, role: %{permissions: permissions}}) do
+    permission_names = permissions |> Enum.map(&(&1.name))
+    %{resource_type: resource_type, resource_id: resource_id, permissions: permission_names}
+  end
+
+  @doc """
+  Check if user has a permission in a domain.
+
+  ## Examples
+
+      iex> authorized?(%User{}, "create", 12)
+      false
+
+  """
+  def authorized?(%Session{jti: jti}, permission, domain_id) do
+    #domain_ids = Taxonomies.get_parent_ids(domain_id, true) # TODO
+    Perms.has_permission(jti, permission, "domain", domain_id)
+  end
 end

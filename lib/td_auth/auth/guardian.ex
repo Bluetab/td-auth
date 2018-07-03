@@ -2,7 +2,7 @@ defmodule TdAuth.Auth.Guardian do
   @moduledoc false
   use Guardian, otp_app: :td_auth
 
-  alias TdAuth.Accounts
+  alias TdAuth.Auth.Session
 
   def subject_for_token(resource, _claims) do
     # You can use any value for the subject of your token but
@@ -19,7 +19,16 @@ defmodule TdAuth.Auth.Guardian do
     # found in the `"sub"` key. In `above subject_for_token/2` we returned
     # the resource id so here we'll rely on that to look it up.
     sub = Poison.decode!(claims["sub"])
-    resource = Accounts.get_user!(sub["id"])
-    {:ok,  resource}
+
+    resource = %Session{
+      id: sub["id"],
+      is_admin: sub["is_admin"],
+      user_name: sub["user_name"],
+      gids: claims["gids"],
+      jti: claims["jti"],
+      exp: claims["exp"]
+    }
+
+    {:ok, resource}
   end
 end
