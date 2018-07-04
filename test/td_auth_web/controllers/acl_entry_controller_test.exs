@@ -182,7 +182,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
     @tag :admin_authenticated
     test "lists acl_entries by resource", %{conn: conn, acl_entry: acl_entry, user: user} do
-      conn = get conn, acl_entry_path(conn, :acl_entries, acl_entry.resource_type, acl_entry.resource_id)
+      conn = get conn, acl_entry_path(conn, :acl_entries, "domains", acl_entry.resource_id)
       data = json_response(conn, 200)["data"]
       assert length(data) == 1
       [entry] = data

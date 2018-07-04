@@ -2,6 +2,7 @@ defmodule TdAuthWeb.AclEntryController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
+  alias Inflex
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Role
   alias TdAuthWeb.ErrorView
@@ -196,6 +197,7 @@ defmodule TdAuthWeb.AclEntryController do
   end
 
   def acl_entries(conn, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
+    resource_type = Inflex.singularize(resource_type)
     acl_entries = AclEntry.list_acl_entries(%{resource_type: resource_type, resource_id: resource_id})
 
     render(
