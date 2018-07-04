@@ -1156,68 +1156,33 @@
   },
   "host": "localhost:4001",
   "definitions": {
-    "RolesResponse": {
+    "PermissionsResponse": {
       "type": "object",
       "properties": {
         "data": {
-          "$ref": "#/definitions/Roles"
+          "$ref": "#/definitions/Permissions"
         }
       }
     },
-    "PermissionResponse": {
+    "UsersResponse": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/UserResponseAttrs"
+      }
+    },
+    "GroupResponse": {
       "type": "object",
       "properties": {
         "data": {
-          "$ref": "#/definitions/Permission"
+          "$ref": "#/definitions/GroupResponseAttrs"
         }
       }
     },
-    "Group": {
+    "AclEntriesResponse": {
       "type": "object",
-      "title": "Group",
-      "required": [
-        "name",
-        "id"
-      ],
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "name"
-        },
-        "id": {
-          "type": "integer",
-          "description": "unique identifier"
-        },
-        "description": {
-          "type": "string",
-          "description": "description"
-        }
-      },
-      "example": {
-        "name": "mygroup",
-        "id": 123,
-        "description": "mydescription"
-      },
-      "description": "Group entity"
-    },
-    "GroupResponseAttrs": {
-      "type": "object",
-      "required": [
-        "name",
-        "id"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "name"
-        },
-        "id": {
-          "type": "integer",
-          "description": "unique identifier"
-        },
-        "description": {
-          "type": "string",
-          "description": "description"
+        "data": {
+          "$ref": "#/definitions/AclEntries"
         }
       }
     },
@@ -1260,69 +1225,6 @@
       },
       "description": "An Acl entry"
     },
-    "GroupsCreate": {
-      "type": "object",
-      "properties": {
-        "groups": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/GroupCreateProps"
-          }
-        }
-      }
-    },
-    "RoleResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/Role"
-        }
-      }
-    },
-    "RefreshSessionCreate": {
-      "type": "object",
-      "required": [
-        "refresh_token"
-      ],
-      "properties": {
-        "refresh_token": {
-          "type": "string",
-          "description": "refresh token"
-        }
-      }
-    },
-    "SessionCreate": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/Session"
-        }
-      }
-    },
-    "AclEntryResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/AclEntry"
-        }
-      }
-    },
-    "GroupCreate": {
-      "type": "object",
-      "properties": {
-        "group": {
-          "$ref": "#/definitions/GroupCreateProps"
-        }
-      }
-    },
-    "AclEntriesResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/AclEntries"
-        }
-      }
-    },
     "UserChangePassword": {
       "type": "object",
       "required": [
@@ -1340,19 +1242,243 @@
         }
       }
     },
-    "PermissionItems": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/PermissionItem"
+    "RoleCreateUpdate": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "role name"
+            }
+          }
+        }
       }
     },
-    "Roles": {
+    "GroupCreate": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/GroupCreateProps"
+        }
+      }
+    },
+    "UserCreateProps": {
+      "type": "object",
+      "required": [
+        "email",
+        "password",
+        "user_name"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "password": {
+          "type": "string",
+          "description": "user password"
+        },
+        "is_admin": {
+          "type": "boolean",
+          "description": "is admin flag"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "email": {
+          "type": "string",
+          "description": "some@email.com"
+        }
+      }
+    },
+    "GroupsResponseData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/GroupsResponse"
+        }
+      }
+    },
+    "RefreshSessionCreate": {
+      "type": "object",
+      "required": [
+        "refresh_token"
+      ],
+      "properties": {
+        "refresh_token": {
+          "type": "string",
+          "description": "refresh token"
+        }
+      }
+    },
+    "UserCreate": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/UserCreateProps"
+        }
+      }
+    },
+    "Users": {
       "type": "array",
-      "title": "Roles",
+      "title": "Users",
       "items": {
-        "$ref": "#/definitions/Role"
+        "$ref": "#/definitions/User"
       },
-      "description": "A collection of Roles"
+      "description": "A collection of Users"
+    },
+    "UserUpdateProps": {
+      "type": "object",
+      "required": [
+        "email",
+        "password",
+        "user_name"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "password": {
+          "type": "string",
+          "description": "user password"
+        },
+        "is_admin": {
+          "type": "boolean",
+          "description": "is admin flag"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "email": {
+          "type": "string",
+          "description": "some@email.com"
+        }
+      }
+    },
+    "AddPermissionsToRole": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "$ref": "#/definitions/PermissionItems"
+        }
+      }
+    },
+    "AclEntryResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/AclEntry"
+        }
+      }
+    },
+    "SessionCreate": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/Session"
+        }
+      }
+    },
+    "PermissionResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Permission"
+        }
+      }
+    },
+    "UsersResponseData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/UsersResponse"
+        }
+      }
+    },
+    "GroupsCreate": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GroupCreateProps"
+          }
+        }
+      }
+    },
+    "UserResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/UserResponseAttrs"
+        }
+      }
+    },
+    "GroupsResponse": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GroupResponseAttrs"
+      }
+    },
+    "RolesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Roles"
+        }
+      }
+    },
+    "UserResponseAttrs": {
+      "type": "object",
+      "required": [
+        "email",
+        "is_admin",
+        "user_name",
+        "id"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "is_admin": {
+          "type": "boolean",
+          "description": "flag is admin"
+        },
+        "id": {
+          "type": "integer",
+          "description": "unique identifier"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "full_name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "full name"
+        },
+        "email": {
+          "type": "string",
+          "description": "email"
+        }
+      }
     },
     "Token": {
       "type": "object",
@@ -1371,27 +1497,75 @@
         }
       }
     },
-    "GroupsResponse": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/GroupResponseAttrs"
-      }
-    },
-    "UsersResponseData": {
+    "AclEntryCreateUpdate": {
       "type": "object",
       "properties": {
-        "data": {
-          "$ref": "#/definitions/UsersResponse"
+        "acl_entry": {
+          "type": "object",
+          "required": [
+            "role_id",
+            "resource_type",
+            "resource_id",
+            "principal_type",
+            "principal_id"
+          ],
+          "properties": {
+            "role_id": {
+              "type": "integer",
+              "description": "id of role"
+            },
+            "resource_type": {
+              "type": "string",
+              "description": "type of resource: domain"
+            },
+            "resource_id": {
+              "type": "integer",
+              "description": "id of resource"
+            },
+            "principal_type": {
+              "type": "string",
+              "description": "type of principal: user"
+            },
+            "principal_id": {
+              "type": "integer",
+              "description": "id of principal"
+            }
+          }
         }
       }
     },
-    "Groups": {
-      "type": "array",
-      "title": "Groups",
-      "items": {
-        "$ref": "#/definitions/Group"
-      },
-      "description": "A collection of Groups"
+    "Session": {
+      "type": "object",
+      "required": [
+        "password",
+        "user_name"
+      ],
+      "properties": {
+        "user_name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "password": {
+          "type": "string",
+          "description": "password"
+        }
+      }
+    },
+    "GroupCreateProps": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "name"
+        },
+        "description": {
+          "type": "string",
+          "description": "description"
+        }
+      }
     },
     "User": {
       "type": "object",
@@ -1447,11 +1621,41 @@
       },
       "description": "User entity"
     },
-    "UserUpdate": {
+    "GroupUpdate": {
       "type": "object",
       "properties": {
-        "user": {
-          "$ref": "#/definitions/UserUpdateProps"
+        "group": {
+          "$ref": "#/definitions/GroupUpdateProps"
+        }
+      }
+    },
+    "PermissionItems": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PermissionItem"
+      }
+    },
+    "Groups": {
+      "type": "array",
+      "title": "Groups",
+      "items": {
+        "$ref": "#/definitions/Group"
+      },
+      "description": "A collection of Groups"
+    },
+    "GroupUpdateProps": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "name"
+        },
+        "description": {
+          "type": "string",
+          "description": "description"
         }
       }
     },
@@ -1474,66 +1678,13 @@
       },
       "description": "Permission"
     },
-    "GroupUpdateProps": {
-      "type": "object",
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "name"
-        },
-        "description": {
-          "type": "string",
-          "description": "description"
-        }
-      }
-    },
-    "GroupResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/GroupResponseAttrs"
-        }
-      }
-    },
-    "AclEntryCreateUpdate": {
-      "type": "object",
-      "properties": {
-        "acl_entry": {
-          "type": "object",
-          "required": [
-            "role_id",
-            "resource_type",
-            "resource_id",
-            "principal_type",
-            "principal_id"
-          ],
-          "properties": {
-            "role_id": {
-              "type": "integer",
-              "description": "id of role"
-            },
-            "resource_type": {
-              "type": "string",
-              "description": "type of resource: domain"
-            },
-            "resource_id": {
-              "type": "integer",
-              "description": "id of resource"
-            },
-            "principal_type": {
-              "type": "string",
-              "description": "type of principal: user"
-            },
-            "principal_id": {
-              "type": "integer",
-              "description": "id of principal"
-            }
-          }
-        }
-      }
+    "Permissions": {
+      "type": "array",
+      "title": "Roles",
+      "items": {
+        "$ref": "#/definitions/Role"
+      },
+      "description": "A collection of Permissions"
     },
     "AclEntryCreateOrUpdate": {
       "type": "object",
@@ -1572,6 +1723,14 @@
         }
       }
     },
+    "AclEntries": {
+      "type": "array",
+      "title": "Acl entries",
+      "items": {
+        "$ref": "#/definitions/AclEntry"
+      },
+      "description": "A collection of Acl Entry"
+    },
     "PermissionItem": {
       "type": "object",
       "required": [
@@ -1587,6 +1746,14 @@
           "description": "unique identifier"
         }
       }
+    },
+    "Roles": {
+      "type": "array",
+      "title": "Roles",
+      "items": {
+        "$ref": "#/definitions/Role"
+      },
+      "description": "A collection of Roles"
     },
     "Role": {
       "type": "object",
@@ -1607,225 +1774,36 @@
       },
       "description": "Role"
     },
-    "UserUpdateProps": {
-      "type": "object",
-      "required": [
-        "email",
-        "password",
-        "user_name"
-      ],
-      "properties": {
-        "user_name": {
-          "type": "string",
-          "description": "user name"
-        },
-        "password": {
-          "type": "string",
-          "description": "user password"
-        },
-        "is_admin": {
-          "type": "boolean",
-          "description": "is admin flag"
-        },
-        "groups": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "email": {
-          "type": "string",
-          "description": "some@email.com"
-        }
-      }
-    },
-    "GroupUpdate": {
-      "type": "object",
-      "properties": {
-        "group": {
-          "$ref": "#/definitions/GroupUpdateProps"
-        }
-      }
-    },
-    "AddPermissionsToRole": {
-      "type": "object",
-      "properties": {
-        "permissions": {
-          "$ref": "#/definitions/PermissionItems"
-        }
-      }
-    },
-    "PermissionsResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/Permissions"
-        }
-      }
-    },
-    "Users": {
-      "type": "array",
-      "title": "Users",
-      "items": {
-        "$ref": "#/definitions/User"
-      },
-      "description": "A collection of Users"
-    },
-    "UserResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/UserResponseAttrs"
-        }
-      }
-    },
-    "UserCreate": {
+    "UserUpdate": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/UserCreateProps"
+          "$ref": "#/definitions/UserUpdateProps"
         }
       }
     },
-    "UserCreateProps": {
-      "type": "object",
-      "required": [
-        "email",
-        "password",
-        "user_name"
-      ],
-      "properties": {
-        "user_name": {
-          "type": "string",
-          "description": "user name"
-        },
-        "password": {
-          "type": "string",
-          "description": "user password"
-        },
-        "is_admin": {
-          "type": "boolean",
-          "description": "is admin flag"
-        },
-        "groups": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "email": {
-          "type": "string",
-          "description": "some@email.com"
-        }
-      }
-    },
-    "RoleCreateUpdate": {
-      "type": "object",
-      "properties": {
-        "role": {
-          "type": "object",
-          "required": [
-            "name"
-          ],
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "role name"
-            }
-          }
-        }
-      }
-    },
-    "UserResponseAttrs": {
-      "type": "object",
-      "required": [
-        "email",
-        "is_admin",
-        "user_name",
-        "id"
-      ],
-      "properties": {
-        "user_name": {
-          "type": "string",
-          "description": "user name"
-        },
-        "is_admin": {
-          "type": "boolean",
-          "description": "flag is admin"
-        },
-        "id": {
-          "type": "integer",
-          "description": "unique identifier"
-        },
-        "groups": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "full_name": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "full name"
-        },
-        "email": {
-          "type": "string",
-          "description": "email"
-        }
-      }
-    },
-    "AclEntries": {
-      "type": "array",
-      "title": "Acl entries",
-      "items": {
-        "$ref": "#/definitions/AclEntry"
-      },
-      "description": "A collection of Acl Entry"
-    },
-    "Session": {
-      "type": "object",
-      "required": [
-        "password",
-        "user_name"
-      ],
-      "properties": {
-        "user_name": {
-          "type": "string",
-          "description": "user name"
-        },
-        "password": {
-          "type": "string",
-          "description": "password"
-        }
-      }
-    },
-    "Permissions": {
-      "type": "array",
-      "title": "Roles",
-      "items": {
-        "$ref": "#/definitions/Role"
-      },
-      "description": "A collection of Permissions"
-    },
-    "GroupsResponseData": {
+    "RoleResponse": {
       "type": "object",
       "properties": {
         "data": {
-          "$ref": "#/definitions/GroupsResponse"
+          "$ref": "#/definitions/Role"
         }
       }
     },
-    "GroupCreateProps": {
+    "GroupResponseAttrs": {
       "type": "object",
       "required": [
-        "name"
+        "name",
+        "id"
       ],
       "properties": {
         "name": {
           "type": "string",
           "description": "name"
+        },
+        "id": {
+          "type": "integer",
+          "description": "unique identifier"
         },
         "description": {
           "type": "string",
@@ -1833,11 +1811,33 @@
         }
       }
     },
-    "UsersResponse": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/UserResponseAttrs"
-      }
+    "Group": {
+      "type": "object",
+      "title": "Group",
+      "required": [
+        "name",
+        "id"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "name"
+        },
+        "id": {
+          "type": "integer",
+          "description": "unique identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "description"
+        }
+      },
+      "example": {
+        "name": "mygroup",
+        "id": 123,
+        "description": "mydescription"
+      },
+      "description": "Group entity"
     }
   },
   "basePath": "/api"
