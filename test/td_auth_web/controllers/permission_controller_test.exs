@@ -17,7 +17,8 @@ defmodule TdAuthWeb.PermissionControllerTest do
       %{name: role_name, permissions: permission_names} ->
         permissions = permission_names
           |> Enum.map(&(get_or_create_permission/1))
-        %{id: role_id} = Role.role_get_or_create_by_name(role_name)
+        %{id: role_id} = role_name
+          |> Role.role_get_or_create_by_name
           |> Role.add_permissions_to_role(permissions)
         role_id
       _ -> nil
@@ -28,7 +29,7 @@ defmodule TdAuthWeb.PermissionControllerTest do
 
   defp get_or_create_permission(name) do
     case Permissions.get_permission_by_name(name) do
-      nil -> 
+      nil ->
         {:ok, p} = Permissions.create_permission(%{name: name})
         p
       p -> p

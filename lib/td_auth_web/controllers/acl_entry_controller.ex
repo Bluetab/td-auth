@@ -205,7 +205,6 @@ defmodule TdAuthWeb.AclEntryController do
     )
   end
 
-
   # TODO: Why is this needed??
   defp to_struct(kind, attrs) do
     struct = struct(kind)

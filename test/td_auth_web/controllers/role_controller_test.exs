@@ -24,11 +24,13 @@ defmodule TdAuthWeb.RoleControllerTest do
   end
 
   describe "index" do
+    setup [:create_role]
+
     @tag :admin_authenticated
     test "lists all roles", %{conn: conn, swagger_schema: schema} do
       conn = get conn, role_path(conn, :index)
       validate_resp_schema(conn, schema, "RolesResponse")
-      assert length(json_response(conn, 200)["data"]) == 0
+      assert length(json_response(conn, 200)["data"]) == 1
     end
   end
 
