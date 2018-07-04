@@ -86,6 +86,6 @@ defmodule TdAuth.Permissions do
   """
   def authorized?(%Session{jti: jti}, permission, domain_id) do
     #domain_ids = Taxonomies.get_parent_ids(domain_id, true) # TODO
-    Perms.has_permission(jti, permission, "domain", domain_id)
+    Perms.has_permission?(jti, permission, "domain", domain_id)
   end
 end
