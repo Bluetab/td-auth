@@ -31,14 +31,30 @@ defmodule TdAuth.Permissions do
 
   ## Examples
 
-      iex> get_permissions!(123)
+      iex> get_permission!(123)
       %Permission{}
 
-      iex> get_permissions!(456)
+      iex> get_permission!(456)
       ** (Ecto.NoResultsError)
 
   """
   def get_permission!(id), do: Repo.get!(Permission, id)
+
+  @doc """
+  Gets a single permission by name.
+
+  Raises `Ecto.NoResultsError` if the Permission does not exist.
+
+  ## Examples
+
+      iex> get_permission_by_name("view_domain")
+      {:ok, %Permission{}}
+
+      iex> get_permission_by_name("does_not_exist")
+      nil
+
+  """
+  def get_permission_by_name(name), do: Repo.get_by(Permission, name: name)
 
   @doc """
   Creates a permission.
