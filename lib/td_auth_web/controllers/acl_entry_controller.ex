@@ -182,6 +182,30 @@ defmodule TdAuthWeb.AclEntryController do
     end
   end
 
+  swagger_path :acl_entries do
+    description("Lists acl entries of a specified resource")
+    produces("application/json")
+
+    parameters do
+      resource_type(:path, :string, "Resource Type", required: true)
+      resource_id(:path, :string, "Resource Id", required: true)
+    end
+
+    response(200, "Ok", Schema.ref(:ResourceAclEntriesResponse))
+    response(400, "Client Error")
+  end
+
+  def acl_entries(conn, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
+    acl_entries = AclEntry.list_acl_entries(%{resource_type: resource_type, resource_id: resource_id})
+
+    render(
+      conn,
+      "resource_acl_entries.json",
+      acl_entries: acl_entries
+    )
+  end
+
+
   # TODO: Why is this needed??
   defp to_struct(kind, attrs) do
     struct = struct(kind)

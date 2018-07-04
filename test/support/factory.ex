@@ -24,7 +24,7 @@ defmodule TdAuth.Factory do
     }
   end
 
-  def acl_entry_domain_user_factory do
+  def acl_entry_resource_factory do
     %TdAuth.Permissions.AclEntry {
       principal_id: nil,
       principal_type: "user",

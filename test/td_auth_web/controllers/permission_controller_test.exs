@@ -4,17 +4,11 @@ defmodule TdAuthWeb.PermissionControllerTest do
 
   import TdAuthWeb.Authentication, only: :functions
 
-  #alias TdAuth.Permissions.MockPermissionResolver
   alias TdAuth.Permissions
   alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.Role
-  #alias TdAuthWeb.ApiServices.MockTdAuditService
-  #alias TdAuthWeb.ApiServices.MockTdAuthService
 
   setup_all do
-   # start_supervised MockPermissionResolver
-   # start_supervised MockTdAuthService
-   # start_supervised MockTdAuditService
     :ok
   end
 

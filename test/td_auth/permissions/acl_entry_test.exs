@@ -18,7 +18,7 @@ defmodule TdAuth.Permissions.AclEntryTest do
       role = Role.role_get_or_create_by_name("watch")
 
       acl_entry_attrs =
-        insert(:acl_entry_domain_user, principal_id: user.id, resource_id: 1234, role: role)
+        insert(:acl_entry_resource, principal_id: user.id, resource_id: 1234, role: role)
 
       acl_entry_attrs
     end

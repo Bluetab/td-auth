@@ -59,21 +59,21 @@ defmodule TdAuth.Permissions.AclEntry do
   end
 
   @doc """
-    Returns a list of users-role with acl_entries in the domain passed as argument
+  Returns a list of acl_entries relating to a specified resource type and id.
   """
-  def list_acl_entries(%{domain: domain}) do
-    list_acl_entries(%{domain: domain}, :role)
+  def list_acl_entries(%{resource_type: type, resource_id: id}) do
+    list_acl_entries(%{resource_type: type, resource_id: id}, :role)
   end
 
   @doc """
-    Returns a list of users-role with acl_entries in the domain passed as argument, configurable preloading
+  Returns a list of acl_entries relating to a specified resource type and id., configurable preloading
   """
-  def list_acl_entries(%{domain: domain}, preload) do
+  def list_acl_entries(%{resource_type: type, resource_id: id}, preload) do
     acl_entries =
       Repo.all(
         from(
           acl_entry in AclEntry,
-          where: acl_entry.resource_type == "domain" and acl_entry.resource_id == ^domain.id
+          where: acl_entry.resource_type == ^type and acl_entry.resource_id == ^id
         )
       )
 

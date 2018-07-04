@@ -265,6 +265,29 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             data(Schema.ref(:AclEntries))
           end
+        end,
+      ResourceAclEntriesResponse:
+        swagger_schema do
+          properties do
+            data(
+              Schema.new do
+                properties do
+                  principal(
+                    Schema.new do
+                      properties do
+                        id(:integer, "principal id")
+                        name(:string, "principal name")
+                      end
+                    end
+                  )
+                  principal_type(:string, "principal type")
+                  role_id(:integer, "role id")
+                  role_name(:string, "role name")
+                  acl_entry_id(:integer, "acl entry id")
+                end
+              end
+            )
+          end
         end
     }
   end

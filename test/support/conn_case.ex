@@ -24,6 +24,7 @@ defmodule TdAuthWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       import TdAuthWeb.Router.Helpers
+      import TdAuth.Factory
 
       # The default endpoint for testing
       @endpoint TdAuthWeb.Endpoint

@@ -70,10 +70,10 @@ defmodule TdAuth.Permissions.RoleTest do
       permissions = Permissions.list_permissions()
       permissions = Enum.sort(permissions, &(&1.name < &2.name))
 
-      role = Role.get_role_by_name(@role_attrs.name)
+      role = Role.role_get_or_create_by_name(@role_attrs.name)
       Role.add_permissions_to_role(role, permissions)
 
-      role = Role.get_role_by_name(@role_attrs.name)
+      role = Role.role_get_or_create_by_name(@role_attrs.name)
       stored_permissions = Role.get_role_permissions(role)
       stored_permissions = Enum.sort(stored_permissions, &(&1.name < &2.name))
 
@@ -86,19 +86,19 @@ defmodule TdAuth.Permissions.RoleTest do
       permissions = Permissions.list_permissions()
       permissions = Enum.sort(permissions, &(&1.name < &2.name))
 
-      role = Role.get_role_by_name(@role_attrs.name)
+      role = Role.role_get_or_create_by_name(@role_attrs.name)
       Role.add_permissions_to_role(role, permissions)
 
-      role = Role.get_role_by_name(@role_attrs.name)
+      role = Role.role_get_or_create_by_name(@role_attrs.name)
       stored_permissions = Role.get_role_permissions(role)
       stored_permissions = Enum.sort(stored_permissions, &(&1.name < &2.name))
 
       assert permissions == stored_permissions
 
-      role = Role.get_role_by_name(@role_attrs.name)
+      role = Role.role_get_or_create_by_name(@role_attrs.name)
       Role.add_permissions_to_role(role, [])
 
-      role = Role.get_role_by_name(@role_attrs.name)
+      role = Role.role_get_or_create_by_name(@role_attrs.name)
       stored_permissions = Role.get_role_permissions(role)
 
       assert [] == stored_permissions
