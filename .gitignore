@@ -16,3 +16,4 @@ erl_crash.dump
 # variables.
 .idea/
 td-auth.iml
+priv/static/swagger.json
