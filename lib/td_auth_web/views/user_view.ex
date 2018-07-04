@@ -20,4 +20,9 @@ defmodule TdAuthWeb.UserView do
       groups: render_many(user.groups, GroupView, "name.json")
     }
   end
+
+  def render("user_embedded.json", %{user: user}) do
+    user
+      |> Map.take([:id, :user_name, :email, :full_name, :is_admin])
+  end
 end

@@ -177,12 +177,34 @@ defmodule TdAuthWeb.AclEntryControllerTest do
     end
   end
 
+  describe "list acl_entries by resource" do
+    setup [:create_acl_entry]
+
+    @tag :admin_authenticated
+    test "lists acl_entries by resource", %{conn: conn, acl_entry: acl_entry, user: user} do
+      conn = get conn, acl_entry_path(conn, :acl_entries, acl_entry.resource_type, acl_entry.resource_id)
+      data = json_response(conn, 200)["data"]
+      assert length(data) == 1
+      [entry] = data
+      assert entry["acl_entry_id"] == acl_entry.id
+      assert entry["principal_type"] == acl_entry.principal_type
+      assert entry["role_id"] == acl_entry.role.id
+      assert entry["role_name"] == acl_entry.role.name
+      assert entry["principal"]["id"] == user.id
+      assert entry["principal"]["user_name"] == user.user_name
+      assert entry["principal"]["email"] == user.email
+      assert entry["principal"]["full_name"] == user.full_name
+      assert entry["principal"]["is_admin"] == user.is_admin
+    end
+
+  end
+
   defp create_acl_entry(_) do
-    user = build(:user)
+    user = insert(:user)
     # domain = insert(:domain)
     role = Role.role_get_or_create_by_name("watch")
     acl_entry_attrs = insert(:acl_entry_resource, principal_id: user.id, resource_id: role.id, role: role)
-    {:ok, acl_entry: acl_entry_attrs}
+    {:ok, acl_entry: acl_entry_attrs, user: user}
   end
 
 end

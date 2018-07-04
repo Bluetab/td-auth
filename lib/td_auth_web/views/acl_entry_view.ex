@@ -2,7 +2,10 @@ defmodule TdAuthWeb.AclEntryView do
   use TdAuthWeb, :view
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
+  alias TdAuth.Repo
   alias TdAuthWeb.AclEntryView
+  alias TdAuthWeb.GroupView
+  alias TdAuthWeb.UserView
 
   def render("index.json", %{acl_entries: acl_entries}) do
     %{data: render_many(acl_entries, AclEntryView, "acl_entry.json")}
@@ -28,20 +31,22 @@ defmodule TdAuthWeb.AclEntryView do
 
   def render("resource_acl_entry.json", %{acl_entry: acl_entry}) do
     %{
-      principal: render_principal(acl_entry.principal),
+      principal: render_principal(acl_entry.principal_type, acl_entry.principal_id),
       principal_type: acl_entry.principal_type,
-      role_name: acl_entry.role_name,
-      role_id: acl_entry.role_id,
-      acl_entry_id: acl_entry.acl_entry_id
+      role_name: acl_entry.role.name,
+      role_id: acl_entry.role.id,
+      acl_entry_id: acl_entry.id
     }
   end
 
-  def render_principal(%Group{} = group) do
+  def render_principal("group", group_id) do
+    group = Repo.get_by(Group, id: group_id)
     render_one(group, GroupView, "group.json")
   end
 
-  def render_principal(%User{} = user) do
-    render_one(user, UserView, "user.json")
+  def render_principal("user", user_id) do
+    user = Repo.get_by(User, id: user_id)
+    render_one(user, UserView, "user_embedded.json")
   end
 
 end
