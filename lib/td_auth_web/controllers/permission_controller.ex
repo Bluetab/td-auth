@@ -16,7 +16,6 @@ defmodule TdAuthWeb.PermissionController do
   end
 
   swagger_path :index do
-    get "/permissions"
     description "List Permissions"
     response 200, "OK", Schema.ref(:PermissionsResponse)
   end
@@ -27,7 +26,6 @@ defmodule TdAuthWeb.PermissionController do
   end
 
   swagger_path :show do
-    get "/permissions/{id}"
     description "Show Permission"
     produces "application/json"
     parameters do
@@ -43,7 +41,6 @@ defmodule TdAuthWeb.PermissionController do
   end
 
   swagger_path :get_role_permissions do
-    get "/roles/{role_id}/permissions"
     description "List Role Permissions"
     parameters do
       role_id :path, :integer, "Role ID", required: true
@@ -58,7 +55,6 @@ defmodule TdAuthWeb.PermissionController do
   end
 
   swagger_path :add_permissions_to_role do
-    post "/roles/{role_id}/permissions"
     description "Add Permissions to Role"
     parameters do
       role_id :path, :integer, "Role ID", required: true
