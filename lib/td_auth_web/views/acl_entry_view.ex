@@ -1,5 +1,6 @@
 defmodule TdAuthWeb.AclEntryView do
   use TdAuthWeb, :view
+  use TdHypermedia, :view
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
   alias TdAuth.Repo
@@ -25,8 +26,8 @@ defmodule TdAuthWeb.AclEntryView do
     }
   end
 
-  def render("resource_acl_entries.json", %{acl_entries: acl_entries}) do
-    %{data: render_many(acl_entries, AclEntryView, "resource_acl_entry.json")}
+  def render("resource_acl_entries.json", %{acl_entries: acl_entries, hypermedia: hypermedia}) do
+    render_many_hypermedia(acl_entries, hypermedia, AclEntryView, "resource_acl_entry.json")
   end
 
   def render("resource_acl_entry.json", %{acl_entry: acl_entry}) do

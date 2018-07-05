@@ -54,7 +54,8 @@ defmodule TdAuth.Mixfile do
       {:phoenix_swagger, "~> 0.8.0"},
       {:ex_json_schema, "~> 0.5"},
       {:td_perms, git: "https://github.com/Bluetab/td-perms.git"},
-      { :inflex, "~> 1.10.0" }
+      {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git"},
+      {:inflex, "~> 1.10.0"}
     ]
   end
 

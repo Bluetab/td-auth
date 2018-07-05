@@ -1,5 +1,6 @@
 defmodule TdAuthWeb.AclEntryController do
   use TdAuthWeb, :controller
+  use TdHypermedia, :controller
   use PhoenixSwagger
 
   alias Inflex
@@ -198,13 +199,24 @@ defmodule TdAuthWeb.AclEntryController do
 
   def acl_entries(conn, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
     resource_type = Inflex.singularize(resource_type)
-    acl_entries = AclEntry.list_acl_entries(%{resource_type: resource_type, resource_id: resource_id})
 
-    render(
-      conn,
-      "resource_acl_entries.json",
-      acl_entries: acl_entries
-    )
+    current_resource = conn.assigns[:current_resource]
+
+    if current_resource |> can?(view_acl_entries(%{resource_type: resource_type, resource_id: resource_id})) do
+      acl_entries = AclEntry.list_acl_entries(%{resource_type: resource_type, resource_id: resource_id})
+
+      render(
+        conn,
+        "resource_acl_entries.json",
+        hypermedia: hypermedia("acl_entry", conn, acl_entries),
+        acl_entries: acl_entries
+      )
+    else
+      conn
+      |> put_status(:forbidden)
+      |> render(ErrorView, :"403.json")
+    end
+
   end
 
   # TODO: Why is this needed??
