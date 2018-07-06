@@ -45,6 +45,7 @@ defmodule TdAuth.Accounts do
 
   def get_user_by_name(user_name) do
     Repo.get_by(User, user_name: String.downcase(user_name))
+    |> Repo.preload(:groups)
   end
 
   def exist_user?(user_name) do
