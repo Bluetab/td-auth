@@ -14,6 +14,13 @@ defmodule TdAuth.Factory do
     }
   end
 
+  def group_factory do
+    %TdAuth.Accounts.Group{
+      id: 0,
+      name: "group name"
+    }
+  end
+
   def acl_entry_factory do
     %TdAuth.Permissions.AclEntry {
       principal_id: nil,

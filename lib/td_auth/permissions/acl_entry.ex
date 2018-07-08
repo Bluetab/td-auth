@@ -5,6 +5,7 @@ defmodule TdAuth.Permissions.AclEntry do
   import Ecto.Changeset
   import Ecto.Query, warn: false
 
+  alias TdAuth.Accounts
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Role
   alias TdAuth.Repo
@@ -78,6 +79,23 @@ defmodule TdAuth.Permissions.AclEntry do
       )
 
     acl_entries |> Repo.preload(preload)
+  end
+
+  def list_user_roles(%{resource_type: type, resource_id: id}) do
+    %{resource_type: type, resource_id: id}
+      |> list_acl_entries()
+      |> Enum.map(&(role_with_users/1))
+      |> Enum.group_by(&(&1.role_name), &(&1.users))
+      |> Enum.map(fn {role, users} -> {role, Enum.uniq_by(Enum.concat(users), &(&1.id))} end)
+  end
+
+  def role_with_users(%AclEntry{role: role, principal_type: "user", principal_id: user_id}) do
+    user = Accounts.get_user!(user_id)
+    %{role_name: role.name, users: [user]}
+  end
+  def role_with_users(%AclEntry{role: role, principal_type: "group", principal_id: group_id}) do
+    users = Accounts.list_users_by_group_id(group_id)
+    %{role_name: role.name, users: users}
   end
 
   @doc """
