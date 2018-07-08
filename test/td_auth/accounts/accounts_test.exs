@@ -57,7 +57,6 @@ defmodule TdAuth.AccountsTest do
 
     test "delete_user/1 deletes the user" do
       user = user_fixture()
-      #assert {:ok, %User{}} = Accounts.delete_user(user)
       assert {:ok, _} = Accounts.delete_user(user)
       assert_raise Ecto.NoResultsError, fn -> Accounts.get_user!(user.id) end
     end
@@ -69,7 +68,6 @@ defmodule TdAuth.AccountsTest do
 
     test "get_user_by_name/1 return the user with given user_name" do
       user = user_fixture()
-      #assert Accounts.get_user_by_name(user.user_name) == user
       assert Accounts.get_user_by_name(user.user_name).id == user.id
     end
 

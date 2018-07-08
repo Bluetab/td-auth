@@ -27,6 +27,11 @@ defmodule TdAuth.Accounts do
     Repo.all(from u in User, where: u.id in ^ids)
   end
 
+  def list_users_by_group_id(group_id) do
+    group = get_group!(group_id)
+    Repo.all(Ecto.assoc(group, :users))
+  end
+
   @doc """
   Gets a single user.
 
@@ -44,7 +49,8 @@ defmodule TdAuth.Accounts do
   def get_user!(id), do: Repo.get!(User, id)
 
   def get_user_by_name(user_name) do
-    Repo.get_by(User, user_name: String.downcase(user_name))
+    User
+    |> Repo.get_by(user_name: String.downcase(user_name))
     |> Repo.preload(:groups)
   end
 
