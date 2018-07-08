@@ -40,6 +40,12 @@ defmodule TdAuthWeb.AclEntryView do
     }
   end
 
+  def render("resource_user_roles.json", %{user_roles: user_roles}) do
+    user_roles
+      |> Enum.map(fn {role_name, users} -> %{role_name: role_name, users: Enum.map(users, &(Map.take(&1, [:id, :user_name, :full_name])))} end)
+      |> Enum.into([])
+  end
+
   def render_principal("group", group_id) do
     group = Repo.get_by(Group, id: group_id)
     render_one(group, GroupView, "group.json")

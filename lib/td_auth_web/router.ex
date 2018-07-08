@@ -44,6 +44,7 @@ defmodule TdAuthWeb.Router do
     resources "/acl_entries", AclEntryController, except: [:new, :edit]
     post "/acl_entries/create_or_update", AclEntryController, :create_or_update
     get "/:resource_type/:resource_id/acl_entries", AclEntryController, :acl_entries
+    get "/:resource_type/:resource_id/user_roles", AclEntryController, :user_roles
     post "/:resource_type/:resource_id/acl_entries", AclEntryController, :create_acl_entry
 
     resources "/permissions", PermissionController, except: [:new, :edit, :update, :delete, :create]

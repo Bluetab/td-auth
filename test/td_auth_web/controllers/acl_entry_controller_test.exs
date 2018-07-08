@@ -197,6 +197,20 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       assert entry["principal"]["is_admin"] == user.is_admin
     end
 
+    @tag :admin_authenticated
+    test "lists user_roles by resource", %{conn: conn, swagger_schema: schema, acl_entry: acl_entry, user: expected_user} do
+      conn = get conn, acl_entry_path(conn, :user_roles, "domains", acl_entry.resource_id)
+      validate_resp_schema(conn, schema, "ResourceUserRolesResponse")
+      data = json_response(conn, 200)
+      assert length(data) == 1
+      [entry] = data
+      assert entry["role_name"] == acl_entry.role.name
+      [user] = entry["users"]
+      assert user["id"] == expected_user.id
+      assert user["user_name"] == expected_user.user_name
+      assert user["full_name"] == expected_user.full_name
+    end
+
   end
 
   defp create_acl_entry(_) do

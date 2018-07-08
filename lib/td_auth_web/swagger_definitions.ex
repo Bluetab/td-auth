@@ -288,7 +288,29 @@ defmodule TdAuthWeb.SwaggerDefinitions do
               end
             )
           end
+        end,
+      ResourceUserRolesResponse: swagger_schema do
+        title "Resource User Roles"
+        description "A collection of roles with corresponding users"
+        type :array
+        items Schema.ref(:ResourceUserRolesItem)
+      end,
+      ResourceUserRolesItem: swagger_schema do
+        properties do
+          role_name :string, "role name", required: true
+          users (Schema.new do
+            type :array
+            items Schema.ref(:UserItem)
+          end)
         end
+      end,
+      UserItem: swagger_schema do
+        properties do
+          id(:integer, "user id")
+          user_name(:string, "user name")
+          full_name [:string, :null], "full name"
+        end
+      end
     }
   end
 

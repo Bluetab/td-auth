@@ -165,6 +165,7 @@ defmodule TdAuthWeb.UserController do
     |> send_resp(:unprocessable_entity, "")
   end
 
+  # TODO: Remove this...
   def get_groups_users(conn, %{"data" => data_params}) do
     group_ids      = Map.get(data_params, "group_ids", [])
     extra_user_ids = Map.get(data_params, "extra_user_ids", [])

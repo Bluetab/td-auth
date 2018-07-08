@@ -219,6 +219,40 @@ defmodule TdAuthWeb.AclEntryController do
 
   end
 
+  swagger_path :user_roles do
+    description("Lists user roles of a specified resource")
+    produces("application/json")
+
+    parameters do
+      resource_type(:path, :string, "Resource Type", required: true)
+      resource_id(:path, :string, "Resource Id", required: true)
+    end
+
+    response(200, "Ok", Schema.ref(:ResourceAclEntriesResponse))
+    response(400, "Client Error")
+  end
+
+  def user_roles(conn, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
+    resource_type = Inflex.singularize(resource_type)
+
+    current_resource = conn.assigns[:current_resource]
+
+    if current_resource |> can?(view_acl_entries(%{resource_type: resource_type, resource_id: resource_id})) do
+      user_roles = AclEntry.list_user_roles(%{resource_type: resource_type, resource_id: resource_id})
+
+      render(
+        conn,
+        "resource_user_roles.json",
+        user_roles: user_roles
+      )
+    else
+      conn
+      |> put_status(:forbidden)
+      |> render(ErrorView, :"403.json")
+    end
+
+  end
+
   # TODO: Why is this needed??
   defp to_struct(kind, attrs) do
     struct = struct(kind)

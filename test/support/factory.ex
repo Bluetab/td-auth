@@ -10,6 +10,7 @@ defmodule TdAuth.Factory do
       id: 0,
       user_name: "bufoncillo",
       email: "bufoncillo@truedat.io",
+      full_name: "Bufon Cillo",
       is_admin: false
     }
   end
