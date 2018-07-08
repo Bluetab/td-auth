@@ -165,22 +165,6 @@ defmodule TdAuthWeb.UserController do
     |> send_resp(:unprocessable_entity, "")
   end
 
-  # TODO: Remove this...
-  def get_groups_users(conn, %{"data" => data_params}) do
-    group_ids      = Map.get(data_params, "group_ids", [])
-    extra_user_ids = Map.get(data_params, "extra_user_ids", [])
-    case is_admin?(conn) do
-      true ->
-        users = Accounts.list_groups_users(group_ids, extra_user_ids)
-        users = Repo.preload(users, :groups)
-        render(conn, "index.json", users: users)
-      _ ->
-        conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
-    end
-  end
-
   defp create_user(user_params) do
     Accounts.create_user(user_params)
   end

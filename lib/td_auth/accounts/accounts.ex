@@ -243,22 +243,4 @@ defmodule TdAuth.Accounts do
     |> Repo.update
   end
 
-  @doc false
-  def list_groups_users([], []), do: []
-  def list_groups_users(group_ids, extra_user_ids) do
-    query = from u in User, distinct: true, left_join: g in assoc(u, :groups)
-
-    dynamic = false
-    dynamic = case length(group_ids) do
-      0 -> dynamic
-      _ -> dynamic([_u, g], g.id in ^group_ids or ^dynamic)
-    end
-    dynamic = case length(extra_user_ids) do
-      0 -> dynamic
-      _ -> dynamic([u, _g], u.id in ^extra_user_ids or ^dynamic)
-    end
-
-    Repo.all(from query, where: ^dynamic)
-  end
-
 end
