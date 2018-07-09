@@ -17,7 +17,8 @@ defmodule TdAuthWeb.AclEntryView do
   end
 
   def render("acl_entry.json", %{acl_entry: acl_entry}) do
-    %{id: acl_entry.id,
+    %{
+      id: acl_entry.id,
       principal_type: acl_entry.principal_type,
       principal_id: acl_entry.principal_id,
       resource_type: acl_entry.resource_type,
@@ -42,8 +43,13 @@ defmodule TdAuthWeb.AclEntryView do
 
   def render("resource_user_roles.json", %{user_roles: user_roles}) do
     user_roles
-      |> Enum.map(fn {role_name, users} -> %{role_name: role_name, users: Enum.map(users, &(Map.take(&1, [:id, :user_name, :full_name])))} end)
-      |> Enum.into([])
+    |> Enum.map(fn {role_name, users} ->
+      %{
+        role_name: role_name,
+        users: Enum.map(users, &Map.take(&1, [:id, :user_name, :full_name]))
+      }
+    end)
+    |> Enum.into([])
   end
 
   def render_principal("group", group_id) do
@@ -55,5 +61,4 @@ defmodule TdAuthWeb.AclEntryView do
     user = Repo.get_by(User, id: user_id)
     render_one(user, UserView, "user_embedded.json")
   end
-
 end

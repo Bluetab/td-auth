@@ -27,7 +27,15 @@ defmodule TdAuth.Permissions.AclEntryTest do
     def group_acl_entry_fixture(role_name \\ "watch") do
       group = build(:group)
       role = Role.role_get_or_create_by_name(role_name)
-      insert(:acl_entry, principal_type: "group", principal_id: group.id, resource_type: "domain", resource_id: 1234, role: role)
+
+      insert(
+        :acl_entry,
+        principal_type: "group",
+        principal_id: group.id,
+        resource_type: "domain",
+        resource_id: 1234,
+        role: role
+      )
     end
 
     defp get_comparable_acl_entry_fields(acl_entry) do
@@ -113,12 +121,20 @@ defmodule TdAuth.Permissions.AclEntryTest do
 
     test "list_user_roles/1 returns user roles for a specified resource" do
       group = insert(:group)
-      {:ok, user} = insert(:user)
+
+      {:ok, user} =
+        insert(:user)
         |> Accounts.add_groups_to_user([group.name])
 
       acl_entry = group_acl_entry_fixture()
       role_name = acl_entry.role.name
-      [{^role_name, users}] = AclEntry.list_user_roles(%{resource_type: acl_entry.resource_type, resource_id: acl_entry.resource_id})
+
+      [{^role_name, users}] =
+        AclEntry.list_user_roles(%{
+          resource_type: acl_entry.resource_type,
+          resource_id: acl_entry.resource_id
+        })
+
       assert length(users) == 1
       assert Enum.at(users, 0).id == user.id
     end
