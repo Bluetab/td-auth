@@ -9,34 +9,36 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-alias TdAuth.Accounts.User
-alias TdAuth.Accounts.Group
 alias Ecto.Changeset
+alias TdAuth.Accounts.Group
+alias TdAuth.Accounts.User
+alias TdAuth.Permissions.AclEntry
+alias TdAuth.Permissions.Role
 alias TdAuth.Repo
 
-Repo.insert!(%User{
-  user_name: "user3",
-  password: "user3",
-  email: "user3@bluetab.net",
-  full_name: "User 3",
+user1 = Repo.insert!(%User{
+  user_name: "user1",
+  password: "user1",
+  email: "user1@bluetab.net",
+  full_name: "User 1",
   is_admin: false,
   is_protected: false
 }) # id 3
 
-Repo.insert!(%User{
-  user_name: "user",
-  password: "user4",
-  email: "user4@bluetab.net",
-  full_name: "User 4",
+user2 = Repo.insert!(%User{
+  user_name: "user2",
+  password: "user2",
+  email: "user2@bluetab.net",
+  full_name: "User 2",
   is_admin: false,
   is_protected: false
 }) # id 4
 
-user4 = Repo.insert!(%User{
-  user_name: "user5",
-  password: "user5",
-  email: "user4@bluetab.net",
-  full_name: "User 5",
+user3 = Repo.insert!(%User{
+  user_name: "user3",
+  password: "user3",
+  email: "user3@bluetab.net",
+  full_name: "User 3",
   is_admin: false,
   is_protected: false
 }) # id 5
@@ -51,8 +53,86 @@ group2 = Repo.insert!(%Group{
   description: "group 2"
 })
 
-user4
+group3 = Repo.insert!(%Group{
+  name: "group3",
+  description: "group 3"
+})
+
+role1 = Repo.insert!(%Role{
+  name: "role1"
+})
+
+role2 = Repo.insert!(%Role{
+  name: "role2"
+})
+
+role3 = Repo.insert!(%Role{
+  name: "role3"
+})
+
+user1
+|> Repo.preload(:groups)
+|> Changeset.change
+|> Changeset.put_assoc(:groups, [group1])
+|> Repo.update!
+
+
+user2
 |> Repo.preload(:groups)
 |> Changeset.change
 |> Changeset.put_assoc(:groups, [group1, group2])
 |> Repo.update!
+
+user3
+|> Repo.preload(:groups)
+|> Changeset.change
+|> Changeset.put_assoc(:groups, [group1, group2, group3])
+|> Repo.update!
+
+Repo.insert(%AclEntry{
+  principal_id: user3.id,
+  principal_type: "user",
+  resource_id: 1,
+  resource_type: "domain",
+  role_id: role1.id
+})
+
+Repo.insert(%AclEntry{
+  principal_id: user3.id,
+  principal_type: "user",
+  resource_id: 2,
+  resource_type: "domain",
+  role_id: role2.id
+})
+
+Repo.insert(%AclEntry{
+  principal_id: user3.id,
+  principal_type: "user",
+  resource_id: 3,
+  resource_type: "domain",
+  role_id: role3.id
+})
+
+Repo.insert(%AclEntry{
+  principal_id: group1.id,
+  principal_type: "group",
+  resource_id: 1,
+  resource_type: "domain",
+  role_id: role1.id
+})
+
+Repo.insert(%AclEntry{
+  principal_id: group2.id,
+  principal_type: "group",
+  resource_id: 2,
+  resource_type: "domain",
+  role_id: role2.id
+})
+
+Repo.insert(%AclEntry{
+  principal_id: group3.id,
+  principal_type: "group",
+  resource_id: 3,
+  resource_type: "domain",
+  role_id: role3.id
+})

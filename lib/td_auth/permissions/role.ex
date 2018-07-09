@@ -58,6 +58,20 @@ defmodule TdAuth.Permissions.Role do
   def get_role!(id), do: Repo.get!(Role, id)
 
   @doc """
+  Gets a single role.
+
+  ## Examples
+
+      iex> get_role(123)
+      %Role{}
+
+      iex> get_role(456)
+      nil
+
+  """
+  def get_role(id), do: Repo.get(Role, id)
+
+  @doc """
   Creates a role.
 
   ## Examples
