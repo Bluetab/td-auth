@@ -40,7 +40,7 @@ defmodule TdAuth.Mixfile do
       {:postgrex, ">= 0.0.0"},
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
-      {:credo, "~> 0.9.0-rc1", only: [:dev, :test], runtime: false},
+      {:credo, "~> 0.9.3", only: [:dev, :test], runtime: false},
       {:edeliver, "~> 1.4.5"},
       {:distillery, "~> 1.5", runtime: false},
       {:guardian, "~> 1.0"},
