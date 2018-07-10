@@ -34,6 +34,46 @@ defmodule TdAuthWeb.SwaggerDefinitions do
 
   def user_swagger_definitions do
     %{
+      UserAclResource: swagger_schema do
+        title "User Acl Resource"
+        description "User Acl Resource"
+        properties do
+          id :integer, "unique identifier", required: true
+          name :string, "resource name", required: true
+          type :string, "resource type", required: true
+        end
+      end,
+      UserAclRole: swagger_schema do
+        title "User Acl Role"
+        description "User Acl Role"
+        properties do
+          id :integer, "unique identifier", required: true
+          name :string, "role name", required: true
+        end
+      end,
+      UserAclGroup: swagger_schema do
+        title "User Acl Group"
+        description "User Acl Group"
+        properties do
+          id :integer, "unique identifier", required: true
+          name :string, "group name", required: true
+        end
+      end,
+      UserAcl: swagger_schema do
+        title "User Acl"
+        description "User Acl"
+        properties do
+          resource Schema.ref(:UserAclResource)
+          role     Schema.ref(:UserAclRole)
+          group    Schema.ref(:UserAclGroup)
+        end
+      end,
+      UserAcls: swagger_schema do
+        title "User Acls"
+        description "A collection of User Acls"
+        type :array
+        items Schema.ref(:UserAcl)
+      end,
       User: swagger_schema do
         title "User"
         description "User entity"
@@ -45,6 +85,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           email :string, "email", required: true
           full_name :string, "full name"
           groups Schema.array(:string)
+          acls Schema.ref(:UserAcls)
         end
         example %{
           id: 123,
@@ -53,7 +94,14 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           password: "myuserpass",
           email: "some@email.com",
           full_name: "My User",
-          groups: ["group1"]
+          groups: ["group1"],
+          acls: [
+            %{
+              resource: %{id: 1, name: "foo", type: "domain"},
+              role: %{id: 2, name: "bar"},
+              group: %{id: 3, name: "goo"}
+            }
+          ]
         }
       end,
       UserCreateProps: swagger_schema do

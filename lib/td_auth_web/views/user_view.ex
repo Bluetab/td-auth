@@ -25,7 +25,7 @@ defmodule TdAuthWeb.UserView do
       full_name: user.full_name,
       is_admin: user.is_admin,
       groups: render_many(user.groups, GroupView, "name.json")
-    } |> render_role_mappings(assigns)
+    } |> render_acls(assigns)
   end
 
   def render("user_embedded.json", %{user: user}) do
@@ -33,8 +33,8 @@ defmodule TdAuthWeb.UserView do
       |> Map.take([:id, :user_name, :email, :full_name, :is_admin])
   end
 
-  defp render_role_mappings(user_map, %{role_mappings: role_mappings}) do
-    Map.put(user_map, :role_mappings, role_mappings)
+  defp render_acls(user_map, %{acls: acls}) do
+    Map.put(user_map, :acls, acls)
   end
-  defp render_role_mappings(user_map, _), do: user_map
+  defp render_acls(user_map, _), do: user_map
 end

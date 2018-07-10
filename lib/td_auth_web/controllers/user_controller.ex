@@ -6,10 +6,8 @@ defmodule TdAuthWeb.UserController do
   import Canada
 
   alias TdAuth.Accounts
-  alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
-  alias TdAuth.Permissions.AclEntry
-  alias TdAuth.Permissions.Role
+  alias TdAuth.Accounts.UserAcl
   alias TdAuth.Repo
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
@@ -78,79 +76,14 @@ defmodule TdAuthWeb.UserController do
           |> Accounts.get_user!()
           |> Repo.preload(:groups)
 
-          role_mappings = user
-          |> get_acl_entries
-          |> get_role_mappings
+          acls = UserAcl.get_user_acls(user)
 
-        render(conn, "show.json", user: user, role_mappings: role_mappings)
+        render(conn, "show.json", user: user, acls: acls)
       _ ->
         conn
           |> put_status(:unauthorized)
           |> render(ErrorView, "403.json")
     end
-  end
-
-  defp get_acl_entries(user) do
-    gids = Enum.reduce(user.groups, [], &([&1.id|&2]))
-    AclEntry.list_acl_entries_by_user_with_groups(%{user_id: user.id,
-                                                      gids: gids})
-  end
-
-  defp add_to_role_mapping(role_mapping, %{id: id, type: type}) do
-    role_mapping
-    |> Map.put(:resource, %{id: id, type: type, name: to_string(id)})
-  end
-
-  defp add_to_role_mapping(role_mapping, %Role{} = role) do
-    role_mapping
-    |> Map.put(:role, Map.take(role, [:id, :name]))
-  end
-
-  defp add_to_role_mapping(role_mapping, %Group{} = group) do
-    role_mapping
-    |> Map.put(:group, Map.take(group, [:id, :name]))
-  end
-
-  defp get_role_mapping(%AclEntry{resource_type: resource_type,
-                                  resource_id: resource_id,
-                                  principal_type: "user",
-                                  role_id: role_id})
-                                  when resource_type == "domain" do
-    case Role.get_role(role_id) do
-      role when not is_nil(role) ->
-        %{}
-        |> add_to_role_mapping(%{id: resource_id, type: resource_type})
-        |> add_to_role_mapping(role)
-
-      _ -> nil
-    end
-  end
-  defp get_role_mapping(%AclEntry{resource_type: resource_type,
-                                  resource_id: resource_id,
-                                  principal_type: "group",
-                                  principal_id: principal_id,
-                                  role_id: role_id})
-                                  when resource_type == "domain" do
-
-    case {Role.get_role(role_id), Accounts.get_group(principal_id)} do
-      {role, group} when not is_nil(role) and not is_nil(group) ->
-        %{}
-        |> add_to_role_mapping(%{id: resource_id, type: resource_type})
-        |> add_to_role_mapping(role)
-        |> add_to_role_mapping(group)
-      _ -> nil
-    end
-  end
-  defp get_role_mapping(_), do: nil
-
-  defp get_role_mappings(acl_entries) do
-    acl_entries
-    |> Enum.reduce([], fn(acl_entry, acc) ->
-      case get_role_mapping(acl_entry) do
-        nil -> acc
-        role_mapping -> [role_mapping|acc]
-      end
-    end)
   end
 
   swagger_path :update do
