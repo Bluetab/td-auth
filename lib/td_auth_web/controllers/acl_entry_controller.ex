@@ -201,14 +201,15 @@ defmodule TdAuthWeb.AclEntryController do
     resource_type = Inflex.singularize(resource_type)
 
     current_resource = conn.assigns[:current_resource]
+    acl_resource = %{resource_type: resource_type, resource_id: resource_id}
 
-    if current_resource |> can?(view_acl_entries(%{resource_type: resource_type, resource_id: resource_id})) do
-      acl_entries = AclEntry.list_acl_entries(%{resource_type: resource_type, resource_id: resource_id})
+    if current_resource |> can?(view_acl_entries(acl_resource)) do
+      acl_entries = AclEntry.list_acl_entries(acl_resource)
 
       render(
         conn,
         "resource_acl_entries.json",
-        hypermedia: hypermedia("acl_entry", conn, acl_entries),
+        hypermedia: collection_hypermedia("acl_entry", conn, acl_entries, acl_resource),
         acl_entries: acl_entries
       )
     else

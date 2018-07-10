@@ -2,7 +2,7 @@ defmodule TdAuthWeb.RoleController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
-  import Canada, only: [can?: 2]
+  import Canada
 
   alias TdAuth.Permissions.Role
   alias TdAuthWeb.ErrorView
@@ -20,8 +20,15 @@ defmodule TdAuthWeb.RoleController do
   end
 
   def index(conn, _params) do
-    roles = Role.list_roles()
-    render(conn, "index.json", roles: roles)
+    current_resource = conn.assigns[:current_resource]
+    if can?(current_resource, list(Role)) do
+      roles = Role.list_roles()
+      render(conn, "index.json", roles: roles)
+    else
+      conn
+      |> put_status(:unauthorized)
+      |> render(ErrorView, "401.json")
+    end
   end
 
   swagger_path :create do

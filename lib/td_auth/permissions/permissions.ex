@@ -5,7 +5,6 @@ defmodule TdAuth.Permissions do
 
   import Ecto.Query, warn: false
 
-  alias TdAuth.Auth.Session
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Permission
   alias TdAuth.Repo
@@ -91,17 +90,4 @@ defmodule TdAuth.Permissions do
     %{resource_type: resource_type, resource_id: resource_id, permissions: permission_names}
   end
 
-  @doc """
-  Check if user has a permission in a domain.
-
-  ## Examples
-
-      iex> authorized?(%User{}, "create", 12)
-      false
-
-  """
-  def authorized?(%Session{jti: jti}, permission, domain_id) do
-    #domain_ids = Taxonomies.get_parent_ids(domain_id, true) # TODO
-    Perms.has_permission?(jti, permission, "domain", domain_id)
-  end
 end

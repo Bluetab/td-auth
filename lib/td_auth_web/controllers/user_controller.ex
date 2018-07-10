@@ -3,6 +3,8 @@ defmodule TdAuthWeb.UserController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
+  import Canada
+
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
@@ -24,7 +26,8 @@ defmodule TdAuthWeb.UserController do
   end
 
   def index(conn, _params) do
-    case is_admin?(conn) do
+    current_resource = conn.assigns[:current_resource]
+    case current_resource |> can?(list(User)) do
       true ->
         users = Accounts.list_users() |> Repo.preload(:groups)
         render(conn, "index.json", users: users)
@@ -83,7 +86,7 @@ defmodule TdAuthWeb.UserController do
       _ ->
         conn
           |> put_status(:unauthorized)
-          |> render(ErrorView, "401.json")
+          |> render(ErrorView, "403.json")
     end
   end
 

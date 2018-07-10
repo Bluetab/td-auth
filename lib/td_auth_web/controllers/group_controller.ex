@@ -2,10 +2,13 @@ defmodule TdAuthWeb.GroupController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
+  import Canada
+
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
   alias TdAuth.Repo
+  alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
 
   action_fallback TdAuthWeb.FallbackController
@@ -20,7 +23,8 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def index(conn, _params) do
-    case is_admin?(conn) do
+    current_resource = conn.assigns[:current_resource]
+    case current_resource |> can?(list(Group)) do
       true ->
         groups = Accounts.list_groups()
         render(conn, "index.json", groups: groups)
