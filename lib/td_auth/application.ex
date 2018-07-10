@@ -16,6 +16,7 @@ defmodule TdAuth.Application do
       supervisor(TdAuthWeb.Endpoint, []),
       # Start your own worker by calling: TdAuth.Worker.start_link(arg1, arg2, arg3)
       # worker(TdAuth.Worker, [arg1, arg2, arg3]),
+      worker(TdAuth.UserLoader, [TdAuth.UserLoader])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

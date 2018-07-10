@@ -64,6 +64,8 @@ config :td_auth, :phoenix_swagger,
    "priv/static/swagger.json" => [router: TdAuthWeb.Router]
   }
 
+config :td_auth, cache_users_on_startup: true
+
 config :td_perms, permissions: [
   :is_admin,
   :create_acl_entry,

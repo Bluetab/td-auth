@@ -9,6 +9,7 @@ defmodule TdAuth.Accounts do
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
   alias TdAuth.Repo
+  alias TdAuth.UserLoader
 
   @doc """
   Returns the list of users.
@@ -74,6 +75,7 @@ defmodule TdAuth.Accounts do
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
+    |> refresh_cache
   end
 
   @doc """
@@ -92,6 +94,7 @@ defmodule TdAuth.Accounts do
     user
     |> User.update_changeset(attrs)
     |> Repo.update()
+    |> refresh_cache
   end
 
   @doc """
@@ -108,6 +111,7 @@ defmodule TdAuth.Accounts do
   """
   def delete_user(%User{} = user) do
     Repo.delete(user)
+    |> delete_cache
   end
 
   @doc """
@@ -256,5 +260,16 @@ defmodule TdAuth.Accounts do
     |> User.link_to_groups_changeset(groups)
     |> Repo.update
   end
+
+  defp refresh_cache({:ok, %{id: id} = user}) do
+    UserLoader.refresh(id)
+    {:ok, user}
+  end
+  defp refresh_cache(result), do: result
+  defp delete_cache({:ok, %{id: id} = user}) do
+    UserLoader.delete(id)
+    {:ok, user}
+  end
+  defp delete_cache(result), do: result
 
 end

@@ -33,6 +33,11 @@ defmodule TdAuth.DataCase do
 
     unless tags[:async] do
       Sandbox.mode(TdAuth.Repo, {:shared, self()})
+      parent = self()
+      case Process.whereis(TdAuth.UserLoader) do
+        nil -> nil
+        pid -> Sandbox.allow(TdAuth.Repo, parent, pid)
+      end
     end
 
     :ok

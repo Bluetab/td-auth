@@ -39,5 +39,7 @@ config :td_auth, TdAuth.Auth.Auth,
   token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
 
+config :td_auth, cache_users_on_startup: false
+
 # Redis configuration
 config :td_perms, redis_uri: "redis://localhost"
