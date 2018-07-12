@@ -110,7 +110,8 @@ defmodule TdAuth.Accounts do
 
   """
   def delete_user(%User{} = user) do
-    Repo.delete(user)
+    resp = Repo.delete(user)
+    resp
     |> delete_cache
   end
 
