@@ -74,49 +74,49 @@ defmodule TdAuthWeb.UserControllerTest do
     end
   end
 
-  # describe "get user" do
-  #
-  #   @tag :admin_authenticated
-  #   test "renders user with configured acls", %{conn: conn, swagger_schema: schema} do
-  #     domain = %{id: :rand.uniform(1000), parent_ids: [], name: "MyDomain"}
-  #     role = insert(:role)
-  #     group = insert(:group)
-  #     user = insert(:user, groups: [group])
-  #
-  #     {:ok, _} = TaxonomyCache.put_domain(domain)
-  #
-  #     insert(:acl_entry,
-  #           principal_id: user.id,
-  #           principal_type: "user",
-  #           resource_id: domain.id,
-  #           resource_type: "domain",
-  #           role: role)
-  #
-  #     insert(:acl_entry,
-  #           principal_id: group.id,
-  #           principal_type: "group",
-  #           resource_id: domain.id,
-  #           resource_type: "domain",
-  #           role: role)
-  #
-  #     conn = get conn, user_path(conn, :show, user.id)
-  #     validate_resp_schema(conn, schema, "UserResponse")
-  #     user_data = json_response(conn, 200)["data"]
-  #     assert Map.has_key?(user_data, "acls")
-  #     acls = Map.get(user_data, "acls")
-  #     assert length(acls) == 2
-  #     acl = Enum.find(acls, &(!Map.has_key?(&1, "group")))
-  #     group_acl = Enum.find(acls, &Map.has_key?(&1, "group"))
-  #
-  #     assert acl["resource"]["name"] == domain.name
-  #     assert acl["role"]["name"] == role.name
-  #
-  #     assert group_acl["resource"]["name"] == domain.name
-  #     assert group_acl["role"]["name"] == role.name
-  #     assert group_acl["group"]["name"] == group.name
-  #
-  #   end
-  # end
+  describe "get user" do
+
+    @tag :admin_authenticated
+    test "renders user with configured acls", %{conn: conn, swagger_schema: schema} do
+      domain = %{id: :rand.uniform(1000), parent_ids: [], name: "MyDomain"}
+      role = insert(:role)
+      group = insert(:group)
+      user = insert(:user, groups: [group])
+
+      {:ok, _} = TaxonomyCache.put_domain(domain)
+
+      insert(:acl_entry,
+            principal_id: user.id,
+            principal_type: "user",
+            resource_id: domain.id,
+            resource_type: "domain",
+            role: role)
+
+      insert(:acl_entry,
+            principal_id: group.id,
+            principal_type: "group",
+            resource_id: domain.id,
+            resource_type: "domain",
+            role: role)
+
+      conn = get conn, user_path(conn, :show, user.id)
+      validate_resp_schema(conn, schema, "UserResponse")
+      user_data = json_response(conn, 200)["data"]
+      assert Map.has_key?(user_data, "acls")
+      acls = Map.get(user_data, "acls")
+      assert length(acls) == 2
+      acl = Enum.find(acls, &(!Map.has_key?(&1, "group")))
+      group_acl = Enum.find(acls, &Map.has_key?(&1, "group"))
+
+      assert acl["resource"]["name"] == domain.name
+      assert acl["role"]["name"] == role.name
+
+      assert group_acl["resource"]["name"] == domain.name
+      assert group_acl["role"]["name"] == role.name
+      assert group_acl["group"]["name"] == group.name
+
+    end
+  end
 
   describe "update user" do
     setup [:create_user]
