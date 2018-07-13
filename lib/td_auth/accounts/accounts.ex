@@ -72,10 +72,18 @@ defmodule TdAuth.Accounts do
 
   """
   def create_user(attrs \\ %{}) do
+    attrs
+    |> create_user_nocache
+    |> refresh_cache
+  end
+
+  @doc """
+  Creates a user without updating user cache.
+  """
+  def create_user_nocache(attrs \\ %{}) do
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
-    |> refresh_cache
   end
 
   @doc """

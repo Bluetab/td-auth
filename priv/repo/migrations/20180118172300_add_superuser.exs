@@ -9,6 +9,6 @@ defmodule TdAuth.Repo.Migrations.AddSuperuser do
                  email: "truedat@bluetab.net"}
 
   def change do
-    Accounts.create_user(@valid_attrs)
+    Accounts.create_user_nocache(@valid_attrs)
   end
 end
