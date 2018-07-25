@@ -62,7 +62,7 @@ defmodule TdAuthWeb.Router do
         title: "TDAuth"
       },
       "host": @endpoint_url,
-      "basePath": "/api",
+      #"basePath": "/api",
       "securityDefinitions":
       %{
         bearer:
