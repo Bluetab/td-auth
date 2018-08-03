@@ -33,17 +33,17 @@ defmodule TdBg.Canada.Abilities do
 
     def can?(%Session{jti: jti}, :list, Group) do
       permissions = [:create_acl_entry, :update_acl_entry]
-      PermissionCache.has_any_permission?(jti, permissions, "domain")
+      PermissionCache.has_any_permission_on_resource_type?(jti, permissions, "domain")
     end
 
     def can?(%Session{jti: jti}, :list, User) do
       permissions = [:create_acl_entry, :update_acl_entry]
-      PermissionCache.has_any_permission?(jti, permissions, "domain")
+      PermissionCache.has_any_permission_on_resource_type?(jti, permissions, "domain")
     end
 
     def can?(%Session{jti: jti}, :list, Role) do
       permissions = [:create_acl_entry, :update_acl_entry]
-      PermissionCache.has_any_permission?(jti, permissions, "domain")
+      PermissionCache.has_any_permission_on_resource_type?(jti, permissions, "domain")
     end
 
     def can?(%Session{} = _session, _action, _entity), do: false

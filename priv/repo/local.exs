@@ -18,7 +18,7 @@ alias TdAuth.Repo
 
 user1 = Repo.insert!(%User{
   user_name: "user1",
-  password: "user1",
+  password_hash: "$2b$12$EtLeBV/oVeaL74bgotO1SuRfMDtaT6MOzBNFk7gU29tsEPupyUFJm",
   email: "user1@bluetab.net",
   full_name: "User 1",
   is_admin: false,
@@ -27,7 +27,7 @@ user1 = Repo.insert!(%User{
 
 user2 = Repo.insert!(%User{
   user_name: "user2",
-  password: "user2",
+  password_hash: "$2b$12$EtLeBV/oVeaL74bgotO1SuRfMDtaT6MOzBNFk7gU29tsEPupyUFJm",
   email: "user2@bluetab.net",
   full_name: "User 2",
   is_admin: false,
@@ -36,7 +36,7 @@ user2 = Repo.insert!(%User{
 
 user3 = Repo.insert!(%User{
   user_name: "user3",
-  password: "user3",
+  password_hash: "$2b$12$EtLeBV/oVeaL74bgotO1SuRfMDtaT6MOzBNFk7gU29tsEPupyUFJm",
   email: "user3@bluetab.net",
   full_name: "User 3",
   is_admin: false,
