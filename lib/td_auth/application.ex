@@ -1,6 +1,7 @@
 defmodule TdAuth.Application do
   @moduledoc false
   use Application
+  alias TdAuth.Metrics.PrometheusExporter
   alias TdAuthWeb.Endpoint
 
   # See https://hexdocs.pm/elixir/Application.html
@@ -9,7 +10,7 @@ defmodule TdAuth.Application do
     import Supervisor.Spec
 
     # Setup metrics exporter
-    TdAuth.Metrics.PrometheusExporter.setup()
+    PrometheusExporter.setup()
 
     # Define workers and child supervisors to be supervised
     children = [
