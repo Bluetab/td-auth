@@ -8,6 +8,9 @@ defmodule TdAuth.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
+    # Setup metrics exporter
+    TdAuth.Metrics.PrometheusExporter.setup()
+
     # Define workers and child supervisors to be supervised
     children = [
       # Start the Ecto repository

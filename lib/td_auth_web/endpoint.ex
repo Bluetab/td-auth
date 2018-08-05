@@ -38,6 +38,7 @@ defmodule TdAuthWeb.Endpoint do
 
   plug CORSPlug, origin: ["*"]
 
+  plug TdAuth.Metrics.PrometheusExporter
   plug TdAuthWeb.Router
 
   @doc """

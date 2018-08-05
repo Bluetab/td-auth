@@ -55,7 +55,9 @@ defmodule TdAuth.Mixfile do
       {:ex_json_schema, "~> 0.5"},
       {:td_perms, git: "https://github.com/Bluetab/td-perms.git", tag: "v0.3.1"},
       {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git"},
-      {:inflex, "~> 1.10.0"}
+      {:inflex, "~> 1.10.0"},
+      {:prometheus_ex, "~> 3.0.2"},
+      {:prometheus_plugs, "~> 1.1.5"}
     ]
   end
 
