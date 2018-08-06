@@ -32,7 +32,8 @@ defmodule TdAuth.Permissions.Permission do
     view_rejected_business_concepts: "view_rejected_business_concepts",
     view_deprecated_business_concepts: "view_deprecated_business_concepts",
     create_business_concept_link: "create_business_concept_link",
-    delete_business_concept_link: "delete_business_concept_link"
+    delete_business_concept_link: "delete_business_concept_link",
+    create_quality_rule: "create_quality_rule"
   }
 
   schema "permissions" do
