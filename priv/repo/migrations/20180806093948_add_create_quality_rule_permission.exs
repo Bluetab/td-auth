@@ -1,6 +1,8 @@
 defmodule TdAuth.Repo.Migrations.AddCreateQualityRulePermission do
   use Ecto.Migration
 
+  alias TdAuth.Permissions
+
   @permissions [
     "create_quality_rule"
   ]
