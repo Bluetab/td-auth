@@ -14,23 +14,23 @@ config :td_auth, TdAuthWeb.Endpoint,
 # Configure your database
 config :td_auth, TdAuth.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "td_auth_prod",
-  hostname: "localhost",
+  username: "${DB_USER}",
+  password: "${DB_PASSWORD}",
+  database: "${DB_NAME}",
+  hostname: "${DB_HOST}",
   pool_size: 10
 
 config :td_auth, TdAuth.Auth.Guardian,
   allowed_algos: ["HS512"], # optional
   issuer: "tdauth",
   token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
-  secret_key: "GUARDIAN_SECRET_KEY"
+  secret_key: "${GUARDIAN_SECRET_KEY}"
 
 config :td_auth, :auth,
   auth_service: TdAuthWeb.ApiServices.HttpAuthService,
   protocol: "https",
-  domain: "AUTH_DOMAIN",
-  audience: "AUTH_AUDIENCE",
+  domain: "${AUTH_DOMAIN}",
+  audience: "${AUTH_AUDIENCE}",
   userinfo: "/userinfo",
   profile_mapping: %{user_name: "nickname",
                      full_name: "name",
@@ -38,9 +38,9 @@ config :td_auth, :auth,
 
  config :td_auth, TdAuth.Auth.Auth,
    allowed_algos: ["RS256"],
-   issuer: "AUTH_ISSUER",
+   issuer: "${AUTH_ISSUER}",
    verify_issuer: true,
    secret_key:
-   AUTH_SECRET_KEY
+   AUTH0_SECRET_KEY
 
-config :td_perms, redis_uri: "REDIS_URI"
+config :td_perms, redis_uri: "${REDIS_URI}"

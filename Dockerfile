@@ -16,9 +16,8 @@ ARG MIX_ENV
 ARG APP_VERSION
 ARG APP_NAME
 
-#TODO: If required finally to set this variable
-#RUN sed -i -e "s/AUTH_SECRET_KEY/$(cat secret)/g" ./config/prod.aws.secret.exs
-RUN sed -i -e 's/prod.secret.exs/prod.aws.secret.exs/g' config/prod.exs
+#TODO: Find a way to substitute Auth0 secret key...
+#RUN sed -i -e "s/AUTH0_SECRET_KEY/$(cat secret)/g" ./config/prod.secret.exs
 
 RUN mix local.hex --force
 RUN mix local.rebar --force
