@@ -26,10 +26,10 @@ defmodule TdAuthWeb.SessionController do
     custom_claims = %{
       user_name: user.user_name,
       is_admin: user.is_admin,
-      gids: user.groups |> Enum.map(&(&1.id))
+      gids: user.groups |> Enum.map(& &1.id)
     }
 
-    resource = user |> JSON.encode! |> JSON.decode!
+    resource = user |> JSON.encode!() |> JSON.decode!()
 
     conn
     |> GuardianPlug.sign_in(resource, custom_claims)
@@ -113,16 +113,23 @@ defmodule TdAuthWeb.SessionController do
     token = GuardianPlug.current_token(conn)
 
     # Load permissions cache
-    %{"jti" => jti, "exp" => exp, "gids" => gids} = conn |> GuardianPlug.current_claims
-    %{"id" => user_id} = conn |> GuardianPlug.current_resource
-    Permissions.cache_session_permissions(user_id, gids, jti, exp)
+    %{"jti" => jti, "exp" => exp, "gids" => gids} = conn |> GuardianPlug.current_claims()
+    %{"id" => user_id} = conn |> GuardianPlug.current_resource()
+    acl_entries = Permissions.cache_session_permissions(user_id, gids, jti, exp)
 
     {:ok, refresh_token, _full_claims} =
       Guardian.encode_and_sign(user, %{}, token_type: "refresh")
 
     conn
     |> put_status(:created)
-    |> render("show.json", token: %{token: token, refresh_token: refresh_token})
+    |> render(
+      "show.json",
+      token: %{
+        token: token,
+        refresh_token: refresh_token
+      },
+      has_permissions: has_user_permissions?(user, acl_entries)
+    )
   end
 
   defp create_username_password_session(conn, user_name, password) do
@@ -137,6 +144,13 @@ defmodule TdAuthWeb.SessionController do
         |> put_status(:unauthorized)
         |> render(ErrorView, "401.json")
     end
+  end
+
+  defp has_user_permissions?(%User{is_admin: true}, _acl_entries), do: true
+
+  defp has_user_permissions?(%User{}, acl_entries) do
+    acl_entries
+    |> Enum.any?(&(Map.has_key?(&1, :permissions) && !Enum.empty?(&1.permissions)))
   end
 
   defp get_profile_path do

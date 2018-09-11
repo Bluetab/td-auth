@@ -77,7 +77,9 @@ defmodule TdAuth.Permissions do
     acl_entries = %{user_id: user_id, gids: gids}
       |> AclEntry.list_acl_entries_by_user_with_groups
       |> Enum.map(&(acl_entry_to_permissions/1))
+
     cache_session_permissions!(jti, exp, acl_entries)
+    acl_entries
   end
 
   def cache_session_permissions!(_jti, _exp, []), do: []

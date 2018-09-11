@@ -11,6 +11,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         properties do
           token :string, "token"
           refresh_token :string, "refresh token", required: true
+          has_permissions :boolean, "has_permissions", required: false
         end
       end,
       Session: swagger_schema do
