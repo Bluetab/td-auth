@@ -79,11 +79,11 @@ defmodule TdAuth.Permissions do
       |> Enum.map(&(acl_entry_to_permissions/1))
   end
 
-  def cache_session_permissions([acl_entries], jti, exp) do
+  def cache_session_permissions([], _jti, _exp), do: []
+
+  def cache_session_permissions(acl_entries, jti, exp) do
     cache_session_permissions!(jti, exp, acl_entries)
   end
-
-  def cache_session_permissions([], _jti, _exp), do: []
 
   def cache_session_permissions(user_id, gids, jti, exp) do
     acl_entries = retrieve_acl_with_permissions(user_id, gids)

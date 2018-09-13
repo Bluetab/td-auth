@@ -103,7 +103,7 @@ defmodule TdAuthWeb.SessionController do
   defp create_session(conn, user) do
     user_claims = retrieve_user_claims(user)
     acl_entries = Permissions.retrieve_acl_with_permissions(user.id, user_claims.gids)
-    custom_claims = user_claims |> Map.put(:has_permission, has_user_permissions?(user, acl_entries))
+    custom_claims = user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
     conn = handle_sign_in(conn, user, custom_claims)
     token = GuardianPlug.current_token(conn)
 
