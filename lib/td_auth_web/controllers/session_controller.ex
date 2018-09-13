@@ -20,15 +20,7 @@ defmodule TdAuthWeb.SessionController do
     SwaggerDefinitions.session_swagger_definitions()
   end
 
-  defp handle_sign_in(conn, user) do
-    user = user |> Repo.preload(:groups)
-
-    custom_claims = %{
-      user_name: user.user_name,
-      is_admin: user.is_admin,
-      gids: user.groups |> Enum.map(& &1.id)
-    }
-
+  defp handle_sign_in(conn, user, custom_claims) do
     resource = user |> JSON.encode!() |> JSON.decode!()
 
     conn
@@ -109,13 +101,15 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp create_session(conn, user) do
-    conn = handle_sign_in(conn, user)
+    user_claims = retrieve_user_claims(user)
+    acl_entries = Permissions.retrieve_acl_with_permissions(user.id, user_claims.gids)
+    custom_claims = user_claims |> Map.put(:has_permission, has_user_permissions?(user, acl_entries))
+    conn = handle_sign_in(conn, user, custom_claims)
     token = GuardianPlug.current_token(conn)
 
     # Load permissions cache
-    %{"jti" => jti, "exp" => exp, "gids" => gids} = conn |> GuardianPlug.current_claims()
-    %{"id" => user_id} = conn |> GuardianPlug.current_resource()
-    acl_entries = Permissions.cache_session_permissions(user_id, gids, jti, exp)
+    %{"jti" => jti, "exp" => exp} = conn |> GuardianPlug.current_claims()
+    Permissions.cache_session_permissions(acl_entries, jti, exp)
 
     {:ok, refresh_token, _full_claims} =
       Guardian.encode_and_sign(user, %{}, token_type: "refresh")
@@ -127,8 +121,7 @@ defmodule TdAuthWeb.SessionController do
       token: %{
         token: token,
         refresh_token: refresh_token
-      },
-      has_permissions: has_user_permissions?(user, acl_entries)
+      }
     )
   end
 
@@ -144,6 +137,16 @@ defmodule TdAuthWeb.SessionController do
         |> put_status(:unauthorized)
         |> render(ErrorView, "401.json")
     end
+  end
+
+  defp retrieve_user_claims(user) do
+    user = user |> Repo.preload(:groups)
+
+   %{
+      user_name: user.user_name,
+      is_admin: user.is_admin,
+      gids: user.groups |> Enum.map(& &1.id)
+    }
   end
 
   defp has_user_permissions?(%User{is_admin: true}, _acl_entries), do: true
