@@ -83,16 +83,17 @@ defmodule TdAuth.Permissions.AclEntry do
 
   def list_user_roles(%{resource_type: type, resource_id: id}) do
     %{resource_type: type, resource_id: id}
-      |> list_acl_entries()
-      |> Enum.map(&(role_with_users/1))
-      |> Enum.group_by(&(&1.role_name), &(&1.users))
-      |> Enum.map(fn {role, users} -> {role, Enum.uniq_by(Enum.concat(users), &(&1.id))} end)
+    |> list_acl_entries()
+    |> Enum.map(&role_with_users/1)
+    |> Enum.group_by(& &1.role_name, & &1.users)
+    |> Enum.map(fn {role, users} -> {role, Enum.uniq_by(Enum.concat(users), & &1.id)} end)
   end
 
   def role_with_users(%AclEntry{role: role, principal_type: "user", principal_id: user_id}) do
     user = Accounts.get_user!(user_id)
     %{role_name: role.name, users: [user]}
   end
+
   def role_with_users(%AclEntry{role: role, principal_type: "group", principal_id: group_id}) do
     users = Accounts.list_users_by_group_id(group_id)
     %{role_name: role.name, users: users}
@@ -125,9 +126,11 @@ defmodule TdAuth.Permissions.AclEntry do
 
   def list_acl_entries_by_user_with_groups(%{user_id: user_id, gids: gids}) do
     user_acl_entries = list_acl_entries_by_user(%{user_id: user_id})
+
     group_acl_entries =
       gids
       |> Enum.flat_map(&list_acl_entries_by_group(%{group_id: &1}))
+
     user_acl_entries ++ group_acl_entries
   end
 
@@ -197,6 +200,15 @@ defmodule TdAuth.Permissions.AclEntry do
   """
   def delete_acl_entry(%AclEntry{} = acl_entry) do
     Repo.delete(acl_entry)
+  end
+
+  def delete_acl_entries(principal_id, principal_type) do
+    query =
+      from(
+        p in AclEntry,
+        where: p.principal_id == ^principal_id and p.principal_type == ^principal_type
+      )
+    query |> Repo.delete_all()
   end
 
   @doc """

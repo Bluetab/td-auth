@@ -8,6 +8,7 @@ defmodule TdAuth.Accounts do
   alias Ecto.Changeset
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
+  alias TdAuth.Permissions.AclEntry
   alias TdAuth.Repo
   alias TdAuth.UserLoader
 
@@ -118,9 +119,10 @@ defmodule TdAuth.Accounts do
 
   """
   def delete_user(%User{} = user) do
-    resp = Repo.delete(user)
-    resp
-    |> delete_cache
+    user
+      |> Repo.delete()
+      |> delete_acl_entries("user")
+      |> delete_cache()
   end
 
   @doc """
@@ -236,7 +238,9 @@ defmodule TdAuth.Accounts do
 
   """
   def delete_group(%Group{} = group) do
-    Repo.delete(group)
+    group
+    |> Repo.delete()
+    |> delete_acl_entries("group")
   end
 
   @doc """
@@ -268,6 +272,11 @@ defmodule TdAuth.Accounts do
     |> Repo.preload(:groups)
     |> User.link_to_groups_changeset(groups)
     |> Repo.update
+  end
+
+  defp delete_acl_entries({:ok, %{id: id} = resource}, principal_type) do
+    AclEntry.delete_acl_entries(id, principal_type)
+    {:ok, resource}
   end
 
   defp refresh_cache({:ok, %{id: id} = user}) do
