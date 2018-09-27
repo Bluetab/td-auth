@@ -275,7 +275,7 @@ defmodule TdAuth.Accounts do
   end
 
   defp delete_acl_entries({:ok, %{id: id} = resource}, principal_type) do
-    AclEntry.delete_acl_entries(id, principal_type)
+    AclEntry.delete_acl_entries(%{principal_id: id, principal_type: principal_type})
     {:ok, resource}
   end
 

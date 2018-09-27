@@ -202,11 +202,14 @@ defmodule TdAuth.Permissions.AclEntry do
     Repo.delete(acl_entry)
   end
 
-  def delete_acl_entries(principal_id, principal_type) do
+  def delete_acl_entries(params, options \\ %{}) do
+    fields = AclEntry.__schema__(:fields)
+    dynamic = filter(params, fields, options)
+
     query =
       from(
         p in AclEntry,
-        where: p.principal_id == ^principal_id and p.principal_type == ^principal_type
+        where: ^dynamic
       )
     query |> Repo.delete_all()
   end
@@ -268,4 +271,32 @@ defmodule TdAuth.Permissions.AclEntry do
   end
 
   def acl_matches?(_, _, _), do: false
+
+  defp filter(params, fields, options) do
+    dynamic = true
+
+    Enum.reduce(Map.keys(params), dynamic, fn x, acc ->
+      key_as_atom = if is_binary(x), do: String.to_atom(x), else: x
+      param_value = Map.get(params, x)
+      case Enum.member?(fields, key_as_atom) do
+        true -> buid_dynamic_condition(key_as_atom, param_value, acc, options)
+        false -> acc
+      end
+    end)
+  end
+
+  defp buid_dynamic_condition(param_key, param_value, acc, options) when is_list(param_value) do
+    case Map.get(options, param_key) do
+      :negative -> dynamic([p], not field(p, ^param_key) in ^param_value and ^acc)
+      _ -> dynamic([p], field(p, ^param_key) in ^param_value and ^acc)
+    end
+  end
+
+  defp buid_dynamic_condition(param_key, param_value, acc, options) do
+    case Map.get(options, param_key) do
+      :negative -> dynamic([p], field(p, ^param_key) != ^param_value and ^acc)
+      _ -> dynamic([p], field(p, ^param_key) == ^param_value and ^acc)
+    end
+  end
+
 end
