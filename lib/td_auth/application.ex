@@ -9,6 +9,10 @@ defmodule TdAuth.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
+    acl_remover_worker = %{
+      id: TdAuth.AclRemover,
+      start: {TdAuth.AclRemover, :start_link, []}
+    }
     # Setup metrics exporter
     PrometheusExporter.setup()
 
@@ -20,7 +24,14 @@ defmodule TdAuth.Application do
       supervisor(TdAuthWeb.Endpoint, []),
       # Start your own worker by calling: TdAuth.Worker.start_link(arg1, arg2, arg3)
       # worker(TdAuth.Worker, [arg1, arg2, arg3]),
-      worker(TdAuth.UserLoader, [TdAuth.UserLoader])
+      worker(TdAuth.UserLoader, [TdAuth.UserLoader]),
+      %{
+        id: TdAuth.CustomSupervisor,
+        start:
+          {TdAuth.CustomSupervisor, :start_link,
+           [%{children: [acl_remover_worker], strategy: :one_for_one}]},
+        type: :supervisor
+      }
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

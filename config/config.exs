@@ -65,6 +65,9 @@ config :td_auth, :phoenix_swagger,
   }
 
 config :td_auth, cache_users_on_startup: true
+config :td_auth, acl_removement: true
+# config :td_auth, acl_removement_frequency: 36_00_000
+config :td_auth, acl_removement_frequency: 60_000
 
 config :td_perms, permissions: [
   :is_admin,

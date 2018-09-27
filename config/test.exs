@@ -40,6 +40,7 @@ config :td_auth, TdAuth.Auth.Auth,
   secret_key: "SuperSecretTruedat"
 
 config :td_auth, cache_users_on_startup: false
+config :td_auth, acl_removement: false
 
 # Redis configuration
 config :td_perms, redis_uri: "redis://localhost"
