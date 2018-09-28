@@ -11,7 +11,10 @@ defmodule TdAuthWeb.RoleView do
   end
 
   def render("role.json", %{role: role}) do
-    %{id: role.id,
-      name: role.name}
+    %{
+      id: role.id,
+      name: role.name,
+      is_default: role.is_default
+    }
   end
 end

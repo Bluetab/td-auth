@@ -10,9 +10,11 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Auth.Guardian
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuth.Permissions
+  alias TdAuth.Permissions.Role
   alias TdAuth.Repo
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
+  alias TdPerms.TaxonomyCache
 
   @auth_service Application.get_env(:td_auth, :auth)[:auth_service]
 
@@ -102,7 +104,7 @@ defmodule TdAuthWeb.SessionController do
 
   defp create_session(conn, user) do
     user_claims = retrieve_user_claims(user)
-    acl_entries = Permissions.retrieve_acl_with_permissions(user.id, user_claims.gids)
+    acl_entries = retrieve_acl_with_permissions(user, user_claims.gids)
     custom_claims = user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
     conn = handle_sign_in(conn, user, custom_claims)
     token = GuardianPlug.current_token(conn)
@@ -123,6 +125,27 @@ defmodule TdAuthWeb.SessionController do
         refresh_token: refresh_token
       }
     )
+  end
+
+  defp retrieve_acl_with_permissions(%User{is_admin: true}, _), do: []
+  defp retrieve_acl_with_permissions(%User{} = user, gids) do
+    acl_entries = Permissions.retrieve_acl_with_permissions(user.id, gids)
+    default_acl_entries = case Role.get_default_role do
+      nil -> []
+      role ->
+        permissions = role
+        |> Repo.preload(:permissions)
+        |> Map.get(:permissions)
+        |> Enum.map(&(&1.name))
+
+        TaxonomyCache.get_root_domain_ids()
+        |> Enum.map(&%{
+            permissions: permissions,
+            resource_type: "domain",
+            resource_id: &1,
+          })
+    end
+    acl_entries ++ default_acl_entries
   end
 
   defp create_username_password_session(conn, user_name, password) do

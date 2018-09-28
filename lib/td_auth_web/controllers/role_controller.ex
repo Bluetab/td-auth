@@ -1,4 +1,5 @@
 defmodule TdAuthWeb.RoleController do
+  require Logger
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
@@ -45,13 +46,23 @@ defmodule TdAuthWeb.RoleController do
     current_resource = conn.assigns[:current_resource]
     case can?(current_resource, create(Role)) do
       true ->
-        with {:ok, %Role{} = role} <- Role.create_role(role_params) do
+        with {:ok} <- update_to_no_default_role(role_params),
+          {:ok, %Role{} = role} <- Role.create_role(role_params) do
           conn
           |> put_status(:created)
           |> put_resp_header("location", role_path(conn, :show, role))
           |> render("show.json", role: role)
         else
-          _error ->
+          {:error_unsetting_is_default} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(ErrorView, :"422.json")
+          {:error, %Ecto.Changeset{}} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(ErrorView, :"422.json")
+          error ->
+            Logger.error("While creating role... #{inspect(error)}")
             conn
             |> put_status(:unprocessable_entity)
             |> render(ErrorView, :"422.json")
@@ -94,10 +105,20 @@ defmodule TdAuthWeb.RoleController do
     role = Role.get_role!(id)
     case can?(current_resource, update(role)) do
       true ->
-        with {:ok, %Role{} = role} <- Role.update_role(role, role_params) do
+        with {:ok} <- update_to_no_default_role(role_params),
+             {:ok, %Role{} = role} <- Role.update_role(role, role_params) do
           render(conn, "show.json", role: role)
         else
-          _error ->
+          {:error_unsetting_is_default} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(ErrorView, :"422.json")
+          {:error, %Ecto.Changeset{}} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(ErrorView, :"422.json")
+          error ->
+            Logger.error("While updating role... #{inspect(error)}")
             conn
             |> put_status(:unprocessable_entity)
             |> render(ErrorView, :"422.json")
@@ -136,6 +157,19 @@ defmodule TdAuthWeb.RoleController do
         conn
         |> put_status(:forbidden)
         |> render(ErrorView, :"403.json")
+    end
+  end
+
+  defp update_to_no_default_role(%{"is_default" => true}) do
+    unset_is_default(Role.get_default_role())
+  end
+  defp update_to_no_default_role(_), do: {:ok}
+
+  defp unset_is_default(nil), do: {:ok}
+  defp unset_is_default(%Role{} = role) do
+    case Role.update_role(role, %{is_default: false}) do
+      {:ok, _} -> {:ok}
+      {:error, _} -> {:error_unsetting_is_default}
     end
   end
 

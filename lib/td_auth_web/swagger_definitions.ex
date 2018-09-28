@@ -425,6 +425,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             id(:integer, "unique identifier", required: true)
             name(:string, "role name", required: true)
+            is_default(:boolean, "is default role?", required: false)
           end
         end,
       Roles:
@@ -441,6 +442,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
               Schema.new do
                 properties do
                   name(:string, "role name", required: true)
+                  is_default(:boolean, "is default role?", required: false, default: false)
                 end
               end
             )

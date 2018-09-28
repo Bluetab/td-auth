@@ -6,13 +6,17 @@ defmodule TdAuthWeb.RoleControllerTest do
 
   alias TdAuth.Permissions.Role
 
-  @create_attrs %{name: "some name"}
-  @update_attrs %{name: "some updated name"}
-  @invalid_attrs %{name: nil}
+  @create_attrs %{name: "some name", is_default: false}
+  @update_attrs %{name: "some updated name", is_default: false}
+  @invalid_attrs %{name: nil, is_default: nil}
 
   def fixture(:role) do
     {:ok, role} = Role.create_role(@create_attrs)
     role
+  end
+
+  defp to_string_keys(attrs) do
+    for {k, v} <- attrs, into: %{}, do: {Atom.to_string(k), v}
   end
 
   setup_all do
@@ -44,9 +48,8 @@ defmodule TdAuthWeb.RoleControllerTest do
       conn = recycle_and_put_headers(conn)
       conn = get conn, role_path(conn, :show, id)
       validate_resp_schema(conn, schema, "RoleResponse")
-      assert json_response(conn, 200)["data"] == %{
-        "id" => id,
-        "name" => "some name"}
+      assert json_response(conn, 200)["data"] ==
+        to_string_keys(Map.merge(%{id: id}, @create_attrs))
     end
 
     @tag :admin_authenticated
@@ -68,9 +71,8 @@ defmodule TdAuthWeb.RoleControllerTest do
       conn = recycle_and_put_headers(conn)
       conn = get conn, role_path(conn, :show, id)
       validate_resp_schema(conn, schema, "RoleResponse")
-      assert json_response(conn, 200)["data"] == %{
-        "id" => id,
-        "name" => "some updated name"}
+      assert json_response(conn, 200)["data"] ==
+        to_string_keys(Map.merge(%{id: id}, @update_attrs))
     end
 
     @tag :admin_authenticated

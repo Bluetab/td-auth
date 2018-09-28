@@ -52,7 +52,7 @@ defmodule TdAuth.Factory do
   def role_factory do
     %TdAuth.Permissions.Role {
       name: "custom_role",
-      permissions: []
+      is_default: false
     }
   end
 

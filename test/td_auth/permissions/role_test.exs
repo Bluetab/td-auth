@@ -49,6 +49,25 @@ defmodule TdAuth.Permissions.RoleTest do
       assert role == Role.get_role!(role.id)
     end
 
+    test "update_role/2 with is default true" do
+      role = role_fixture()
+      assert {:ok, role} = Role.update_role(role, %{is_default: true})
+      assert Role.get_role!(role.id).is_default
+    end
+
+    test "get_default_role/0 returns the default role" do
+      assert nil == Role.get_default_role()
+      role = insert(:role, is_default: true)
+      assert Role.get_default_role() == role
+    end
+
+    test "create_role/2 two default roles not allowed" do
+      insert(:role, name: "first", is_default: true)
+      creation_attrs = Map.from_struct(build(:role, name: "second", is_default: true))
+      assert {:error, %Ecto.Changeset{errors: [is_default: _]}} =
+        Role.create_role(creation_attrs)
+    end
+
     test "delete_role/1 deletes the role" do
       role = role_fixture()
       assert {:ok, %Role{}} = Role.delete_role(role)

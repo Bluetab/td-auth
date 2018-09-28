@@ -9,6 +9,7 @@ defmodule TdAuth.Permissions.Role do
 
   schema "roles" do
     field(:name, :string)
+    field(:is_default, :boolean, default: false)
 
     many_to_many(
       :permissions,
@@ -24,8 +25,9 @@ defmodule TdAuth.Permissions.Role do
   @doc false
   def changeset(%Role{} = role, attrs) do
     role
-    |> Changeset.cast(attrs, [:name])
-    |> Changeset.validate_required([:name])
+    |> Changeset.cast(attrs, [:name, :is_default])
+    |> Changeset.validate_required([:name, :is_default])
+    |> Changeset.unique_constraint(:is_default)
   end
 
   @doc """
@@ -141,6 +143,10 @@ defmodule TdAuth.Permissions.Role do
   """
   def get_role_by_name(role_name) do
     Repo.get_by(Role, name: role_name)
+  end
+
+  def get_default_role do
+    Repo.get_by(Role, is_default: true)
   end
 
   @doc """
