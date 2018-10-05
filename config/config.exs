@@ -31,6 +31,8 @@ config :td_auth, TdAuth.Auth.Guardian,
   token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
 
+# --------- Auht0 --------------
+
 config :td_auth, :auth,
   auth_service: TdAuthWeb.ApiServices.HttpAuthService,
   protocol: "https",
@@ -40,6 +42,7 @@ config :td_auth, :auth,
   profile_mapping: %{user_name: "nickname",
                      full_name: "name",
                      email:     "email"}
+
 
  config :td_auth, TdAuth.Auth.Auth,
    allowed_algos: ["RS256"],
@@ -58,6 +61,23 @@ config :td_auth, :auth,
        "kid" => "NzM4Q0M3RUM4MjRBMkQyNTkzRTgyN0MwQTA3MjI0ODQwODM3Q0RDMA",
        "x5t" => "NzM4Q0M3RUM4MjRBMkQyNTkzRTgyN0MwQTA3MjI0ODQwODM3Q0RDMA"
  }
+
+ # ------------ ldap ----------
+
+config :exldap, :settings,
+  server: "ldap.forumsys.com",
+  base: "dc=example,dc=com",
+  port: 389,
+  ssl: false,
+  user_dn: "cn=read-only-admin,dc=example,dc=com",
+  password: "password",
+  search_timeout: 5_000
+
+config :td_auth, :ldap,
+  profile_mapping: "{\"user_name\":\"uid\",\"full_name\":\"cn\",\"email\":\"mail\"}",
+  bind_pattern: "uid=%{user_name},dc=example,dc=com",
+  search_path: "dc=example,dc=com",
+  search_field: "uid"
 
 config :td_auth, :phoenix_swagger,
   swagger_files: %{

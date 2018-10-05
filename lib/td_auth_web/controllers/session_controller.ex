@@ -4,6 +4,7 @@ defmodule TdAuthWeb.SessionController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
+  alias Gettext.Interpolation
   alias Poison, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
@@ -27,6 +28,170 @@ defmodule TdAuthWeb.SessionController do
 
     conn
     |> GuardianPlug.sign_in(resource, custom_claims)
+  end
+
+  swagger_path :create do
+    description("Creates a user session")
+    produces("application/json")
+
+    parameters do
+      user(:body, Schema.ref(:SessionCreate), "User session create attrs")
+    end
+
+    response(201, "Created", Schema.ref(:Token))
+    response(400, "Client Error")
+  end
+
+  def create(conn, %{"auth_realm" => "ldap", "user" => %{"user_name" => user_name, "password" => password}}) do
+    authenticate_using_ldap_and_create_session(conn, user_name, password)
+  end
+  def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}}) do
+    authenticate_and_create_session(conn, user_name, password)
+  end
+  def create(conn, _params) do
+      authenticate_using_auth0_and_create_session(conn)
+  end
+
+  defp create_session(conn, user) do
+    user_claims = retrieve_user_claims(user)
+    acl_entries = retrieve_acl_with_permissions(user, user_claims.gids)
+    custom_claims = user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
+    conn = handle_sign_in(conn, user, custom_claims)
+    token = GuardianPlug.current_token(conn)
+
+    # Load permissions cache
+    %{"jti" => jti, "exp" => exp} = conn |> GuardianPlug.current_claims()
+    Permissions.cache_session_permissions(acl_entries, jti, exp)
+
+    {:ok, refresh_token, _full_claims} =
+      Guardian.encode_and_sign(user, %{}, token_type: "refresh")
+
+    conn
+    |> put_status(:created)
+    |> render(
+      "show.json",
+      token: %{
+        token: token,
+        refresh_token: refresh_token
+      }
+    )
+  end
+
+  defp has_user_permissions?(%User{is_admin: true}, _acl_entries), do: true
+
+  defp has_user_permissions?(%User{}, acl_entries) do
+    acl_entries
+    |> Enum.any?(&(Map.has_key?(&1, :permissions) && !Enum.empty?(&1.permissions)))
+  end
+
+  defp retrieve_acl_with_permissions(%User{is_admin: true}, _), do: []
+  defp retrieve_acl_with_permissions(%User{} = user, gids) do
+    acl_entries = Permissions.retrieve_acl_with_permissions(user.id, gids)
+    default_acl_entries = case Role.get_default_role do
+      nil -> []
+      role ->
+        permissions = role
+        |> Repo.preload(:permissions)
+        |> Map.get(:permissions)
+        |> Enum.map(&(&1.name))
+
+        TaxonomyCache.get_root_domain_ids()
+        |> Enum.map(&%{
+            permissions: permissions,
+            resource_type: "domain",
+            resource_id: &1,
+          })
+    end
+    acl_entries ++ default_acl_entries
+  end
+
+  defp authenticate_and_create_session(conn, user_name, password) do
+    user = Accounts.get_user_by_name(user_name)
+
+    case User.check_password(user, password) do
+      true ->
+        create_session(conn, user)
+
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
+  end
+
+  defp authenticate_using_ldap_and_create_session(conn, user_name, password) do
+    with { :ok, ldap_conn} <- Exldap.open,
+           :ok <- ldap_authenticate(ldap_conn, user_name, password),
+           {:ok, user} <- create_or_update_ldap_user(ldap_conn, user_name) do
+             create_session(conn, user)
+    else
+      error ->
+        Logger.error("While authenticating using ldap and creating session... #{inspect(error)}")
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
+  end
+
+  defp ldap_authenticate(ldap_conn, user_name, password) do
+    bind_pattern = get_ldap_bind_pattern()
+    { :ok, bind } = bind_pattern
+    |> Interpolation.to_interpolatable
+    |> Interpolation.interpolate(%{user_name: user_name})
+    case Exldap.verify_credentials(ldap_conn, bind, password) do
+      :ok -> :ok
+      error ->
+        error
+    end
+  end
+
+  defp create_or_update_ldap_user(ldap_conn, user_name) do
+    search_path  = get_ldap_search_path()
+    search_field = get_ldap_search_field()
+    case Exldap.search_field(ldap_conn, search_path, search_field, user_name) do
+      {:ok, search_results} ->
+        entry = Enum.at(search_results, 0)
+        mapping = get_ldap_profile_mapping()
+        profile = Enum.reduce(mapping, %{}, fn({k, v}, acc) ->
+          attr = Exldap.search_attributes(entry, v)
+          Map.put(acc, k, attr)
+        end)
+        user = Accounts.get_user_by_name(profile["user_name"])
+        create_or_update_user(user, profile)
+      error -> error
+    end
+  end
+
+  defp get_ldap_profile_mapping do
+    ldap_config = Application.get_env(:td_auth, :ldap)
+    Poison.decode!(ldap_config[:profile_mapping])
+  end
+
+  defp get_ldap_bind_pattern do
+    ldap_config = Application.get_env(:td_auth, :ldap)
+    ldap_config[:bind_pattern]
+  end
+
+  defp get_ldap_search_path do
+    ldap_config = Application.get_env(:td_auth, :ldap)
+    ldap_config[:search_path]
+  end
+
+  defp get_ldap_search_field do
+    ldap_config = Application.get_env(:td_auth, :ldap)
+    ldap_config[:search_field]
+  end
+
+  defp authenticate_using_auth0_and_create_session(conn) do
+    case fetch_access_token(conn) do
+      {:ok, access_token} ->
+        create_access_token_session(conn, access_token)
+      _ ->
+        Logger.info("Unable to get fetch access token")
+        conn
+        |> put_status(:unauthorized)
+        |> render(ErrorView, "401.json")
+    end
   end
 
   # defp get_audience do
@@ -72,96 +237,6 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  swagger_path :create do
-    description("Creates a user session")
-    produces("application/json")
-
-    parameters do
-      user(:body, Schema.ref(:SessionCreate), "User session create attrs")
-    end
-
-    response(201, "Created", Schema.ref(:Token))
-    response(400, "Client Error")
-  end
-
-  def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}}) do
-    create_username_password_session(conn, user_name, password)
-  end
-
-  def create(conn, _parmas) do
-    case fetch_access_token(conn) do
-      {:ok, access_token} ->
-        create_access_token_session(conn, access_token)
-
-      _ ->
-        Logger.info("Unable to get fetch access token")
-
-        conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
-    end
-  end
-
-  defp create_session(conn, user) do
-    user_claims = retrieve_user_claims(user)
-    acl_entries = retrieve_acl_with_permissions(user, user_claims.gids)
-    custom_claims = user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
-    conn = handle_sign_in(conn, user, custom_claims)
-    token = GuardianPlug.current_token(conn)
-
-    # Load permissions cache
-    %{"jti" => jti, "exp" => exp} = conn |> GuardianPlug.current_claims()
-    Permissions.cache_session_permissions(acl_entries, jti, exp)
-
-    {:ok, refresh_token, _full_claims} =
-      Guardian.encode_and_sign(user, %{}, token_type: "refresh")
-
-    conn
-    |> put_status(:created)
-    |> render(
-      "show.json",
-      token: %{
-        token: token,
-        refresh_token: refresh_token
-      }
-    )
-  end
-
-  defp retrieve_acl_with_permissions(%User{is_admin: true}, _), do: []
-  defp retrieve_acl_with_permissions(%User{} = user, gids) do
-    acl_entries = Permissions.retrieve_acl_with_permissions(user.id, gids)
-    default_acl_entries = case Role.get_default_role do
-      nil -> []
-      role ->
-        permissions = role
-        |> Repo.preload(:permissions)
-        |> Map.get(:permissions)
-        |> Enum.map(&(&1.name))
-
-        TaxonomyCache.get_root_domain_ids()
-        |> Enum.map(&%{
-            permissions: permissions,
-            resource_type: "domain",
-            resource_id: &1,
-          })
-    end
-    acl_entries ++ default_acl_entries
-  end
-
-  defp create_username_password_session(conn, user_name, password) do
-    user = Accounts.get_user_by_name(user_name)
-
-    case User.check_password(user, password) do
-      true ->
-        create_session(conn, user)
-
-      _ ->
-        conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
-    end
-  end
-
   defp retrieve_user_claims(user) do
     user = user |> Repo.preload(:groups)
 
@@ -172,36 +247,29 @@ defmodule TdAuthWeb.SessionController do
     }
   end
 
-  defp has_user_permissions?(%User{is_admin: true}, _acl_entries), do: true
-
-  defp has_user_permissions?(%User{}, acl_entries) do
-    acl_entries
-    |> Enum.any?(&(Map.has_key?(&1, :permissions) && !Enum.empty?(&1.permissions)))
-  end
-
-  defp get_profile_path do
+  defp get_auth0_profile_path do
     auth = Application.get_env(:td_auth, :auth)
     "#{auth[:protocol]}://#{auth[:domain]}#{auth[:userinfo]}"
   end
 
-  defp get_profile_mapping do
+  defp get_auth0_profile_mapping do
     auth = Application.get_env(:td_auth, :auth)
     auth[:profile_mapping]
   end
 
-  defp get_profile(access_token) do
+  defp get_auth0_profile(access_token) do
     headers = [
       "Content-Type": "application/json",
       Accept: "Application/json; Charset=utf-8",
       Authorization: "Bearer #{access_token}"
     ]
 
-    {status_code, user_info} = @auth_service.get_user_info(get_profile_path(), headers)
+    {status_code, user_info} = @auth_service.get_user_info(get_auth0_profile_path(), headers)
 
     case status_code do
       200 ->
         profile = user_info |> JSON.decode!()
-        mapping = get_profile_mapping()
+        mapping = get_auth0_profile_mapping()
         Enum.reduce(mapping, %{}, &Map.put(&2, elem(&1, 0), Map.get(profile, elem(&1, 1), nil)))
 
       _ ->
@@ -235,7 +303,7 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp create_access_token_session(conn, access_token) do
-    case get_profile(access_token) do
+    case get_auth0_profile(access_token) do
       nil ->
         conn
         |> put_status(:unauthorized)

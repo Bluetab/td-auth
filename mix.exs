@@ -21,7 +21,7 @@ defmodule TdAuth.Mixfile do
   def application do
     [
       mod: {TdAuth.Application, []},
-      extra_applications: [:logger, :runtime_tools],
+      extra_applications: [:logger, :runtime_tools, :exldap],
     ]
   end
 
@@ -57,7 +57,9 @@ defmodule TdAuth.Mixfile do
       {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git"},
       {:inflex, "~> 1.10.0"},
       {:prometheus_ex, "~> 3.0.2"},
-      {:prometheus_plugs, "~> 1.1.5"}
+      {:prometheus_plugs, "~> 1.1.5"},
+      {:exldap, "~> 0.3.4"}
+
     ]
   end
 
