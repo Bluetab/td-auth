@@ -110,7 +110,7 @@ defmodule TdAuthWeb.SessionController do
            create_session(conn, user)
     else
       error ->
-       Logger.error("While authenticating using ldap ... #{inspect(error)}")
+       Logger.info("While authenticating using ldap ... #{inspect(error)}")
        conn
        |> put_status(:unauthorized)
        |> render(ErrorView, "401.json")
@@ -138,7 +138,7 @@ defmodule TdAuthWeb.SessionController do
            create_session(conn, user)
     else
       error ->
-       Logger.error("While authenticating using auth0... #{inspect(error)}")
+       Logger.info("While authenticating using auth0... #{inspect(error)}")
        conn
        |> put_status(:unauthorized)
        |> render(ErrorView, "401.json")
