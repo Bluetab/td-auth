@@ -4,7 +4,6 @@ defmodule TdAuthWeb.SessionController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
-  alias Gettext.Interpolation
   alias Poison, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
@@ -13,11 +12,11 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Permissions
   alias TdAuth.Permissions.Role
   alias TdAuth.Repo
+  alias TdAuthWeb.AuthProvider.Auth0
+  alias TdAuthWeb.AuthProvider.Ldap
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
   alias TdPerms.TaxonomyCache
-
-  @auth_service Application.get_env(:td_auth, :auth)[:auth_service]
 
   def swagger_definitions do
     SwaggerDefinitions.session_swagger_definitions()
@@ -49,7 +48,7 @@ defmodule TdAuthWeb.SessionController do
     authenticate_and_create_session(conn, user_name, password)
   end
   def create(conn, _params) do
-      authenticate_using_auth0_and_create_session(conn)
+    authenticate_using_auth0_and_create_session(conn)
   end
 
   defp create_session(conn, user) do
@@ -105,6 +104,19 @@ defmodule TdAuthWeb.SessionController do
     acl_entries ++ default_acl_entries
   end
 
+  defp authenticate_using_ldap_and_create_session(conn, user_name, password) do
+    with {:ok, profile} <- Ldap.authenticate(user_name, password),
+         {:ok, user} <- create_or_update_user(profile) do
+           create_session(conn, user)
+    else
+      error ->
+       Logger.error("While authenticating using ldap ... #{inspect(error)}")
+       conn
+       |> put_status(:unauthorized)
+       |> render(ErrorView, "401.json")
+    end
+  end
+
   defp authenticate_and_create_session(conn, user_name, password) do
     user = Accounts.get_user_by_name(user_name)
 
@@ -119,121 +131,17 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp authenticate_using_ldap_and_create_session(conn, user_name, password) do
-    with {:ok, ldap_conn} <- Exldap.open,
-          :ok <- ldap_authenticate(ldap_conn, user_name, password),
-         {:ok, user} <- create_or_update_ldap_user(ldap_conn, user_name) do
-             create_session(conn, user)
+  defp authenticate_using_auth0_and_create_session(conn) do
+    authorization_header = get_req_header(conn, "authorization")
+    with {:ok, profile} <- Auth0.authenticate(authorization_header),
+         {:ok, user} <- create_or_update_user(profile) do
+           create_session(conn, user)
     else
       error ->
-        Logger.error("While authenticating using ldap and creating session... #{inspect(error)}")
-        conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
-    end
-  end
-
-  defp ldap_authenticate(ldap_conn, user_name, password) do
-    bind_pattern = get_ldap_bind_pattern()
-    {:ok, bind} = bind_pattern
-    |> Interpolation.to_interpolatable
-    |> Interpolation.interpolate(%{user_name: user_name})
-    case Exldap.verify_credentials(ldap_conn, bind, password) do
-      :ok -> :ok
-      error ->
-        error
-    end
-  end
-
-  defp create_or_update_ldap_user(ldap_conn, user_name) do
-    search_path  = get_ldap_search_path()
-    search_field = get_ldap_search_field()
-    case Exldap.search_field(ldap_conn, search_path, search_field, user_name) do
-      {:ok, search_results} ->
-        entry = Enum.at(search_results, 0)
-        mapping = get_ldap_profile_mapping()
-        profile = Enum.reduce(mapping, %{}, fn({k, v}, acc) ->
-          attr = Exldap.search_attributes(entry, v)
-          Map.put(acc, k, attr)
-        end)
-        user = Accounts.get_user_by_name(profile["user_name"])
-        create_or_update_user(user, profile)
-      error -> error
-    end
-  end
-
-  defp get_ldap_profile_mapping do
-    ldap_config = Application.get_env(:td_auth, :ldap)
-    Poison.decode!(ldap_config[:profile_mapping])
-  end
-
-  defp get_ldap_bind_pattern do
-    ldap_config = Application.get_env(:td_auth, :ldap)
-    ldap_config[:bind_pattern]
-  end
-
-  defp get_ldap_search_path do
-    ldap_config = Application.get_env(:td_auth, :ldap)
-    ldap_config[:search_path]
-  end
-
-  defp get_ldap_search_field do
-    ldap_config = Application.get_env(:td_auth, :ldap)
-    ldap_config[:search_field]
-  end
-
-  defp authenticate_using_auth0_and_create_session(conn) do
-    case fetch_access_token(conn) do
-      {:ok, access_token} ->
-        create_access_token_session(conn, access_token)
-      _ ->
-        Logger.info("Unable to get fetch access token")
-        conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
-    end
-  end
-
-  # defp get_audience do
-  #   auth = Application.get_env(:td_auth, :auth)
-  #   auth[:audience]
-  # end
-  #
-  # defp check_audience(conn) do
-  #   audience = get_audience()
-  #   case audience do
-  #     nil -> true
-  #     _ ->
-  #       conn
-  #       |> AuthPlug.current_claims
-  #       |> Map.get("aud")
-  #       |> Enum.member?(audience)
-  #   end
-  # end
-
-  # defp fetch_access_token(conn) do
-  #   case check_audience(conn) do
-  #     true ->
-  #        {:ok, AuthPlug.current_token(conn)}
-  #     false ->
-  #       Logger.info "Unable to validate token audience"
-  #       {:missing_audience}
-  #   end
-  # end
-
-  defp fetch_access_token(conn) do
-    headers = get_req_header(conn, "authorization")
-    fetch_access_token_from_header(headers)
-  end
-
-  defp fetch_access_token_from_header([]), do: :no_access_token_found
-
-  defp fetch_access_token_from_header([token | tail]) do
-    trimmed_token = String.trim(token)
-
-    case Regex.run(~r/^Bearer (.*)$/, trimmed_token) do
-      [_, match] -> {:ok, String.trim(match)}
-      _ -> fetch_access_token_from_header(tail)
+       Logger.error("While authenticating using auth0... #{inspect(error)}")
+       conn
+       |> put_status(:unauthorized)
+       |> render(ErrorView, "401.json")
     end
   end
 
@@ -247,70 +155,12 @@ defmodule TdAuthWeb.SessionController do
     }
   end
 
-  defp get_auth0_profile_path do
-    auth = Application.get_env(:td_auth, :auth)
-    "#{auth[:protocol]}://#{auth[:domain]}#{auth[:userinfo]}"
-  end
-
-  defp get_auth0_profile_mapping do
-    auth = Application.get_env(:td_auth, :auth)
-    auth[:profile_mapping]
-  end
-
-  defp get_auth0_profile(access_token) do
-    headers = [
-      "Content-Type": "application/json",
-      Accept: "Application/json; Charset=utf-8",
-      Authorization: "Bearer #{access_token}"
-    ]
-
-    {status_code, user_info} = @auth_service.get_user_info(get_auth0_profile_path(), headers)
-
-    case status_code do
-      200 ->
-        profile = user_info |> JSON.decode!()
-        mapping = get_auth0_profile_mapping()
-        Enum.reduce(mapping, %{}, &Map.put(&2, elem(&1, 0), Map.get(profile, elem(&1, 1), nil)))
-
-      _ ->
-        {:error, status_code}
-        Logger.info("Unable to get user profile... status_code '#{status_code}'")
-        nil
-    end
-  end
-
-  defp create_or_update_user(user, attrs) do
-    case user do
-      nil -> Accounts.create_user(attrs)
-      u -> Accounts.update_user(u, attrs)
-    end
-  end
-
-  defp create_profile_session(conn, profile) do
-    user_name = profile[:user_name]
+  defp create_or_update_user(profile) do
+    user_name = Map.get(profile, "user_name") || Map.get(profile, :user_name)
     user = Accounts.get_user_by_name(user_name)
-
-    with {:ok, user} <- create_or_update_user(user, profile) do
-      create_session(conn, user)
-    else
-      error ->
-        Logger.info("Unable to create or update user '#{user_name}'... #{error}")
-
-        conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
-    end
-  end
-
-  defp create_access_token_session(conn, access_token) do
-    case get_auth0_profile(access_token) do
-      nil ->
-        conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
-
-      profile ->
-        create_profile_session(conn, profile)
+    case user do
+      nil -> Accounts.create_user(profile)
+      u -> Accounts.update_user(u, profile)
     end
   end
 
