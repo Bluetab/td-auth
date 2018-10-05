@@ -120,9 +120,9 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp authenticate_using_ldap_and_create_session(conn, user_name, password) do
-    with { :ok, ldap_conn} <- Exldap.open,
-           :ok <- ldap_authenticate(ldap_conn, user_name, password),
-           {:ok, user} <- create_or_update_ldap_user(ldap_conn, user_name) do
+    with {:ok, ldap_conn} <- Exldap.open,
+          :ok <- ldap_authenticate(ldap_conn, user_name, password),
+         {:ok, user} <- create_or_update_ldap_user(ldap_conn, user_name) do
              create_session(conn, user)
     else
       error ->
@@ -135,7 +135,7 @@ defmodule TdAuthWeb.SessionController do
 
   defp ldap_authenticate(ldap_conn, user_name, password) do
     bind_pattern = get_ldap_bind_pattern()
-    { :ok, bind } = bind_pattern
+    {:ok, bind} = bind_pattern
     |> Interpolation.to_interpolatable
     |> Interpolation.interpolate(%{user_name: user_name})
     case Exldap.verify_credentials(ldap_conn, bind, password) do
