@@ -58,7 +58,7 @@ defmodule TdAuth.Mixfile do
       {:inflex, "~> 1.10.0"},
       {:prometheus_ex, "~> 3.0.2"},
       {:prometheus_plugs, "~> 1.1.5"},
-      {:exldap, "~> 0.3.4"}
+      {:exldap, "~> 0.6"}
 
     ]
   end

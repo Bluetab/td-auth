@@ -62,22 +62,20 @@ config :td_auth, :auth,
        "x5t" => "NzM4Q0M3RUM4MjRBMkQyNTkzRTgyN0MwQTA3MjI0ODQwODM3Q0RDMA"
  }
 
- # ------------ ldap ----------
-
-config :exldap, :settings,
-  server: "ldap.forumsys.com",
-  base: "dc=example,dc=com",
-  port: 389,
-  ssl: false,
-  user_dn: "cn=read-only-admin,dc=example,dc=com",
-  password: "password",
-  search_timeout: 5_000
+# ------------ ldap ----------
 
 config :td_auth, :ldap,
-  profile_mapping: "{\"user_name\":\"uid\",\"full_name\":\"cn\",\"email\":\"mail\"}",
-  bind_pattern: "uid=%{user_name},dc=example,dc=com",
-  search_path: "dc=example,dc=com",
-  search_field: "uid"
+  server: "localhost",
+  base: "dc=bluetab,dc=net",
+  port: "389",
+  ssl: "false",
+  user_dn: "cn=admin,dc=bluetab,dc=net",
+  password: "temporal",
+  connection_timeout: "5000",
+  profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"cn\",\"email\":\"cn\"}",
+  bind_pattern: "cn=%{user_name},ou=people,dc=bluetab,dc=net",
+  search_path: "ou=people,dc=bluetab,dc=net",
+  search_field: "cn"
 
 config :td_auth, :phoenix_swagger,
   swagger_files: %{
