@@ -43,4 +43,29 @@ config :td_auth, :auth,
    secret_key:
    AUTH0_SECRET_KEY
 
+ config :td_auth, :ldap,
+   server: "${LDAP_SERVER}",
+   base: "${LDAP_BASE}",
+   port: "${LDAP_PORT}",
+   ssl: "${LDAP_SSL}",
+   user_dn: "${LDAP_USER_DN}",
+   password: "${LDAP_PASSWORD}",
+   connection_timeout: "${LDAP_CONNECTION_TIMEOUT}",
+   profile_mapping: "${LDAP_PROFILE_MAPPING}",
+   bind_pattern: "${LDAP_BIND_PATTERN}",
+   search_path: "${LDAP_SEARCH_PATH}",
+   search_field: "${LDAP_SEARCH_FIELD}"
+
+ config :td_auth, :ad,
+   server: "${AD_SERVER}",
+   base: "${AD_BASE}",
+   port: "${AD_PORT}",
+   ssl: "${AD_SSL}",
+   user_dn: "${AD_USER_DN}",
+   password: "${AD_PASSWORD}",
+   connection_timeout: "${AD_CONNECTION_TIMEOUT}",
+   profile_mapping: "${AD_PROFILE_MAPPING}",
+   search_path: "${LDAP_SEARCH_PATH}"
+
+
 config :td_perms, redis_uri: "${REDIS_URI}"

@@ -15,7 +15,11 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
   defp ldap_authenticate(user_name, password) do
     case ldap_open() do
       {:ok, conn} ->
-        ldap_verify(conn, user_name, password)
+        try do
+          ldap_verify(conn, user_name, password)
+        after
+          ldap_close(conn)
+        end
       error ->
         Logger.info("Error while opening ldap connection... #{inspect(error)}")
         error
@@ -25,6 +29,10 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
   defp ldap_open do
     Exldap.open(get_ldap_server(), get_ldap_port(),
                 get_ldap_ssl(), get_ldap_connection_timeout())
+  end
+
+  defp ldap_close(conn) do
+    Exldap.close(conn)
   end
 
   defp ldap_verify(conn, user_name, password) do
@@ -48,12 +56,16 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
   defp create_profile(user_name) do
     case ldap_connect() do
       {:ok, conn} ->
-        case ldap_search(conn, user_name) do
-          {:ok, search_results} ->
-            build_profile(search_results)
-          error ->
-            Logger.info("Error while searching user... #{inspect(error)}")
-            error
+        try do
+          case ldap_search(conn, user_name) do
+            {:ok, search_results} ->
+              build_profile(search_results)
+            error ->
+              Logger.info("Error while searching user... #{inspect(error)}")
+              error
+          end
+        after
+          ldap_close(conn)
         end
       error ->
         Logger.info("Error while connecting to ldap... #{inspect(error)}")

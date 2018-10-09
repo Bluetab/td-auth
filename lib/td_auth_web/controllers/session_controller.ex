@@ -12,6 +12,7 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Permissions
   alias TdAuth.Permissions.Role
   alias TdAuth.Repo
+  alias TdAuthWeb.AuthProvider.ActiveDirectory
   alias TdAuthWeb.AuthProvider.Auth0
   alias TdAuthWeb.AuthProvider.Ldap
   alias TdAuthWeb.ErrorView
@@ -41,6 +42,9 @@ defmodule TdAuthWeb.SessionController do
     response(400, "Client Error")
   end
 
+  def create(conn, %{"auth_realm" => "active_directory", "user" => %{"user_name" => user_name, "password" => password}}) do
+    authenticate_using_active_directory_and_create_session(conn, user_name, password)
+  end
   def create(conn, %{"auth_realm" => "ldap", "user" => %{"user_name" => user_name, "password" => password}}) do
     authenticate_using_ldap_and_create_session(conn, user_name, password)
   end
@@ -102,6 +106,19 @@ defmodule TdAuthWeb.SessionController do
           })
     end
     acl_entries ++ default_acl_entries
+  end
+
+  defp authenticate_using_active_directory_and_create_session(conn, user_name, password) do
+    with {:ok, profile} <- ActiveDirectory.authenticate(user_name, password),
+         {:ok, user} <- create_or_update_user(profile) do
+           create_session(conn, user)
+    else
+      error ->
+       Logger.info("While authenticating using active directory ... #{inspect(error)}")
+       conn
+       |> put_status(:unauthorized)
+       |> render(ErrorView, "401.json")
+    end
   end
 
   defp authenticate_using_ldap_and_create_session(conn, user_name, password) do

@@ -77,6 +77,19 @@ config :td_auth, :ldap,
   search_path: "ou=people,dc=bluetab,dc=net",
   search_field: "cn"
 
+# ------------ ad ----------
+
+config :td_auth, :ad,
+  server: "localhost",
+  base: "dc=bluetab,dc=net",
+  port: "389",
+  ssl: "false",
+  user_dn: "cn=admin,dc=bluetab,dc=net",
+  password: "temporal",
+  connection_timeout: "5000",
+  profile_mapping: "{\"full_name\":\"cn\",\"email\":\"cn\"}",
+  search_path: "ou=people,dc=bluetab,dc=net"
+
 config :td_auth, :phoenix_swagger,
   swagger_files: %{
    "priv/static/swagger.json" => [router: TdAuthWeb.Router]
