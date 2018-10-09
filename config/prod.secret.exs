@@ -51,7 +51,8 @@ config :td_auth, :auth,
    user_dn: "${LDAP_USER_DN}",
    password: "${LDAP_PASSWORD}",
    connection_timeout: "${LDAP_CONNECTION_TIMEOUT}",
-   profile_mapping: "${LDAP_PROFILE_MAPPING}",
+   profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"cn\",\"email\":\"cn\"}",
+   #profile_mapping: "${LDAP_PROFILE_MAPPING}",
    bind_pattern: "${LDAP_BIND_PATTERN}",
    search_path: "${LDAP_SEARCH_PATH}",
    search_field: "${LDAP_SEARCH_FIELD}"
@@ -64,8 +65,7 @@ config :td_auth, :auth,
    user_dn: "${AD_USER_DN}",
    password: "${AD_PASSWORD}",
    connection_timeout: "${AD_CONNECTION_TIMEOUT}",
-   profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"cn\",\"email\":\"cn\"}",
-   #profile_mapping: "${AD_PROFILE_MAPPING}",
+   profile_mapping: "${AD_PROFILE_MAPPING}",
    search_path: "${LDAP_SEARCH_PATH}"
 
 
