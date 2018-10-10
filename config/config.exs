@@ -80,15 +80,15 @@ config :td_auth, :ldap,
 # ------------ ad ----------
 
 config :td_auth, :ad,
-  server: "localhost",
-  base: "dc=bluetab,dc=net",
+  server: "10.0.0.152",
+  base: "DC=dns,DC=activedirectory,DC=io",
   port: "389",
   ssl: "false",
-  user_dn: "cn=admin,dc=bluetab,dc=net",
-  password: "temporal",
+  user_dn: "CN=Administrador,CN=Users,DC=dns,DC=activedirectory,DC=io",
+  password: "unamuypersonal",
   connection_timeout: "5000",
-  profile_mapping: "{\"full_name\":\"cn\",\"email\":\"cn\"}",
-  search_path: "ou=people,dc=bluetab,dc=net"
+  profile_mapping: "{\"full_name\":\"sAMAccountName\",\"email\":\"sAMAccountName\"}",
+  search_path: "CN=Users,DC=dns,DC=activedirectory,DC=io"
 
 config :td_auth, :phoenix_swagger,
   swagger_files: %{
