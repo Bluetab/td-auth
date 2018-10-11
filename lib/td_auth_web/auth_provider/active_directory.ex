@@ -2,8 +2,6 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   @moduledoc false
   require Logger
 
-  alias Poison, as: JSON
-
   @samaccountname "sAMAccountName"
   @distinguised_name "distinguishedName"
   @user_name "user_name"
@@ -92,7 +90,7 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   end
 
   defp build_profile(entry) do
-      mapping = get_ad_profile_mapping()
+      mapping = %{"full_name" =>  "displayName", "email" => "mail"}
       Enum.reduce(mapping, %{}, fn({k, v}, acc) ->
         attr = get_attribute!(entry, v)
         Map.put(acc, k, attr)
@@ -127,11 +125,6 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
 
   defp get_ad_password do
     Application.get_env(:td_auth, :ad)[:password]
-  end
-
-  defp get_ad_profile_mapping do
-    ldap_config = Application.get_env(:td_auth, :ad)
-    JSON.decode!(ldap_config[:profile_mapping])
   end
 
   defp get_ad_search_path do

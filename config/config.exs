@@ -85,9 +85,8 @@ config :td_auth, :ad,
   port: "389",
   ssl: "false",
   user_dn: "CN=Administrador,CN=Users,DC=dns,DC=activedirectory,DC=io",
-  password: "unamuypersonal",
+  password: "mcue4a1Mcue4a1",
   connection_timeout: "5000",
-  profile_mapping: "{\"full_name\":\"sAMAccountName\",\"email\":\"sAMAccountName\"}",
   search_path: "CN=Users,DC=dns,DC=activedirectory,DC=io"
 
 config :td_auth, :phoenix_swagger,
