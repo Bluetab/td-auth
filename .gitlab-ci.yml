@@ -24,7 +24,7 @@ publish:
     - master
   script:
     - git branch -f master HEAD
-    - export VERSION=2.6.0-alpha+${CI_PIPELINE_ID}
+    - export VERSION=2.6.0-alpha.${CI_PIPELINE_ID}
     - docker build --build-arg APP_VERSION=${VERSION} --build-arg APP_NAME=td_auth --build-arg MIX_ENV=prod -t bluetab-truedat/$CI_PROJECT_NAME:${VERSION} .
     - docker run --rm -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION mesosphere/aws-cli ecr get-login --no-include-email --region $AWS_DEFAULT_REGION | awk '{ sub("\r$", ""); print }' > output
     - bash -f output
