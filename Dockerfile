@@ -44,6 +44,6 @@ WORKDIR /app
 
 COPY --from=build /build/_build/${MIX_ENV}/rel/${APP_NAME}/releases/${APP_VERSION}/*.tar.gz ./
 
-RUN tar -xvzf ${APP_NAME}.tar.gz
+RUN tar -xzf ${APP_NAME}.tar.gz
 
 ENTRYPOINT ["/bin/bash", "-c", "bin/${APP_NAME} foreground"]
