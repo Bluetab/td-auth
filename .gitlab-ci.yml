@@ -30,7 +30,6 @@ publish:
     - bash -f output
     - export ECR=$(cat output | egrep -o 'https?://[^ ]+' | awk -F/ '{print $3}')
     - rm output
-    - docker tag $ECR/bluetab-truedat/$CI_PROJECT_NAME:${VERSION}
     - docker push $ECR/bluetab-truedat/$CI_PROJECT_NAME:${VERSION}
 
 tag:
@@ -45,7 +44,6 @@ tag:
     - bash -f output
     - export ECR=$(cat output | egrep -o 'https?://[^ ]+' | awk -F/ '{print $3}')
     - rm output
-    - docker tag $ECR/bluetab-truedat/$CI_PROJECT_NAME:${VERSION}
     - docker push $ECR/bluetab-truedat/$CI_PROJECT_NAME:${VERSION}
 
 deploy:
