@@ -1,10 +1,10 @@
-defmodule TdAuth.Repo.Migrations.AddViewConfidentialConceptPermission do
+defmodule TdAuth.Repo.Migrations.AddManageConfidentialConceptPermission do
   use Ecto.Migration
 
   alias TdAuth.Permissions
 
   @permissions [
-    "view_confidential_business_concepts"
+    "manage_confidential_business_concepts"
   ]
 
   def change do
