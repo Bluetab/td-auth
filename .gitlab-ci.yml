@@ -25,6 +25,7 @@ publish:
   stage: publish
   only:
     - master
+    - tags
   script:
     - git branch -f master HEAD
     - export VERSION=${CI_COMMIT_TAG:-${VERSION}-alpha.${CI_PIPELINE_ID}}
