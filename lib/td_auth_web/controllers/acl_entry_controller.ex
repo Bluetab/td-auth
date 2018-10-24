@@ -238,8 +238,9 @@ defmodule TdAuthWeb.AclEntryController do
 
     current_resource = conn.assigns[:current_resource]
 
-    if current_resource |> can?(view_acl_entries(%{resource_type: resource_type, resource_id: resource_id})) do
-      user_roles = AclEntry.list_user_roles(%{resource_type: resource_type, resource_id: resource_id})
+    if current_resource |> can?(view_acl_entries(
+      %{resource_type: resource_type, resource_id: resource_id})) do
+      user_roles = AclEntry.list_user_roles(resource_type, resource_id)
 
       render(
         conn,

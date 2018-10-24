@@ -38,6 +38,10 @@ defmodule TdAuth.DataCase do
         nil -> nil
         pid -> Sandbox.allow(TdAuth.Repo, parent, pid)
       end
+      case Process.whereis(TdAuth.AclLoader) do
+        nil -> nil
+        pid -> Sandbox.allow(TdAuth.Repo, parent, pid)
+      end
     end
 
     :ok

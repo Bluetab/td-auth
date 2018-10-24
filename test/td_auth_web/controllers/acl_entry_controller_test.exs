@@ -6,7 +6,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   alias TdAuth.Permissions.Role
   import TdAuthWeb.Authentication, only: :functions
 
-  @update_attrs %{principal_id: 43, principal_type: "user", resource_id: 43, resource_type: "domain"}
+  @update_attrs %{resource_id: 43, resource_type: "domain"}
   @invalid_attrs %{principal_id: nil, principal_type: nil, resource_id: nil, resource_type: nil}
 
   setup_all do
@@ -28,7 +28,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   describe "create acl_entry" do
     @tag :admin_authenticated
     test "renders acl_entry when data is valid", %{conn: conn, swagger_schema: schema} do
-      user = build(:user)
+      user = insert(:user)
       # domain = insert(:domain)
       role = Role.role_get_or_create_by_name("watch")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id, role_id: role.id)
@@ -52,7 +52,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
     @tag :admin_authenticated
     test "renders error for duplicated acl_entry", %{conn: conn, swagger_schema: schema} do
-      user = build(:user)
+      user = insert(:user)
       # domain = insert(:domain)
       role = Role.role_get_or_create_by_name("watch")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id, role_id: role.id)
@@ -76,7 +76,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   describe "create or update acl_entry" do
     @tag :admin_authenticated
     test "renders acl_entry when creating a new acl", %{conn: conn, swagger_schema: schema} do
-      user = build(:user)
+      user = insert(:user)
       # domain = insert(:domain)
       role = Role.role_get_or_create_by_name("create")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id)
@@ -101,7 +101,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
     @tag :admin_authenticated
     test "renders acl_entry when updating an existing acl", %{conn: conn, swagger_schema: schema} do
-      user = build(:user)
+      user = insert(:user)
       # domain = insert(:domain)
       role = Role.role_get_or_create_by_name("watch")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id)
@@ -148,8 +148,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       validate_resp_schema(conn, schema, "AclEntryResponse")
       assert json_response(conn, 200)["data"] == %{
         "id" => id,
-        "principal_id" => @update_attrs.principal_id,
-        "principal_type" => @update_attrs.principal_type,
+        "principal_id" => acl_entry.principal_id,
+        "principal_type" => acl_entry.principal_type,
         "resource_id" => @update_attrs.resource_id,
         "resource_type" => @update_attrs.resource_type,
         "role_id" => role_id

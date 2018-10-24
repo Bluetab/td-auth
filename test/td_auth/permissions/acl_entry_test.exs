@@ -7,21 +7,16 @@ defmodule TdAuth.Permissions.AclEntryTest do
 
   describe "acl_entries" do
     @update_attrs %{
-      principal_id: 43,
-      principal_type: "user",
       resource_id: 43,
       resource_type: "domain"
     }
     @invalid_attrs %{principal_id: nil, principal_type: nil, resource_id: nil, resource_type: nil}
 
     def acl_entry_fixture(role_name \\ "watch") do
-      user = build(:user)
+      user = insert(:user)
       role = Role.role_get_or_create_by_name(role_name)
 
-      acl_entry_attrs =
-        insert(:acl_entry_resource, principal_id: user.id, resource_id: 1234, role: role)
-
-      acl_entry_attrs
+      insert(:acl_entry_resource, principal_id: user.id, resource_id: 1234, role: role)
     end
 
     def group_acl_entry_fixture(role_name \\ "watch") do
@@ -64,7 +59,7 @@ defmodule TdAuth.Permissions.AclEntryTest do
     end
 
     test "create_acl_entry/1 with valid data creates a acl_entry" do
-      user = build(:user)
+      user = insert(:user)
       role = Role.role_get_or_create_by_name("watch")
 
       valid_attrs = %{
@@ -91,8 +86,6 @@ defmodule TdAuth.Permissions.AclEntryTest do
       acl_entry = acl_entry_fixture()
       assert {:ok, acl_entry} = AclEntry.update_acl_entry(acl_entry, @update_attrs)
       assert %AclEntry{} = acl_entry
-      assert acl_entry.principal_id == 43
-      assert acl_entry.principal_type == "user"
       assert acl_entry.resource_id == 43
       assert acl_entry.resource_type == @update_attrs.resource_type
     end
@@ -130,10 +123,7 @@ defmodule TdAuth.Permissions.AclEntryTest do
       role_name = acl_entry.role.name
 
       [{^role_name, users}] =
-        AclEntry.list_user_roles(%{
-          resource_type: acl_entry.resource_type,
-          resource_id: acl_entry.resource_id
-        })
+        AclEntry.list_user_roles(acl_entry.resource_type, acl_entry.resource_id)
 
       assert length(users) == 1
       assert Enum.at(users, 0).id == user.id

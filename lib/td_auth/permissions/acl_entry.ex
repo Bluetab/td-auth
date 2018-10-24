@@ -10,6 +10,8 @@ defmodule TdAuth.Permissions.AclEntry do
   alias TdAuth.Permissions.Role
   alias TdAuth.Repo
 
+  alias TdAuth.AclLoader
+
   schema "acl_entries" do
     field(:principal_id, :integer)
     field(:principal_type, :string)
@@ -81,15 +83,39 @@ defmodule TdAuth.Permissions.AclEntry do
     acl_entries |> Repo.preload(preload)
   end
 
-  def list_user_roles(%{resource_type: type, resource_id: id}) do
-    %{resource_type: type, resource_id: id}
+  def list_acl_resources do
+    entries = list_acl_entries()
+    entries
+    |> Enum.map(
+      fn %{resource_type: resource_type, resource_id: resource_id} ->
+        {resource_type, resource_id}
+      end)
+    |> Enum.group_by(& &1)
+    |> Map.keys
+  end
+
+  def list_user_roles(resource_type, resource_id) do
+    %{resource_type: resource_type, resource_id: resource_id}
     |> list_acl_entries()
     |> Enum.map(&role_with_users/1)
     |> Enum.group_by(& &1.role_name, & &1.users)
     |> Enum.map(fn {role, users} -> {role, Enum.uniq_by(Enum.concat(users), & &1.id)} end)
   end
 
-  def role_with_users(%AclEntry{role: role, principal_type: "user", principal_id: user_id}) do
+  def parsed_list_user_roles(resource_type, resource_id) do
+    resource_type
+    |> list_user_roles(resource_id)
+    |> Enum.map(fn {role_name, users} ->
+        %{
+          role_name: role_name,
+          users: Enum.map(users, &Map.take(&1, [:id, :user_name, :full_name]))
+        }
+      end)
+    |> Enum.into([])
+  end
+
+  def role_with_users(%AclEntry{
+    role: role, principal_type: "user", principal_id: user_id} = entry) do
     user = Accounts.get_user!(user_id)
     %{role_name: role.name, users: [user]}
   end
@@ -166,6 +192,7 @@ defmodule TdAuth.Permissions.AclEntry do
     %AclEntry{}
     |> AclEntry.changeset(attrs)
     |> Repo.insert()
+    |> refresh_cache
   end
 
   @doc """
@@ -184,6 +211,7 @@ defmodule TdAuth.Permissions.AclEntry do
     acl_entry
     |> AclEntry.changeset(attrs)
     |> Repo.update()
+    |> refresh_cache
   end
 
   @doc """
@@ -298,5 +326,12 @@ defmodule TdAuth.Permissions.AclEntry do
       _ -> dynamic([p], field(p, ^param_key) == ^param_value and ^acc)
     end
   end
+
+  defp refresh_cache({:ok,
+    %{resource_type: resource_type, resource_id: resource_id}} = response) do
+    AclLoader.refresh(resource_type, resource_id)
+    response
+  end
+  defp refresh_cache(response), do: response
 
 end
