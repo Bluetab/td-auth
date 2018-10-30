@@ -85,7 +85,7 @@ config :td_auth, :ad,
   port: "389",
   ssl: "false",
   user_dn: "CN=Administrador,CN=Users,DC=dns,DC=activedirectory,DC=io",
-  password: "mcue4a1Mcue4a1",
+  password: "xyzxyz",
   connection_timeout: "5000",
   search_path: "CN=Users,DC=dns,DC=activedirectory,DC=io"
 
