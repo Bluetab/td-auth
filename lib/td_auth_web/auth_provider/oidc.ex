@@ -35,7 +35,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   """
   defp extract_token(authorization_headers) do
     authorization_headers
-    |> Enum.find(&(String.starts_with?(&1, "Bearer ")))
+    |> Enum.find(&String.starts_with?(&1, "Bearer "))
     |> String.replace_leading("Bearer ", "")
   end
 
