@@ -5,7 +5,7 @@ defmodule TdAuth.Mixfile do
   def project do
     [
       app: :td_auth,
-      version: case System.get_env("APP_VERSION") do nil -> "2.7.5-local"; v -> v end,
+      version: case System.get_env("APP_VERSION") do nil -> "2.7.6-local"; v -> v end,
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
       compilers: [:phoenix, :gettext, :phoenix_swagger] ++ Mix.compilers,
@@ -53,7 +53,7 @@ defmodule TdAuth.Mixfile do
       {:cabbage, git: "https://github.com/eriosv/cabbage.git"},
       {:phoenix_swagger, "~> 0.8.0"},
       {:ex_json_schema, "~> 0.5"},
-      {:td_perms, git: "https://github.com/Bluetab/td-perms.git", tag: "v0.3.16"},
+      {:td_perms, git: "https://github.com/Bluetab/td-perms.git", tag: "2.7.0"},
       {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git"},
       {:inflex, "~> 1.10.0"},
       {:prometheus_ex, "~> 3.0.2"},
