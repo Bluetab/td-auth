@@ -49,7 +49,7 @@ defmodule TdAuthWeb.SessionController do
   def create(conn, %{"auth_realm" => "ldap", "user" => %{"user_name" => user_name, "password" => password}}) do
     authenticate_using_ldap_and_create_session(conn, user_name, password)
   end
-  def create(conn, %{"auth_realm" => "oidc", "session_state" => session_state, "state" => state}) do
+  def create(conn, %{"auth_realm" => "oidc", "session_state" => session_state}) do
     authenticate_using_oidc_and_create_session(conn)
   end
   def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}}) do
