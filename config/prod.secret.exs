@@ -21,9 +21,10 @@ config :td_auth, TdAuth.Repo,
   pool_size: 10
 
 config :td_auth, TdAuth.Auth.Guardian,
-  allowed_algos: ["HS512"], # optional
+  # optional
+  allowed_algos: ["HS512"],
   issuer: "tdauth",
-  token_ttl: %{"access" => { 12, :hours }, "refresh" => {24, :hours}},
+  token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
   secret_key: "${GUARDIAN_SECRET_KEY}"
 
 config :td_auth, :auth,
@@ -32,40 +33,45 @@ config :td_auth, :auth,
   domain: "${AUTH_DOMAIN}",
   audience: "${AUTH_AUDIENCE}",
   userinfo: "/userinfo",
-  profile_mapping: %{user_name: "nickname",
-                     full_name: "name",
-                     email:     "email"}
+  profile_mapping: %{user_name: "nickname", full_name: "name", email: "email"}
 
- config :td_auth, TdAuth.Auth.Auth,
-   allowed_algos: ["RS256"],
-   issuer: "${AUTH_ISSUER}",
-   verify_issuer: true,
-   secret_key:
-   AUTH0_SECRET_KEY
+config :td_auth, TdAuth.Auth.Auth,
+  allowed_algos: ["RS256"],
+  issuer: "${AUTH_ISSUER}",
+  verify_issuer: true,
+  secret_key: AUTH0_SECRET_KEY
 
- config :td_auth, :ldap,
-   server: "${LDAP_SERVER}",
-   base: "${LDAP_BASE}",
-   port: "${LDAP_PORT}",
-   ssl: "${LDAP_SSL}",
-   user_dn: "${LDAP_USER_DN}",
-   password: "${LDAP_PASSWORD}",
-   connection_timeout: "${LDAP_CONNECTION_TIMEOUT}",
-   profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"cn\",\"email\":\"cn\"}",
-   #profile_mapping: "${LDAP_PROFILE_MAPPING}",
-   bind_pattern: "${LDAP_BIND_PATTERN}",
-   search_path: "${LDAP_SEARCH_PATH}",
-   search_field: "${LDAP_SEARCH_FIELD}"
+config :td_auth, :ldap,
+  server: "${LDAP_SERVER}",
+  base: "${LDAP_BASE}",
+  port: "${LDAP_PORT}",
+  ssl: "${LDAP_SSL}",
+  user_dn: "${LDAP_USER_DN}",
+  password: "${LDAP_PASSWORD}",
+  connection_timeout: "${LDAP_CONNECTION_TIMEOUT}",
+  profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"cn\",\"email\":\"cn\"}",
+  # profile_mapping: "${LDAP_PROFILE_MAPPING}",
+  bind_pattern: "${LDAP_BIND_PATTERN}",
+  search_path: "${LDAP_SEARCH_PATH}",
+  search_field: "${LDAP_SEARCH_FIELD}"
 
- config :td_auth, :ad,
-   server: "${AD_SERVER}",
-   base: "${AD_BASE}",
-   port: "${AD_PORT}",
-   ssl: "${AD_SSL}",
-   user_dn: "${AD_USER_DN}",
-   password: "${AD_PASSWORD}",
-   connection_timeout: "${AD_CONNECTION_TIMEOUT}",
-   search_path: "${AD_SEARCH_PATH}"
+config :td_auth, :ad,
+  server: "${AD_SERVER}",
+  base: "${AD_BASE}",
+  port: "${AD_PORT}",
+  ssl: "${AD_SSL}",
+  user_dn: "${AD_USER_DN}",
+  password: "${AD_PASSWORD}",
+  connection_timeout: "${AD_CONNECTION_TIMEOUT}",
+  search_path: "${AD_SEARCH_PATH}"
 
+config :td_auth, :openid_connect_providers,
+  oidc: [
+    discovery_document_uri: "${OIDC_DISCOVERY_URI}",
+    client_id: "${OIDC_CLIENT_ID}",
+    client_secret: "${OIDC_CLIENT_SECRET}",
+    redirect_uri: "${OIDC_REDIRECT_URI}",
+    scope: "${OIDC_SCOPE}"
+  ]
 
 config :td_perms, redis_uri: "${REDIS_URI}"

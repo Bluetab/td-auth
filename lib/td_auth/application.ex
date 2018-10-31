@@ -26,6 +26,7 @@ defmodule TdAuth.Application do
       # worker(TdAuth.Worker, [arg1, arg2, arg3]),
       worker(TdAuth.UserLoader, [TdAuth.UserLoader]),
       worker(TdAuth.AclLoader, [TdAuth.AclLoader]),
+      worker(OpenIDConnect.Worker, [Application.get_env(:td_auth, :openid_connect_providers)]),
       %{
         id: TdAuth.CustomSupervisor,
         start:

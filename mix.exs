@@ -58,7 +58,8 @@ defmodule TdAuth.Mixfile do
       {:inflex, "~> 1.10.0"},
       {:prometheus_ex, "~> 3.0.2"},
       {:prometheus_plugs, "~> 1.1.5"},
-      {:exldap, "~> 0.6"}
+      {:exldap, "~> 0.6"},
+      {:openid_connect, "~> 0.1.2"}
     ]
   end
 
@@ -72,8 +73,8 @@ defmodule TdAuth.Mixfile do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      "test": ["ecto.create --quiet", "ecto.migrate", "test"],
-      "compile": ["compile", &pxh_swagger_generate/1]
+      test: ["ecto.create --quiet", "ecto.migrate", "test"],
+      compile: ["compile", &pxh_swagger_generate/1]
     ]
   end
 
