@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.7.7] 2018-11-08
+
+### Added
+
+- API endpoint to list authentication methods (currently only returns OIDC endpoint)
+
 ## [2.7.6] 2018-11-08
 
 ### Fixed

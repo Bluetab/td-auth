@@ -33,6 +33,23 @@ defmodule TdAuthWeb.SwaggerDefinitions do
     }
   end
 
+  def auth_swagger_definitions do
+    %{
+      AuthenticationMethodsResponse: swagger_schema do
+        properties do
+          data Schema.array(:AuthenticationMethodResource)
+        end
+      end,
+      AuthenticationMethodResource: swagger_schema do
+        title "Authentication Method Resource"
+        description "Authentication Method Resource"
+        properties do
+          url :string, "authentication url", required: true
+        end
+      end
+    }
+  end
+
   def user_swagger_definitions do
     %{
       UserAclResource: swagger_schema do

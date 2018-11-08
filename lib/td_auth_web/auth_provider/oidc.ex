@@ -3,7 +3,19 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   Authentication provider for OpenID Connect
   """
 
+  alias TdPerms.NonceCache
   require Logger
+
+  def authentication_url do
+    nonce = NonceCache.create_nonce
+    state = NonceCache.create_nonce
+
+    OpenIDConnect.authorization_uri(:oidc, %{
+      "response_mode" => "fragment",
+      "nonce" => nonce,
+      "state" => state
+    })
+  end
 
   @doc """
   Authenticate a user using and OpenID Connect ID token
