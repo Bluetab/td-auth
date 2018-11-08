@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.7.6] 2018-11-08
+
+### Fixed
+
+- Prevent application startup from failing if OIDC environment variables are absent
+
 ## [2.7.5] 2018-10-31
 
 ### Fixed
