@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.7.8] 2018-11-12
+
+### Added
+
+- User cache loader writes user email by full_name
+
 ## [2.7.7] 2018-11-08
 
 ### Added

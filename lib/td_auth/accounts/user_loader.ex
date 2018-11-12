@@ -55,19 +55,33 @@ defmodule TdAuth.UserLoader do
 
   defp load_user(user_id) do
     user = Accounts.get_user!(user_id)
-    [user]
-    |> load_user_data()
+    load_user_data([user])
+    load_user_email_data([user])
   end
 
   defp load_all_users do
-    Accounts.list_users()
-    |> load_user_data()
+    users = Accounts.list_users()
+    load_user_data(users)
+    load_user_email_data(users)
   end
 
   def load_user_data(users) do
     results = users
     |> Enum.map(&(Map.take(&1, [:id, :user_name, :full_name, :email])))
     |> Enum.map(&(UserCache.put_user(&1)))
+    |> Enum.map(fn {res, _} -> res end)
+
+    if Enum.any?(results, &(&1 != :ok)) do
+      Logger.warn("Cache loading failed")
+    else
+      Logger.info("Cached #{length(results)} users")
+    end
+  end
+
+  def load_user_email_data(users) do
+    results = users
+    |> Enum.map(&(Map.take(&1, [:id, :user_name, :full_name, :email])))
+    |> Enum.map(&(UserCache.put_user_email(&1)))
     |> Enum.map(fn {res, _} -> res end)
 
     if Enum.any?(results, &(&1 != :ok)) do
