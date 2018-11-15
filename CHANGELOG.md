@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0] 2018-11-15
+
+### Changed
+
+- Update dependencies (td-perms 0.8.2, credo 0.10.2)
+- Configurable log level for controllers and reduce logging in PingController
+
 ## [2.7.8] 2018-11-12
 
 ### Added

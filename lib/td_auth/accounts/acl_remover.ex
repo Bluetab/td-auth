@@ -30,9 +30,8 @@ defmodule TdAuth.AclRemover do
 
   def handle_info(:work, state) do
     domain_ids =
-      TaxonomyCache.get_all_domains()
-      |> Enum.filter(&Map.has_key?(&1, :domain_id))
-      |> Enum.map(&Map.fetch!(&1, :domain_id))
+      TaxonomyCache.get_domain_name_to_id_map()
+      |> Map.values()
 
     AclEntry.delete_acl_entries(%{resource_id: domain_ids, resource_type: "domain"}, %{
       resource_id: :negative

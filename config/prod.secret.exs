@@ -74,4 +74,4 @@ config :td_auth, :openid_connect_providers,
     scope: "${OIDC_SCOPE}"
   ]
 
-config :td_perms, redis_uri: "${REDIS_URI}"
+config :td_perms, redis_host: "${REDIS_HOST}"

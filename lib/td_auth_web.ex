@@ -17,9 +17,9 @@ defmodule TdAuthWeb do
   and import those modules here.
   """
 
-  def controller do
-    quote do
-      use Phoenix.Controller, namespace: TdAuthWeb
+  def controller(log \\ :info) do
+    quote bind_quoted: [log: log] do
+      use Phoenix.Controller, namespace: TdAuthWeb, log: log
       import Plug.Conn
       import TdAuthWeb.Router.Helpers
       import TdAuthWeb.Gettext
@@ -60,5 +60,12 @@ defmodule TdAuthWeb do
   """
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
+  end
+
+  @doc """
+  Custom log level for controllers
+  """
+  defmacro __using__([:controller = which, log]) do
+    apply(__MODULE__, which, [log])
   end
 end
