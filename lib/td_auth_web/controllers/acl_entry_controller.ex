@@ -23,6 +23,7 @@ defmodule TdAuthWeb.AclEntryController do
 
   def index(conn, _params) do
     current_resource = conn.assigns[:current_resource]
+
     if current_resource |> can?(view(AclEntry)) do
       acl_entries = AclEntry.list_acl_entries()
       render(conn, "index.json", acl_entries: acl_entries)
@@ -46,7 +47,7 @@ defmodule TdAuthWeb.AclEntryController do
   end
 
   def create(conn, %{"acl_entry" => acl_entry_params}) do
-    acl_entry = %AclEntry{} |> Map.merge(to_struct(AclEntry, acl_entry_params))
+    acl_entry = AclEntry.cast(acl_entry_params)
     current_resource = conn.assigns[:current_resource]
 
     if current_resource |> can?(create(acl_entry)) do
@@ -83,7 +84,7 @@ defmodule TdAuthWeb.AclEntryController do
   def create_or_update(conn, %{"acl_entry" => acl_entry_params}) do
     role = Role.get_role_by_name(acl_entry_params["role_name"])
     acl_entry_params = Map.put(acl_entry_params, "role_id", role.id)
-    acl_entry = %AclEntry{} |> Map.merge(to_struct(AclEntry, acl_entry_params))
+    acl_entry = AclEntry.cast(acl_entry_params)
 
     acl_query_params = %{
       principal_type: acl_entry.principal_type,
@@ -217,7 +218,6 @@ defmodule TdAuthWeb.AclEntryController do
       |> put_status(:forbidden)
       |> render(ErrorView, :"403.json")
     end
-
   end
 
   swagger_path :user_roles do
@@ -238,8 +238,8 @@ defmodule TdAuthWeb.AclEntryController do
 
     current_resource = conn.assigns[:current_resource]
 
-    if current_resource |> can?(view_acl_entries(
-      %{resource_type: resource_type, resource_id: resource_id})) do
+    if current_resource
+       |> can?(view_acl_entries(%{resource_type: resource_type, resource_id: resource_id})) do
       user_roles = AclEntry.list_user_roles(resource_type, resource_id)
 
       render(
@@ -251,18 +251,6 @@ defmodule TdAuthWeb.AclEntryController do
       conn
       |> put_status(:forbidden)
       |> render(ErrorView, :"403.json")
-    end
-
-  end
-
-  # TODO: Why is this needed??
-  defp to_struct(kind, attrs) do
-    struct = struct(kind)
-    Enum.reduce Map.to_list(struct), struct, fn {k, _}, acc ->
-      case Map.fetch(attrs, Atom.to_string(k)) do
-        {:ok, v} -> %{acc | k => v}
-        :error -> acc
-      end
     end
   end
 end

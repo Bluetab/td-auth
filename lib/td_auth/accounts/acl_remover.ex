@@ -8,9 +8,9 @@ defmodule TdAuth.AclRemover do
   require Logger
 
   @acl_removement_frequency Application.get_env(
-                                  :td_auth,
-                                  :acl_removement_frequency
-                                )
+                              :td_auth,
+                              :acl_removement_frequency
+                            )
 
   @acl_removement Application.get_env(:td_auth, :acl_removement)
 

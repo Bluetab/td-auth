@@ -37,13 +37,12 @@ defmodule TdAuthWeb.AclEntryView do
 
   def render("resource_user_roles.json", %{user_roles: user_roles}) do
     user_roles
-    |> Enum.map(fn {role_name, users} ->
+    |> Enum.into([], fn {role_name, users} ->
       %{
         role_name: role_name,
         users: Enum.map(users, &Map.take(&1, [:id, :user_name, :full_name]))
       }
     end)
-    |> Enum.into([])
   end
 
   defp resource_acl_entry(%{"_actions" => actions} = acl_entry) do
@@ -52,7 +51,11 @@ defmodule TdAuthWeb.AclEntryView do
     |> resource_acl_entry
     |> Map.put(:_actions, actions)
   end
-  defp resource_acl_entry(%{id: id, principal_type: principal_type, role: %{id: role_id, name: role_name}} = acl_entry) do
+
+  defp resource_acl_entry(
+         %{id: id, principal_type: principal_type, role: %{id: role_id, name: role_name}} =
+           acl_entry
+       ) do
     %{
       acl_entry_id: id,
       principal_type: principal_type,

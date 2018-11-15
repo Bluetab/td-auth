@@ -13,7 +13,7 @@ defmodule TdAuth.UserLoader do
   @cache_users_on_startup Application.get_env(:td_auth, :cache_users_on_startup)
 
   def start_link(name \\ nil) do
-    GenServer.start_link(__MODULE__, nil, [name: name])
+    GenServer.start_link(__MODULE__, nil, name: name)
   end
 
   def refresh(user_id) do
@@ -64,10 +64,11 @@ defmodule TdAuth.UserLoader do
   end
 
   def load_user_data(users) do
-    results = users
-    |> Enum.map(&(Map.take(&1, [:id, :user_name, :full_name, :email])))
-    |> Enum.map(&(UserCache.put_user(&1)))
-    |> Enum.map(fn {res, _} -> res end)
+    results =
+      users
+      |> Enum.map(&Map.take(&1, [:id, :user_name, :full_name, :email]))
+      |> Enum.map(&UserCache.put_user(&1))
+      |> Enum.map(fn {res, _} -> res end)
 
     if Enum.any?(results, &(&1 != :ok)) do
       Logger.warn("Cache loading failed")

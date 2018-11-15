@@ -14,7 +14,7 @@ config :td_auth, TdAuthWeb.Endpoint,
   http: [port: 4001],
   url: [host: "api.truedat.net", port: 8000],
   server: true,
-  version: Mix.Project.config[:version]
+  version: Mix.Project.config()[:version]
 
 # Do not print debug messages in production
 config :logger, :console, format: "[$level] $message\n"

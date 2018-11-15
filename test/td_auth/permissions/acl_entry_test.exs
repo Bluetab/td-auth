@@ -43,6 +43,23 @@ defmodule TdAuth.Permissions.AclEntryTest do
       ])
     end
 
+    test "cast/1 casts a map to an AclEntry struct" do
+      attrs = %{
+        "principal_id" => "1234",
+        "principal_type" => "system",
+        "resource_type" => "books",
+        "role_id" => "32",
+        "foo" => "bar"
+      }
+
+      assert AclEntry.cast(attrs) == %AclEntry{
+               principal_id: 1234,
+               principal_type: "system",
+               resource_type: "books",
+               role_id: 32
+             }
+    end
+
     test "list_acl_entries/0 returns all acl_entries" do
       acl_entry = acl_entry_fixture()
       acl_entry = get_comparable_acl_entry_fields(acl_entry)

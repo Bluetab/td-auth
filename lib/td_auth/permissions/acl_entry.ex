@@ -22,6 +22,15 @@ defmodule TdAuth.Permissions.AclEntry do
     timestamps()
   end
 
+  @doc """
+  Casts a map to an AclEntry
+  """
+  def cast(attrs) do
+    %AclEntry{}
+    |> cast(attrs, AclEntry.__schema__(:fields))
+    |> apply_changes
+  end
+
   @doc false
   def changeset(%AclEntry{} = acl_entry, attrs) do
     acl_entry
@@ -85,13 +94,13 @@ defmodule TdAuth.Permissions.AclEntry do
 
   def list_acl_resources do
     entries = list_acl_entries()
+
     entries
-    |> Enum.map(
-      fn %{resource_type: resource_type, resource_id: resource_id} ->
-        {resource_type, resource_id}
-      end)
+    |> Enum.map(fn %{resource_type: resource_type, resource_id: resource_id} ->
+      {resource_type, resource_id}
+    end)
     |> Enum.group_by(& &1)
-    |> Map.keys
+    |> Map.keys()
   end
 
   def list_user_roles(resource_type, resource_id) do
@@ -105,17 +114,15 @@ defmodule TdAuth.Permissions.AclEntry do
   def parsed_list_user_roles(resource_type, resource_id) do
     resource_type
     |> list_user_roles(resource_id)
-    |> Enum.map(fn {role_name, users} ->
-        %{
-          role_name: role_name,
-          users: Enum.map(users, &Map.take(&1, [:id, :user_name, :full_name]))
-        }
-      end)
-    |> Enum.into([])
+    |> Enum.into([], fn {role_name, users} ->
+      %{
+        role_name: role_name,
+        users: Enum.map(users, &Map.take(&1, [:id, :user_name, :full_name]))
+      }
+    end)
   end
 
-  def role_with_users(%AclEntry{
-    role: role, principal_type: "user", principal_id: user_id} = entry) do
+  def role_with_users(%AclEntry{role: role, principal_type: "user", principal_id: user_id}) do
     user = Accounts.get_user!(user_id)
     %{role_name: role.name, users: [user]}
   end
@@ -239,6 +246,7 @@ defmodule TdAuth.Permissions.AclEntry do
         p in AclEntry,
         where: ^dynamic
       )
+
     query |> Repo.delete_all()
   end
 
@@ -306,6 +314,7 @@ defmodule TdAuth.Permissions.AclEntry do
     Enum.reduce(Map.keys(params), dynamic, fn x, acc ->
       key_as_atom = if is_binary(x), do: String.to_atom(x), else: x
       param_value = Map.get(params, x)
+
       case Enum.member?(fields, key_as_atom) do
         true -> buid_dynamic_condition(key_as_atom, param_value, acc, options)
         false -> acc
@@ -315,7 +324,7 @@ defmodule TdAuth.Permissions.AclEntry do
 
   defp buid_dynamic_condition(param_key, param_value, acc, options) when is_list(param_value) do
     case Map.get(options, param_key) do
-      :negative -> dynamic([p], not field(p, ^param_key) in ^param_value and ^acc)
+      :negative -> dynamic([p], field(p, ^param_key) not in ^param_value and ^acc)
       _ -> dynamic([p], field(p, ^param_key) in ^param_value and ^acc)
     end
   end
@@ -327,11 +336,10 @@ defmodule TdAuth.Permissions.AclEntry do
     end
   end
 
-  defp refresh_cache({:ok,
-    %{resource_type: resource_type, resource_id: resource_id}} = response) do
+  defp refresh_cache({:ok, %{resource_type: resource_type, resource_id: resource_id}} = response) do
     AclLoader.refresh(resource_type, resource_id)
     response
   end
-  defp refresh_cache(response), do: response
 
+  defp refresh_cache(response), do: response
 end

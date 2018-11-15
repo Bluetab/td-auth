@@ -4,9 +4,9 @@ defmodule TdAuthWeb.Authentication do
   add auth headers to requests
   """
   alias Phoenix.ConnTest
-  alias TdAuth.Auth.Guardian
   alias Poison, as: JSON
   alias TdAuth.Accounts
+  alias TdAuth.Auth.Guardian
   import Plug.Conn
   import TdAuthWeb.Router.Helpers
   @endpoint TdAuthWeb.Endpoint
@@ -20,10 +20,11 @@ defmodule TdAuthWeb.Authentication do
 
   def recycle_and_put_headers(conn) do
     authorization_header = List.first(get_req_header(conn, "authorization"))
+
     conn
     |> ConnTest.recycle()
     |> put_req_header("authorization", authorization_header)
-    end
+  end
 
   def create_user_auth_conn(user) do
     {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
@@ -44,16 +45,20 @@ defmodule TdAuthWeb.Authentication do
   end
 
   def session_create(user_name, user_password) do
-    body = %{user: %{user_name: user_name, password: user_password}} |> JSON.encode!
+    body = %{user: %{user_name: user_name, password: user_password}} |> JSON.encode!()
+
     %HTTPoison.Response{status_code: status_code, body: resp} =
-        HTTPoison.post!(session_url(@endpoint, :create), body, [@headers], [])
-    {:ok, status_code, resp |> JSON.decode!}
+      HTTPoison.post!(session_url(@endpoint, :create), body, [@headers], [])
+
+    {:ok, status_code, resp |> JSON.decode!()}
   end
 
   def session_destroy(token) do
     headers = get_header(token)
+
     %HTTPoison.Response{status_code: status_code, body: _resp} =
-        HTTPoison.delete!(session_url(@endpoint, :destroy), headers, [])
+      HTTPoison.delete!(session_url(@endpoint, :destroy), headers, [])
+
     {:ok, status_code}
   end
 end
