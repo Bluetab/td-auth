@@ -28,7 +28,7 @@ config :td_auth, :auth,
   domain: "icbluetab.eu.auth0.com",
   audience: nil,
   userinfo: "/userinfo",
-  profile_mapping: %{user_name: "nickname", full_name: "name", email: "email"}
+  profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}
 
 config :td_auth, TdAuth.Auth.Auth,
   # optional

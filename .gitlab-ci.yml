@@ -1,5 +1,5 @@
 variables:
-  VERSION: "2.7.9"
+  VERSION: "2.8.3"
   APP_NAME: "td_auth"
   ECR_NAMESPACE: "truedat"
 
