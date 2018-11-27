@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.8.2] 2018-11-25
+
+### Added
+
+- Get surname in login with Auth0
+
 ## [2.8.1] 2018-11-15
 
 ### Changed

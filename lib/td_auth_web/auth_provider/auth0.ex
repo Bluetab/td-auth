@@ -80,12 +80,21 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
         profile = user_info |> JSON.decode!()
         mapping = get_auth0_profile_mapping()
         profile = Enum.reduce(mapping, %{}, fn({k, v}, acc) ->
-          attr = Map.get(profile, v, nil)
+          attr = profile_mapping_value(v, profile)
           Map.put(acc, k, attr)
         end)
         {:ok, profile}
       _ -> {:error, :unable_to_get_user_profile}
     end
+  end
+
+  defp profile_mapping_value(key, profile) when is_binary(key), do: Map.get(profile, key, nil)
+  defp profile_mapping_value(keys, profile) when is_list(keys) do
+    keys
+    |> Enum.map(fn key ->
+      Map.get(profile, key, "")
+    end)
+    |> Enum.join(" ")
   end
 
 end

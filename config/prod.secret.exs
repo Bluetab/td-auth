@@ -33,7 +33,7 @@ config :td_auth, :auth,
   domain: "${AUTH_DOMAIN}",
   audience: "${AUTH_AUDIENCE}",
   userinfo: "/userinfo",
-  profile_mapping: %{user_name: "nickname", full_name: "name", email: "email"}
+  profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}
 
 config :td_auth, TdAuth.Auth.Auth,
   allowed_algos: ["RS256"],
