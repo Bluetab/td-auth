@@ -25,6 +25,8 @@ test:
 
 publish:
   stage: publish
+  tags:
+    - kubectl
   only:
     - master
     - tags
