@@ -41,6 +41,8 @@ publish:
 
 deploy:
   stage: deploy
+  tags:
+    - kubectl
   environment:
     name: prod
   only:
@@ -55,4 +57,4 @@ deploy:
     - rm output
     - docker tag ${ECR_NAMESPACE}/${CI_PROJECT_NAME}:${CI_COMMIT_SHA} ${ECR}/${ECR_NAMESPACE}/${CI_PROJECT_NAME}:latest
     - docker push ${ECR}/${ECR_NAMESPACE}/${CI_PROJECT_NAME}:latest
-    # TODO: td-auth is now in EKS, redeploy pod
+    - kubectl set image deployment.v1.apps/auth auth=${ECR}/${ECR_NAMESPACE}/${CI_PROJECT_NAME}:latest --record
