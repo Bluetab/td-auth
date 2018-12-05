@@ -33,7 +33,20 @@ defmodule TdAuth.Permissions.Permission do
     view_deprecated_business_concepts: "view_deprecated_business_concepts",
     manage_business_concept_links: "manage_business_concept_links",
     manage_quality_rule: "manage_quality_rule",
-    manage_confidential_business_concepts: "manage_confidential_business_concepts"
+    manage_confidential_business_concepts: "manage_confidential_business_concepts",
+    create_ingest: "create_ingest",
+    update_ingest: "update_ingest",
+    send_ingest_for_approval: "send_ingest_for_approval",
+    delete_ingest: "delete_ingest",
+    publish_ingest: "publish_ingest",
+    reject_ingest: "reject_ingest",
+    deprecate_ingest: "deprecate_ingest",
+    view_draft_ingests: "view_draft_ingests",
+    view_approval_pending_ingests: "view_approval_pending_ingests",
+    view_published_ingests: "view_published_ingests",
+    view_versioned_ingests: "view_versioned_ingests",
+    view_rejected_ingests: "view_rejected_ingests",
+    view_deprecated_ingests: "view_deprecated_ingests"
   }
 
   schema "permissions" do
