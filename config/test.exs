@@ -26,6 +26,7 @@ config :td_auth, :auth,
   auth_service: TdAuthWeb.ApiServices.MockAuthService,
   protocol: "https",
   domain: "icbluetab.eu.auth0.com",
+  clientID: "CLIENT_ID",
   audience: nil,
   userinfo: "/userinfo",
   profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}

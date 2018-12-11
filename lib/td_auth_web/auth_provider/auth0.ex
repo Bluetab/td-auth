@@ -14,33 +14,6 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
     end
   end
 
-  # defp get_audience do
-  #   auth = Application.get_env(:td_auth, :auth)
-  #   auth[:audience]
-  # end
-  #
-  # defp check_audience(conn) do
-  #   audience = get_audience()
-  #   case audience do
-  #     nil -> true
-  #     _ ->
-  #       conn
-  #       |> AuthPlug.current_claims
-  #       |> Map.get("aud")
-  #       |> Enum.member?(audience)
-  #   end
-  # end
-
-  # defp fetch_access_token(conn) do
-  #   case check_audience(conn) do
-  #     true ->
-  #        {:ok, AuthPlug.current_token(conn)}
-  #     false ->
-  #       Logger.info "Unable to validate token audience"
-  #       {:missing_audience}
-  #   end
-  # end
-
   defp fetch_access_token(authorization_header) do
     fetch_access_token_from_header(authorization_header)
   end

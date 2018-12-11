@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0] 2018-12-11
+
+### Changed
+
+- [TD-1153] Refactor /api/auth :index. Now it returns a map with the various available auth methods configurated
+- Production build requires new environment variable: AUTH_CLIENT_ID
+
 ## [2.8.2] 2018-11-25
 
 ### Added

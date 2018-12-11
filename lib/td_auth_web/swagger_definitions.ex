@@ -37,7 +37,14 @@ defmodule TdAuthWeb.SwaggerDefinitions do
     %{
       AuthenticationMethodsResponse: swagger_schema do
         properties do
-          data Schema.array(:AuthenticationMethodResource)
+          data(
+            Schema.new do
+              properties do
+                oidc(:string, "oidc url", required: false)
+                auth0(:object, "auth0 config", required: false)
+              end
+            end
+          )
         end
       end,
       AuthenticationMethodResource: swagger_schema do

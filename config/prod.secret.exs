@@ -31,6 +31,7 @@ config :td_auth, :auth,
   auth_service: TdAuthWeb.ApiServices.HttpAuthService,
   protocol: "https",
   domain: "${AUTH_DOMAIN}",
+  clientID: "${AUTH_CLIENT_ID}",
   audience: "${AUTH_AUDIENCE}",
   userinfo: "/userinfo",
   profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}

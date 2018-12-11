@@ -62,7 +62,7 @@ defmodule TdAuth.Application do
     config
     |> Keyword.values()
     |> Enum.map(& &1[:client_id])
-    |> Enum.filter(&(&1 !== ""))
+    |> Enum.filter(&(&1 !== "" and not is_nil(&1)))
     |> Enum.empty?()
   end
 end
