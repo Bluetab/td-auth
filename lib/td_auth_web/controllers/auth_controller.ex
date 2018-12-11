@@ -23,7 +23,7 @@ defmodule TdAuthWeb.AuthController do
       |> Enum.into(%{})
       |> Map.get(:oidc, [])
     auth0_config = Application.get_env(:td_auth, :auth)
-    
+
     auth_methods = %{}
     |> add_oidc_auth(oidc_config)
     |> add_auth0_auth(auth0_config)
