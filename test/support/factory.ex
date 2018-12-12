@@ -7,7 +7,7 @@ defmodule TdAuth.Factory do
 
   def user_factory do
     %TdAuth.Accounts.User{
-      id: 0,
+      #id: 0,
       user_name: "bufoncillo",
       email: "bufoncillo@truedat.io",
       full_name: "Bufon Cillo",

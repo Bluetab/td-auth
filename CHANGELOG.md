@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.10.1] 2018-12-12
+
+### Changed
+
+- [TD-1172] Fixed missing authorization for update_acl_entry 
+
 ## [2.10.0] 2018-12-11
 
 ### Changed

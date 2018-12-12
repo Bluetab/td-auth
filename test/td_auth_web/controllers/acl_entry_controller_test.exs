@@ -2,6 +2,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  alias TdAuth.Permissions
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Role
   import TdAuthWeb.Authentication, only: :functions
@@ -97,6 +98,61 @@ defmodule TdAuthWeb.AclEntryControllerTest do
                "resource_type" => "domain",
                "role_id" => role.id
              }
+    end
+
+    test "renders error when creating a new acl without permission", %{} do
+      user = insert(:user)
+      {:ok, %{conn: conn}} = create_user_auth_conn(user)
+
+      role = Role.role_get_or_create_by_name("create")
+      acl_entry_attrs = %{
+        principal_id: "10",
+        principal_type: "user",
+        resource_id: "1",
+        resource_type: "domain",
+        role_name: role.name
+      }
+      conn = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      assert json_response(conn, 403)
+    end
+
+    @tag :admin_authenticated
+    test "updates acl when non admin user has permission", %{} do
+      user = insert(:user, user_name: "user1")
+      user2 = insert(:user, user_name: "user2")
+      Role.role_get_or_create_by_name("role1")
+      Role.role_get_or_create_by_name("role2")
+      domain_id = "123"
+
+      {:ok, %{conn: conn, claims: %{"jti" => jti, "exp" => exp}}} = create_user_auth_conn(user)
+      perms = [%{
+        permissions: ["create_acl_entry", "update_acl_entry"],
+        resource_id: domain_id,
+        resource_type: "domain"
+      }]
+      Permissions.cache_session_permissions(perms, jti, exp)
+
+      # create acl entry with valid user
+      acl_entry_attrs = %{
+        principal_id: user2.id,
+        principal_type: "user",
+        resource_id: domain_id,
+        resource_type: "domain",
+        role_name: "role1"
+      }
+      resp = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      assert json_response(resp, 201)
+
+      # update acl entry with valid user
+      acl_entry_attrs = %{
+        principal_id: user2.id,
+        principal_type: "user",
+        resource_id: domain_id,
+        resource_type: "domain",
+        role_name: "role2"
+      }
+      resp = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      assert json_response(resp, 200)
     end
 
     @tag :admin_authenticated

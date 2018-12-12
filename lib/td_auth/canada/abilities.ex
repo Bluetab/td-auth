@@ -15,6 +15,10 @@ defmodule TdBg.Canada.Abilities do
       authorized?(session, :create_acl_entry, domain_id)
     end
 
+    def can?(session, :update, %{resource_type: "domain", resource_id: domain_id}) do
+      authorized?(session, :update_acl_entry, domain_id)
+    end
+
     def can?(session, :view, AclEntry) do
       authorized?(session, :view_domain, 1)
     end
@@ -24,7 +28,8 @@ defmodule TdBg.Canada.Abilities do
     end
 
     def can?(session, :create_or_update, %{resource_type: "domain", resource_id: domain_id}) do
-      authorized?(session, :create_acl_entry, domain_id)
+      (authorized?(session, :create_acl_entry, domain_id)
+      or authorized?(session, :update_acl_entry, domain_id))
     end
 
     def can?(session, :delete, %{resource_type: "domain", resource_id: domain_id}) do
