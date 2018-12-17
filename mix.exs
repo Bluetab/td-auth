@@ -7,7 +7,7 @@ defmodule TdAuth.Mixfile do
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "2.8.1-local"
+          nil -> "2.10.2-local"
           v -> v
         end,
       elixir: "~> 1.6",
@@ -63,7 +63,7 @@ defmodule TdAuth.Mixfile do
       {:prometheus_ex, "~> 3.0.2"},
       {:prometheus_plugs, "~> 1.1.5"},
       {:exldap, "~> 0.6"},
-      {:openid_connect, "~> 0.1.2"}
+      {:openid_connect, "~> 0.2.0"}
     ]
   end
 

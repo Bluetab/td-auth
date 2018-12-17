@@ -72,7 +72,8 @@ config :td_auth, :openid_connect_providers,
     client_id: "${OIDC_CLIENT_ID}",
     client_secret: "${OIDC_CLIENT_SECRET}",
     redirect_uri: "${OIDC_REDIRECT_URI}",
-    scope: "${OIDC_SCOPE}"
+    scope: "${OIDC_SCOPE}",
+    response_type: "id_token"
   ]
 
 config :td_perms, redis_host: "${REDIS_HOST}"

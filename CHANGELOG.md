@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.10.2] 2018-12-17
+
+### Changed
+
+- Update to openid_connect 0.2.0 and specify id_token as resposne type
+
 ## [2.10.1] 2018-12-12
 
 ### Changed

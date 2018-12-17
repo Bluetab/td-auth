@@ -52,5 +52,6 @@ config :td_auth, :openid_connect_providers,
     client_id: "CLIENT_ID",
     client_secret: "CLIENT_SECRET",
     redirect_uri: "http://localhost:8080",
-    scope: "openid profile"
+    scope: "openid profile",
+    response_type: "id_token"
   ]
