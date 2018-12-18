@@ -117,7 +117,8 @@ config :td_perms,
     :view_published_ingests,
     :view_versioned_ingests,
     :view_rejected_ingests,
-    :view_deprecated_ingests
+    :view_deprecated_ingests,
+    :manage_confidential_structures
   ]
 
 # Import environment specific config. This must remain at the bottom

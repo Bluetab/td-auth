@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.3] 2018-12-18
+
+### Added
+
+- Added manage_confidential_structures permission
+- Update td_perms version 2.10.0
+
 ## [2.10.2] 2018-12-17
 
 ### Changed

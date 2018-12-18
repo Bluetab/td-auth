@@ -46,7 +46,8 @@ defmodule TdAuth.Permissions.Permission do
     view_published_ingests: "view_published_ingests",
     view_versioned_ingests: "view_versioned_ingests",
     view_rejected_ingests: "view_rejected_ingests",
-    view_deprecated_ingests: "view_deprecated_ingests"
+    view_deprecated_ingests: "view_deprecated_ingests",
+    manage_confidential_structures: "manage_confidential_structures"
   }
 
   schema "permissions" do
