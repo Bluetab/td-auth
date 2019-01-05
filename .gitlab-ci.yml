@@ -1,5 +1,5 @@
 variables:
-  VERSION: "2.11.1"
+  VERSION: "2.11.2"
   APP_NAME: "td_auth"
   ECR_NAMESPACE: "truedat"
   K8S_DEPLOYMENT: "auth"
@@ -13,14 +13,14 @@ stages:
 build:
   stage: build
   script:
-    - docker run --rm -v $(pwd):/code:ro -w /code --entrypoint=/code/ci/build.sh bluetab/amazonlinux-phoenix-postgresql:20180621095335
+    - docker run --rm -v $(pwd):/code:ro -w /code --entrypoint=/code/ci/build.sh bluetab/amazonlinux-phoenix-postgresql:20190105051037
   artifacts:
     untracked: true
 
 test:
   stage: test
   script:
-    - docker run --rm -v $(pwd):/code:ro -w /code --entrypoint=/code/ci/test.sh bluetab/amazonlinux-phoenix-postgresql-redis:20180709225133
+    - docker run --rm -v $(pwd):/code:ro -w /code --entrypoint=/code/ci/test.sh bluetab/amazonlinux-phoenix-postgresql-redis:20190105051228
   artifacts:
     untracked: true
 
