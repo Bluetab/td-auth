@@ -2,7 +2,7 @@ defmodule TdAuthWeb.User do
   @moduledoc false
 
   alias Poison, as: JSON
-  import TdAuthWeb.Router.Helpers
+  alias TdAuthWeb.Router.Helpers, as: Routes
   import TdAuthWeb.Authentication, only: :functions
   @endpoint TdAuthWeb.Endpoint
 
@@ -11,7 +11,7 @@ defmodule TdAuthWeb.User do
     body = %{user: user_params} |> JSON.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
-      HTTPoison.post!(user_url(@endpoint, :create), body, headers, [])
+      HTTPoison.post!(Routes.user_url(@endpoint, :create), body, headers, [])
 
     {:ok, status_code, resp |> JSON.decode!()}
   end
@@ -21,7 +21,7 @@ defmodule TdAuthWeb.User do
     body = %{user: user_params} |> JSON.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
-      HTTPoison.put!(user_url(@endpoint, :update, target_user_id), body, headers, [])
+      HTTPoison.put!(Routes.user_url(@endpoint, :update, target_user_id), body, headers, [])
 
     {:ok, status_code, resp |> JSON.decode!()}
   end
@@ -30,7 +30,7 @@ defmodule TdAuthWeb.User do
     headers = get_header(token)
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
-      HTTPoison.delete!(user_url(@endpoint, :delete, target_user_id), headers, [])
+      HTTPoison.delete!(Routes.user_url(@endpoint, :delete, target_user_id), headers, [])
 
     {:ok, status_code, resp}
   end
@@ -39,7 +39,7 @@ defmodule TdAuthWeb.User do
     headers = get_header(token)
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
-      HTTPoison.get!(user_url(@endpoint, :index), headers, [])
+      HTTPoison.get!(Routes.user_url(@endpoint, :index), headers, [])
 
     {:ok, status_code, resp |> JSON.decode!()}
   end
@@ -54,7 +54,7 @@ defmodule TdAuthWeb.User do
     body = %{old_password: old_password, new_password: new_password} |> JSON.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: _resp} =
-      HTTPoison.patch!(user_user_url(@endpoint, :change_password, user_id), body, headers, [])
+      HTTPoison.patch!(Routes.user_user_url(@endpoint, :change_password, user_id), body, headers, [])
 
     {:ok, status_code}
   end

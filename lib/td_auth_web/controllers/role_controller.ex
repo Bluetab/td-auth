@@ -27,8 +27,9 @@ defmodule TdAuthWeb.RoleController do
       render(conn, "index.json", roles: roles)
     else
       conn
-      |> put_status(:unauthorized)
-      |> render(ErrorView, "401.json")
+      |> put_status(:forbidden)
+      |> put_view(ErrorView)
+      |> render("403.json")
     end
   end
 
@@ -50,27 +51,31 @@ defmodule TdAuthWeb.RoleController do
           {:ok, %Role{} = role} <- Role.create_role(role_params) do
           conn
           |> put_status(:created)
-          |> put_resp_header("location", role_path(conn, :show, role))
+          |> put_resp_header("location", Routes.role_path(conn, :show, role))
           |> render("show.json", role: role)
         else
           {:error_unsetting_is_default} ->
             conn
             |> put_status(:unprocessable_entity)
-            |> render(ErrorView, :"422.json")
+            |> put_view(ErrorView)
+            |> render("422.json")
           {:error, %Ecto.Changeset{}} ->
             conn
             |> put_status(:unprocessable_entity)
-            |> render(ErrorView, :"422.json")
+            |> put_view(ErrorView)
+            |> render("422.json")
           error ->
             Logger.error("While creating role... #{inspect(error)}")
             conn
             |> put_status(:unprocessable_entity)
-            |> render(ErrorView, :"422.json")
+            |> put_view(ErrorView)
+            |> render("422.json")
         end
       false ->
         conn
         |> put_status(:forbidden)
-        |> render(ErrorView, :"403.json")
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -112,21 +117,25 @@ defmodule TdAuthWeb.RoleController do
           {:error_unsetting_is_default} ->
             conn
             |> put_status(:unprocessable_entity)
-            |> render(ErrorView, :"422.json")
+            |> put_view(ErrorView)
+            |> render("422.json")
           {:error, %Ecto.Changeset{}} ->
             conn
             |> put_status(:unprocessable_entity)
-            |> render(ErrorView, :"422.json")
+            |> put_view(ErrorView)
+            |> render("422.json")
           error ->
             Logger.error("While updating role... #{inspect(error)}")
             conn
             |> put_status(:unprocessable_entity)
-            |> render(ErrorView, :"422.json")
+            |> put_view(ErrorView)
+            |> render("422.json")
         end
       false ->
         conn
         |> put_status(:forbidden)
-        |> render(ErrorView, :"403.json")
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -151,12 +160,14 @@ defmodule TdAuthWeb.RoleController do
           _error ->
             conn
             |> put_status(:unprocessable_entity)
-            |> render(ErrorView, :"422.json")
+            |> put_view(ErrorView)
+            |> render("422.json")
         end
       false ->
         conn
         |> put_status(:forbidden)
-        |> render(ErrorView, :"403.json")
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 

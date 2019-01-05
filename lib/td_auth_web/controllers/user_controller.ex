@@ -31,8 +31,9 @@ defmodule TdAuthWeb.UserController do
         render(conn, "index.json", users: users)
       _ ->
         conn
-          |> put_status(:unauthorized)
-          |> render(ErrorView, "401.json")
+          |> put_status(:forbidden)
+          |> put_view(ErrorView)
+          |> render("403.json")
     end
   end
 
@@ -53,8 +54,9 @@ defmodule TdAuthWeb.UserController do
           |> do_create(user_params)
       _ ->
         conn
-          |> put_status(:unauthorized)
-          |> render(ErrorView, "401.json")
+          |> put_status(:forbidden)
+          |> put_view(ErrorView)
+          |> render("403.json")
     end
   end
 
@@ -81,8 +83,9 @@ defmodule TdAuthWeb.UserController do
         render(conn, "show.json", user: user, acls: acls)
       _ ->
         conn
-          |> put_status(:unauthorized)
-          |> render(ErrorView, "403.json")
+          |> put_status(:forbidden)
+          |> put_view(ErrorView)
+          |> render("403.json")
     end
   end
 
@@ -123,8 +126,9 @@ defmodule TdAuthWeb.UserController do
         |> do_delete(id)
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -163,8 +167,9 @@ defmodule TdAuthWeb.UserController do
         render(conn, "index.json", users: users)
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
   def search(conn, %{"data" => _}) do
@@ -181,19 +186,21 @@ defmodule TdAuthWeb.UserController do
     do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", user_path(conn, :show, user))
+      |> put_resp_header("location", Routes.user_path(conn, :show, user))
       |> render("show.json", user: user |> Repo.preload(:groups))
 
     else
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> render(TdAuthWeb.ChangesetView, "error.json", changeset: changeset)
+        |> put_view(TdAuthWeb.ChangesetView)
+        |> render("error.json", changeset: changeset)
       error ->
         Logger.error("Logger While creating user... #{inspect(error)}")
         conn
           |> put_status(:unprocessable_entity)
-          |> render(ErrorView, "422.json")
+          |> put_view(ErrorView)
+          |> render("422.json")
     end
 
   end
@@ -216,8 +223,9 @@ defmodule TdAuthWeb.UserController do
   defp update?(conn, id, user_params, true), do: do_update(conn, id, user_params)
   defp update?(conn, _id, _user_params, _) do
     conn
-    |> put_status(:unauthorized)
-    |> render(ErrorView, "401.json")
+    |> put_status(:forbidden)
+    |> put_view(ErrorView)
+    |> render("403.json")
   end
 
   defp do_update(conn, id, user_params) do

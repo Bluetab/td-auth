@@ -13,7 +13,6 @@ config :td_auth, TdAuthWeb.Endpoint,
 
 # Configure your database
 config :td_auth, TdAuth.Repo,
-  adapter: Ecto.Adapters.Postgres,
   username: "${DB_USER}",
   password: "${DB_PASSWORD}",
   database: "${DB_NAME}",

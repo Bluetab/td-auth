@@ -7,8 +7,8 @@ defmodule TdAuthWeb.Authentication do
   alias Poison, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Auth.Guardian
+  alias TdAuthWeb.Router.Helpers, as: Routes
   import Plug.Conn
-  import TdAuthWeb.Router.Helpers
   @endpoint TdAuthWeb.Endpoint
   @headers {"Content-type", "application/json"}
 
@@ -48,7 +48,7 @@ defmodule TdAuthWeb.Authentication do
     body = %{user: %{user_name: user_name, password: user_password}} |> JSON.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
-      HTTPoison.post!(session_url(@endpoint, :create), body, [@headers], [])
+      HTTPoison.post!(Routes.session_url(@endpoint, :create), body, [@headers], [])
 
     {:ok, status_code, resp |> JSON.decode!()}
   end
@@ -57,7 +57,7 @@ defmodule TdAuthWeb.Authentication do
     headers = get_header(token)
 
     %HTTPoison.Response{status_code: status_code, body: _resp} =
-      HTTPoison.delete!(session_url(@endpoint, :destroy), headers, [])
+      HTTPoison.delete!(Routes.session_url(@endpoint, :destroy), headers, [])
 
     {:ok, status_code}
   end

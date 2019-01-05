@@ -121,7 +121,8 @@ defmodule TdAuthWeb.SessionController do
        Logger.info("While authenticating using active directory ... #{inspect(error)}")
        conn
        |> put_status(:unauthorized)
-       |> render(ErrorView, "401.json")
+       |> put_view(ErrorView)
+       |> render("401.json")
     end
   end
 
@@ -134,7 +135,8 @@ defmodule TdAuthWeb.SessionController do
        Logger.info("While authenticating using ldap ... #{inspect(error)}")
        conn
        |> put_status(:unauthorized)
-       |> render(ErrorView, "401.json")
+       |> put_view(ErrorView)
+       |> render("401.json")
     end
   end
 
@@ -148,7 +150,8 @@ defmodule TdAuthWeb.SessionController do
       _ ->
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_view(ErrorView)
+        |> render("401.json")
     end
   end
 
@@ -162,7 +165,8 @@ defmodule TdAuthWeb.SessionController do
         Logger.info("While authenticating using OpenID Connect... #{inspect(error)}")
         conn
         |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_view(ErrorView)
+        |> render("401.json")
     end
   end
 
@@ -176,7 +180,8 @@ defmodule TdAuthWeb.SessionController do
        Logger.info("While authenticating using auth0... #{inspect(error)}")
        conn
        |> put_status(:unauthorized)
-       |> render(ErrorView, "401.json")
+       |> put_view(ErrorView)
+       |> render("401.json")
     end
   end
 

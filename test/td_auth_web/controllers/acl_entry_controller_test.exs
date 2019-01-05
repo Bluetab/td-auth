@@ -21,7 +21,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   describe "index" do
     @tag :admin_authenticated
     test "lists all acl_entries", %{conn: conn} do
-      conn = get conn, acl_entry_path(conn, :index)
+      conn = get conn, Routes.acl_entry_path(conn, :index)
       assert json_response(conn, 200)["data"] == []
     end
   end
@@ -34,12 +34,12 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       role = Role.role_get_or_create_by_name("watch")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id, role_id: role.id)
       acl_entry_attrs = acl_entry_attrs |> Map.from_struct
-      conn = post conn, acl_entry_path(conn, :create), acl_entry: acl_entry_attrs
+      conn = post conn, Routes.acl_entry_path(conn, :create), acl_entry: acl_entry_attrs
       assert %{"id" => id} = json_response(conn, 201)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
 
       conn = recycle_and_put_headers(conn)
-      conn = get conn, acl_entry_path(conn, :show, id)
+      conn = get conn, Routes.acl_entry_path(conn, :show, id)
       validate_resp_schema(conn, schema, "AclEntryResponse")
       assert json_response(conn, 200)["data"] == %{
         "id" => id,
@@ -58,18 +58,18 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       role = Role.role_get_or_create_by_name("watch")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id, role_id: role.id)
       acl_entry_attrs = acl_entry_attrs |> Map.from_struct
-      conn = post conn, acl_entry_path(conn, :create), acl_entry: acl_entry_attrs
+      conn = post conn, Routes.acl_entry_path(conn, :create), acl_entry: acl_entry_attrs
       assert %{"id" => _id} = json_response(conn, 201)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
 
       conn = recycle_and_put_headers(conn)
-      conn = post conn, acl_entry_path(conn, :create), acl_entry: acl_entry_attrs
+      conn = post conn, Routes.acl_entry_path(conn, :create), acl_entry: acl_entry_attrs
       assert json_response(conn, 422)["errors"] != %{}
     end
 
     @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post conn, acl_entry_path(conn, :create), acl_entry: @invalid_attrs
+      conn = post conn, Routes.acl_entry_path(conn, :create), acl_entry: @invalid_attrs
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -83,12 +83,12 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id)
       acl_entry_attrs = acl_entry_attrs |> Map.from_struct
       acl_entry_attrs = Map.put(acl_entry_attrs, "role_name", role.name)
-      conn = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      conn = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert %{"id" => id} = json_response(conn, 201)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
 
       conn = recycle_and_put_headers(conn)
-      conn = get conn, acl_entry_path(conn, :show, id)
+      conn = get conn, Routes.acl_entry_path(conn, :show, id)
       validate_resp_schema(conn, schema, "AclEntryResponse")
       assert json_response(conn, 200)["data"] == %{
                "id" => id,
@@ -112,7 +112,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
         resource_type: "domain",
         role_name: role.name
       }
-      conn = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      conn = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert json_response(conn, 403)
     end
 
@@ -140,7 +140,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
         resource_type: "domain",
         role_name: "role1"
       }
-      resp = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      resp = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert json_response(resp, 201)
 
       # update acl entry with valid user
@@ -151,7 +151,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
         resource_type: "domain",
         role_name: "role2"
       }
-      resp = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      resp = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert json_response(resp, 200)
     end
 
@@ -163,7 +163,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id)
       acl_entry_attrs = acl_entry_attrs |> Map.from_struct
       acl_entry_attrs = Map.put(acl_entry_attrs, "role_name", role.name)
-      conn = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      conn = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert %{"id" => _id} = json_response(conn, 201)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
 
@@ -173,12 +173,12 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id)
       acl_entry_attrs = acl_entry_attrs |> Map.from_struct
       acl_entry_attrs = Map.put(acl_entry_attrs, "role_name", role.name)
-      conn = post conn, acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
+      conn = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert %{"id" => id} = json_response(conn, 200)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
 
       conn = recycle_and_put_headers(conn)
-      conn = get conn, acl_entry_path(conn, :show, id)
+      conn = get conn, Routes.acl_entry_path(conn, :show, id)
       validate_resp_schema(conn, schema, "AclEntryResponse")
       assert json_response(conn, 200)["data"] == %{
                "id" => id,
@@ -196,11 +196,11 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
     @tag :admin_authenticated
     test "renders acl_entry when data is valid", %{conn: conn, swagger_schema: schema, acl_entry: %AclEntry{id: id, role_id: role_id} = acl_entry} do
-      conn = put conn, acl_entry_path(conn, :update, acl_entry), acl_entry: @update_attrs
+      conn = put conn, Routes.acl_entry_path(conn, :update, acl_entry), acl_entry: @update_attrs
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
       conn = recycle_and_put_headers(conn)
-      conn = get conn, acl_entry_path(conn, :show, id)
+      conn = get conn, Routes.acl_entry_path(conn, :show, id)
       validate_resp_schema(conn, schema, "AclEntryResponse")
       assert json_response(conn, 200)["data"] == %{
         "id" => id,
@@ -214,7 +214,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
     @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn, acl_entry: acl_entry} do
-      conn = put conn, acl_entry_path(conn, :update, acl_entry), acl_entry: @invalid_attrs
+      conn = put conn, Routes.acl_entry_path(conn, :update, acl_entry), acl_entry: @invalid_attrs
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -224,11 +224,11 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
     @tag :admin_authenticated
     test "deletes chosen acl_entry", %{conn: conn, acl_entry: acl_entry} do
-      conn = delete conn, acl_entry_path(conn, :delete, acl_entry)
+      conn = delete conn, Routes.acl_entry_path(conn, :delete, acl_entry)
       assert response(conn, 204)
       conn = recycle_and_put_headers(conn)
       assert_error_sent 404, fn ->
-        get conn, acl_entry_path(conn, :show, acl_entry)
+        get conn, Routes.acl_entry_path(conn, :show, acl_entry)
       end
     end
   end
@@ -238,7 +238,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
     @tag :admin_authenticated
     test "lists acl_entries by resource", %{conn: conn, acl_entry: acl_entry, user: user} do
-      conn = get conn, acl_entry_path(conn, :acl_entries, "domains", acl_entry.resource_id)
+      conn = get conn, Routes.acl_entry_path(conn, :acl_entries, "domains", acl_entry.resource_id)
       data = json_response(conn, 200)["data"]
       assert length(data) == 1
       [entry] = data
@@ -255,7 +255,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
     @tag :admin_authenticated
     test "lists user_roles by resource", %{conn: conn, swagger_schema: schema, acl_entry: acl_entry, user: expected_user} do
-      conn = get conn, acl_entry_path(conn, :user_roles, "domains", acl_entry.resource_id)
+      conn = get conn, Routes.acl_entry_path(conn, :user_roles, "domains", acl_entry.resource_id)
       validate_resp_schema(conn, schema, "ResourceUserRolesResponse")
       data = json_response(conn, 200)
       assert length(data) == 1

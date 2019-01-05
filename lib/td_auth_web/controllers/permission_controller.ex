@@ -74,7 +74,8 @@ defmodule TdAuthWeb.PermissionController do
       false ->
         conn
         |> put_status(:forbidden)
-        |> render(ErrorView, :"403.json")
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 

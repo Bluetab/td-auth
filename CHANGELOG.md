@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.11.0] 2019-01-05
+
+### Fixed
+
+- Response codes 403 (forbidden) and 401 (unauthorized) were sometimes being used incorrectly
+
+### Changed
+
+- Update to phoenix 1.4.0, ecto 3.0
+- Remove unused channels / phoenix_pubsub artifacts
+
 ## [2.10.3] 2018-12-18
 
 ### Added

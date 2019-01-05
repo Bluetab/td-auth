@@ -30,8 +30,9 @@ defmodule TdAuthWeb.GroupController do
         render(conn, "index.json", groups: groups)
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -51,13 +52,14 @@ defmodule TdAuthWeb.GroupController do
         with {:ok, %Group{} = group} <- Accounts.create_group(group_params) do
           conn
           |> put_status(:created)
-          |> put_resp_header("location", group_path(conn, :show, group))
+          |> put_resp_header("location", Routes.group_path(conn, :show, group))
           |> render("show.json", group: group)
         end
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -78,8 +80,9 @@ defmodule TdAuthWeb.GroupController do
         render(conn, "show.json", group: group)
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -104,8 +107,9 @@ defmodule TdAuthWeb.GroupController do
         end
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -128,8 +132,9 @@ defmodule TdAuthWeb.GroupController do
         end
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -151,8 +156,9 @@ defmodule TdAuthWeb.GroupController do
         render(conn, "index.json", groups: user.groups)
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -180,8 +186,9 @@ defmodule TdAuthWeb.GroupController do
         end
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -209,8 +216,9 @@ defmodule TdAuthWeb.GroupController do
         end
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
 
@@ -223,8 +231,9 @@ defmodule TdAuthWeb.GroupController do
         render(conn, "index.json", groups: groups)
       _ ->
         conn
-        |> put_status(:unauthorized)
-        |> render(ErrorView, "401.json")
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
     end
   end
   def search(conn, %{"data" => _}) do

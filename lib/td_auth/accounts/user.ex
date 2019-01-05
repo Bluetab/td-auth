@@ -44,7 +44,7 @@ defmodule TdAuth.Accounts.User do
     model
     |> changeset(params)
     |> put_assoc(:groups, parse_groups(params["groups"]))
-    |> cast(params, ~w(password))
+    |> cast(params, [:password])
     |> put_pass_hash()
   end
 

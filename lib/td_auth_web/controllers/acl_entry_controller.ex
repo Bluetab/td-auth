@@ -29,8 +29,9 @@ defmodule TdAuthWeb.AclEntryController do
       render(conn, "index.json", acl_entries: acl_entries)
     else
       conn
-      |> put_status(403)
-      |> render(ErrorView, :"403")
+      |> put_status(:forbidden)
+      |> put_view(ErrorView)
+      |> render("403.json")
     end
   end
 
@@ -54,18 +55,20 @@ defmodule TdAuthWeb.AclEntryController do
       with {:ok, %AclEntry{} = acl_entry} <- AclEntry.create_acl_entry(acl_entry_params) do
         conn
         |> put_status(:created)
-        |> put_resp_header("location", acl_entry_path(conn, :show, acl_entry))
+        |> put_resp_header("location", Routes.acl_entry_path(conn, :show, acl_entry))
         |> render("show.json", acl_entry: acl_entry)
       else
         _error ->
           conn
           |> put_status(:unprocessable_entity)
-          |> render(ErrorView, :"422.json")
+          |> put_view(ErrorView)
+          |> render("422.json")
       end
     else
       conn
-      |> put_status(403)
-      |> render(ErrorView, :"403")
+      |> put_status(:forbidden)
+      |> put_view(ErrorView)
+      |> render("403.json")
     end
   end
 
@@ -144,12 +147,14 @@ defmodule TdAuthWeb.AclEntryController do
         _error ->
           conn
           |> put_status(:unprocessable_entity)
-          |> render(ErrorView, :"422.json")
+          |> put_view(ErrorView)
+          |> render("422.json")
       end
     else
       conn
       |> put_status(:forbidden)
-      |> render(ErrorView, :"403.json")
+      |> put_view(ErrorView)
+      |> render("403.json")
     end
   end
 
@@ -176,12 +181,14 @@ defmodule TdAuthWeb.AclEntryController do
         _error ->
           conn
           |> put_status(:unprocessable_entity)
-          |> render(ErrorView, :"422.json")
+          |> put_view(ErrorView)
+          |> render("422.json")
       end
     else
       conn
       |> put_status(:forbidden)
-      |> render(ErrorView, :"403.json")
+      |> put_view(ErrorView)
+      |> render("403.json")
     end
   end
 
@@ -216,7 +223,8 @@ defmodule TdAuthWeb.AclEntryController do
     else
       conn
       |> put_status(:forbidden)
-      |> render(ErrorView, :"403.json")
+      |> put_view(ErrorView)
+      |> render("403.json")
     end
   end
 
@@ -250,7 +258,8 @@ defmodule TdAuthWeb.AclEntryController do
     else
       conn
       |> put_status(:forbidden)
-      |> render(ErrorView, :"403.json")
+      |> put_view(ErrorView)
+      |> render("403.json")
     end
   end
 end

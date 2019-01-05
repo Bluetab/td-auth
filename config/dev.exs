@@ -39,7 +39,6 @@ config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
 config :td_auth, TdAuth.Repo,
-  adapter: Ecto.Adapters.Postgres,
   username: "postgres",
   password: "postgres",
   database: "td_auth_dev",

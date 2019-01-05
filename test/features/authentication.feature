@@ -11,11 +11,11 @@ Feature: User Authentication
 
   Scenario: logging error
     When user "app-admin" tries to log into the application with password "inventedpass"
-    Then the system returns a result with code "Forbidden"
+    Then the system returns a result with code "Unauthorized"
 
   Scenario: logging error for non existing user
     When user "nobody" tries to log into the application with password "inventedpass"
-    Then the system returns a result with code "Forbidden"
+    Then the system returns a result with code "Unauthorized"
 
   Scenario: Creating a New user in the application
     And user "app-admin" is logged in the application with password "mypass"

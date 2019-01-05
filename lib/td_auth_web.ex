@@ -21,8 +21,8 @@ defmodule TdAuthWeb do
     quote bind_quoted: [log: log] do
       use Phoenix.Controller, namespace: TdAuthWeb, log: log
       import Plug.Conn
-      import TdAuthWeb.Router.Helpers
       import TdAuthWeb.Gettext
+      alias TdAuthWeb.Router.Helpers, as: Routes
     end
   end
 
@@ -34,10 +34,9 @@ defmodule TdAuthWeb do
 
       # Import convenience functions from controllers
       import Phoenix.Controller, only: [get_flash: 2, view_module: 1]
-
-      import TdAuthWeb.Router.Helpers
       import TdAuthWeb.ErrorHelpers
       import TdAuthWeb.Gettext
+      alias TdAuthWeb.Router.Helpers, as: Routes
     end
   end
 

@@ -36,13 +36,13 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup [:create_user]
 
     test "create valid user session", %{conn: conn, swagger_schema: schema} do
-      conn = post conn, session_path(conn, :create), user: @valid_attrs
+      conn = post conn, Routes.session_path(conn, :create), user: @valid_attrs
       validate_resp_schema(conn, schema, "Token")
       assert conn.status ==  201
     end
 
     test "create invalid user session", %{conn: conn} do
-      conn = post conn, session_path(conn, :create), user: @invalid_attrs
+      conn = post conn, Routes.session_path(conn, :create), user: @invalid_attrs
       assert conn.status ==  401
     end
 
@@ -56,7 +56,7 @@ defmodule TdAuthWeb.SessionControllerTest do
       conn = put_auth_headers(conn, jwt)
       profile = %{nickname: "user_name", name: "name", family_name: "surname", email: "email@xyz.com"}
       MockAuthService.set_user_info(200, profile |> JSON.encode!)
-      conn = post conn, session_path(conn, :create)
+      conn = post conn, Routes.session_path(conn, :create)
       validate_resp_schema(conn, schema, "Token")
       assert conn.status ==  201
       user = Accounts.get_user_by_name(profile[:nickname])
@@ -70,7 +70,7 @@ defmodule TdAuthWeb.SessionControllerTest do
       conn = put_auth_headers(conn, jwt)
       profile = %{nickname: "usueariotemporal", name: "Un nombre especial", family_name: "surname", email: "email@especial.com"}
       MockAuthService.set_user_info(200, profile |> JSON.encode!)
-      conn = post conn, session_path(conn, :create)
+      conn = post conn, Routes.session_path(conn, :create)
       validate_resp_schema(conn, schema, "Token")
       assert conn.status ==  201
       user = Accounts.get_user_by_name(profile[:nickname])
@@ -84,7 +84,7 @@ defmodule TdAuthWeb.SessionControllerTest do
       conn = put_auth_headers(conn, jwt)
       profile = %{nickname: "user_name", name: "name", email: "email@xyz.com"}
       MockAuthService.set_user_info(401, profile |> JSON.encode!)
-      conn = post conn, session_path(conn, :create)
+      conn = post conn, Routes.session_path(conn, :create)
       assert conn.status ==  401
       user = Accounts.get_user_by_name(profile[:nickname])
       assert !user
@@ -96,7 +96,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup [:create_user]
 
     test "refresh session with valid refresh token", %{conn: conn, swagger_schema: schema} do
-      conn = post conn, session_path(conn, :create), user: @valid_attrs
+      conn = post conn, Routes.session_path(conn, :create), user: @valid_attrs
       validate_resp_schema(conn, schema, "Token")
       token_resp = json_response(conn, 201)
       token = token_resp["token"]
@@ -107,7 +107,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       conn = ConnTest.recycle(conn)
       conn = put_auth_headers(conn, token)
-      conn = post conn, session_path(conn, :refresh), %{refresh_token: refresh_token}
+      conn = post conn, Routes.session_path(conn, :refresh), %{refresh_token: refresh_token}
       validate_resp_schema(conn, schema, "Token")
       token_resp = json_response(conn, 201)
       token = token_resp["token"]
@@ -117,7 +117,7 @@ defmodule TdAuthWeb.SessionControllerTest do
       |> ConnTest.recycle
       |> put_auth_headers(token)
 
-      conn = get conn, session_path(conn, :ping)
+      conn = get conn, Routes.session_path(conn, :ping)
       assert conn.status == 200
     end
   end

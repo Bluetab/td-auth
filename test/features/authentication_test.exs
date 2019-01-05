@@ -108,7 +108,7 @@ defmodule TdAuth.AuthenticationTest do
          %{user_name: user_name, password: password},
          _state do
     {_, status_code, json_resp} = session_create(user_name, password)
-    assert rc_forbidden() == to_response_code(status_code)
+    assert rc_unauthorized() == to_response_code(status_code)
     assert json_resp["token"] == nil
   end
 
