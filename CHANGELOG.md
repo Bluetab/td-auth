@@ -5,6 +5,7 @@
 ### Changed
 
 - CI builds are now on OTP 21.2 and Elixir 1.7.4
+- Removed unused edeliver artifacts
 
 ## [2.11.0] 2019-01-05
 

@@ -51,6 +51,6 @@ release :td_auth do
     :runtime_tools
   ]
   set commands: [
-    "migrate": "rel/commands/migrate.sh"
+    migrate: "rel/commands/migrate.sh"
   ]
 end
