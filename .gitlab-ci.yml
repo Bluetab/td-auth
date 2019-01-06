@@ -8,6 +8,7 @@ variables:
 stages:
   - build
   - test
+  - publish
   - deploy
 
 build:
@@ -24,10 +25,8 @@ test:
   artifacts:
     untracked: true
 
-deploy:
-  stage: deploy
-  tags:
-    - kubectl
+publish:
+  stage: publish
   only:
     - master
     - tags
@@ -41,4 +40,11 @@ deploy:
     - rm output
     - docker tag ${ECR_NAMESPACE}/${CI_PROJECT_NAME}:${CI_COMMIT_SHA} ${ECR}/${ECR_NAMESPACE}/${CI_PROJECT_NAME}:${VERSION}
     - docker push ${ECR}/${ECR_NAMESPACE}/${CI_PROJECT_NAME}:${VERSION}
+
+deploy:
+  stage: deploy
+  only:
+    - master
+    - tags
+  script:
     - kubectl set image deployment.v1.apps/${K8S_DEPLOYMENT} ${K8S_CONTAINER}=${ECR}/${ECR_NAMESPACE}/${CI_PROJECT_NAME}:${VERSION} --record

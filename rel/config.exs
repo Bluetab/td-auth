@@ -37,7 +37,7 @@ environment :prod do
   set include_erts: true
   set include_src: false
   set cookie: :"k>qX&B,;f%I/y7;il|zcYkAXvc7L0]jd8,4)wp:jns]O.a397e_8<TG96>tBLU=8"
-  set pre_start_hooks: "rel/hooks/pre-start"
+  set pre_start_hooks: "rel/hooks/pre_start"
 end
 
 # You may define one or more releases in this file.
