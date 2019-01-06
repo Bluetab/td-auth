@@ -38,7 +38,7 @@ defmodule TdAuth.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.4.0", override: true},
+      {:phoenix, "~> 1.4.0"},
       {:plug_cowboy, "~> 2.0"},
       {:plug, "~> 1.7"},
       {:phoenix_ecto, "~> 4.0"},
@@ -59,7 +59,7 @@ defmodule TdAuth.Mixfile do
       {:phoenix_swagger, "~> 0.8.0"},
       {:ex_json_schema, "~> 0.5"},
       {:td_perms, git: "https://github.com/Bluetab/td-perms.git", tag: "2.10.0"},
-      {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git"},
+      {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git", tag: "2.11.0"},
       {:inflex, "~> 1.10.0"},
       {:prometheus_ex, "~> 3.0.2"},
       {:prometheus_plugs, "~> 1.1.5"},
