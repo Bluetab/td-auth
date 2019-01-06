@@ -43,8 +43,11 @@ publish:
 
 deploy:
   stage: deploy
+  tags:
+    - kubectl
   only:
     - master
     - tags
   script:
+    - export VERSION=${CI_COMMIT_TAG:-${VERSION}-alpha.${CI_PIPELINE_ID}}
     - kubectl set image deployment.v1.apps/${K8S_DEPLOYMENT} ${K8S_CONTAINER}=${ECR}/${ECR_NAMESPACE}/${CI_PROJECT_NAME}:${VERSION} --record
