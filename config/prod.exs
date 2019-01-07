@@ -19,7 +19,7 @@ config :td_auth, TdAuthWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, :console,
   format: "[$level] $message\n",
-  level: info
+  level: :info
 
 # ## SSL Support
 #
