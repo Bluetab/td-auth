@@ -10,7 +10,8 @@ defmodule TdAuth.ReleaseTasks do
     :ssl,
     :postgrex,
     :ecto,
-    :ecto_sql # If using Ecto 3.0 or higher
+    # If using Ecto 3.0 or higher
+    :ecto_sql
   ]
 
   @repos Application.get_env(:td_auth, :ecto_repos, [])
@@ -35,7 +36,7 @@ defmodule TdAuth.ReleaseTasks do
 
     # Start the Repo(s) for app
     IO.puts("Starting repos..")
-    
+
     # Switch pool_size to 2 for ecto > 3.0
     Enum.each(@repos, & &1.start_link(pool_size: 2))
   end
