@@ -12,7 +12,6 @@ use Mix.Config
 # This is an API, so we don't cache a static manifest.
 config :td_auth, TdAuthWeb.Endpoint,
   http: [port: 4001],
-  url: [host: "api.truedat.net", port: 8000],
   server: true,
   version: Mix.Project.config()[:version]
 

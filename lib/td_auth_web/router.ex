@@ -1,10 +1,6 @@
 defmodule TdAuthWeb.Router do
   use TdAuthWeb, :router
 
-  @endpoint_url "#{Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:host]}:#{
-                  Application.get_env(:td_auth, TdAuthWeb.Endpoint)[:url][:port]
-                }"
-
   pipeline :api_unsecured do
     plug(TdAuth.Auth.Pipeline.Unsecure)
     plug(:accepts, ["json"])
@@ -63,13 +59,11 @@ defmodule TdAuthWeb.Router do
 
   def swagger_info do
     %{
-      schemes: ["http"],
+      schemes: ["http", "https"],
       info: %{
-        version: "1.0",
-        title: "TDAuth"
+        version: Application.spec(:td_auth, :vsn),
+        title: "Truedat Authorization Service"
       },
-      host: @endpoint_url,
-      # basePath: "/api",
       securityDefinitions: %{
         bearer: %{
           type: "apiKey",
