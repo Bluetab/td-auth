@@ -1,5 +1,5 @@
 defmodule TdAuthWeb.PingController do
-  use TdAuthWeb, [:controller, :warn]
+  use TdAuthWeb, [:controller, :debug]
 
   action_fallback(TdAuthWeb.FallbackController)
 
