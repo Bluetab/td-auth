@@ -16,13 +16,13 @@ defmodule TdAuth.ReleaseTasks do
 
   @repos Application.get_env(:td_auth, :ecto_repos, [])
 
-  def migrate() do
+  def migrate do
     start_services()
     run_migrations()
     stop_services()
   end
 
-  def seed() do
+  def seed do
     start_services()
     run_migrations()
     run_seeds()
