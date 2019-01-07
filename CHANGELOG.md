@@ -1,10 +1,11 @@
 # Changelog
 
-## [2.11.2] 2019-01-06
+## [2.11.3] 2019-01-07
 
 ### Changed
 
 - CI builds are now on OTP 21.2 and Elixir 1.7.4
+- Update to distillery 2.0
 - Removed unused edeliver artifacts
 
 ## [2.11.0] 2019-01-05
