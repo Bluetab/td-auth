@@ -9,19 +9,19 @@ defmodule TdAuth.ReleaseTasks do
     :crypto,
     :ssl,
     :postgrex,
-    :ecto
+    :ecto,
+    :ecto_sql # If using Ecto 3.0 or higher
   ]
 
-  @app :td_auth
-  @repos Application.get_env(@app, :ecto_repos, [])
+  @repos Application.get_env(:td_auth, :ecto_repos, [])
 
-  def migrate do
+  def migrate(_argv) do
     start_services()
     run_migrations()
     stop_services()
   end
 
-  def seed do
+  def seed(_argv) do
     start_services()
     run_migrations()
     run_seeds()
@@ -29,17 +29,14 @@ defmodule TdAuth.ReleaseTasks do
   end
 
   defp start_services do
-    IO.puts("Loading #{@app}..")
-
-    # Load the code for myapp, but don't start it
-    Application.load(@app)
-
     IO.puts("Starting dependencies..")
     # Start apps necessary for executing migrations
     Enum.each(@start_apps, &Application.ensure_all_started/1)
 
     # Start the Repo(s) for app
     IO.puts("Starting repos..")
+    
+    # Switch pool_size to 2 for ecto > 3.0
     Enum.each(@repos, & &1.start_link(pool_size: 2))
   end
 
