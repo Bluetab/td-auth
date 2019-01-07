@@ -17,7 +17,9 @@ config :td_auth, TdAuthWeb.Endpoint,
   version: Mix.Project.config()[:version]
 
 # Do not print debug messages in production
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console,
+  format: "[$level] $message\n",
+  level: info
 
 # ## SSL Support
 #
