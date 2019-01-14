@@ -107,6 +107,18 @@ defmodule TdAuth.Accounts do
   end
 
   @doc """
+  Update a user from a profile. Creates the user if it doesn't exist
+  """
+  def create_or_update_user(profile) do
+    user_name = Map.get(profile, "user_name") || Map.get(profile, :user_name)
+    user = get_user_by_name(user_name)
+    case user do
+      nil -> create_user(profile)
+      u -> update_user(u, profile)
+    end
+  end
+
+  @doc """
   Deletes a User.
 
   ## Examples

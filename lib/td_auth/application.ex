@@ -35,7 +35,7 @@ defmodule TdAuth.Application do
              [%{children: [acl_remover_worker], strategy: :one_for_one}]},
           type: :supervisor
         }
-      ] ++ oidc_workers()
+      ] ++ oidc_workers() ++ saml_workers()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -50,19 +50,40 @@ defmodule TdAuth.Application do
     :ok
   end
 
+  defp saml_workers do
+    import Supervisor.Spec
+    config = Application.get_env(:td_auth, :saml)
+
+    if empty_config?(config, :sp_id),
+      do: [],
+      else: [worker(TdAuth.Saml.SamlWorker, [config])]
+  end
+
   defp oidc_workers do
     import Supervisor.Spec
 
     config = Application.get_env(:td_auth, :openid_connect_providers)
 
-    if empty_config?(config), do: [], else: [worker(OpenIDConnect.Worker, [config])]
+    if empty_config?(config, :client_id),
+      do: [],
+      else: [worker(OpenIDConnect.Worker, [config])]
   end
 
-  defp empty_config?(config) do
+  defp empty_config?(nil, _), do: true
+
+  defp empty_config?(config, :client_id) do
     config
     |> Keyword.values()
     |> Enum.map(& &1[:client_id])
     |> Enum.filter(&(&1 !== "" and not is_nil(&1)))
     |> Enum.empty?()
+  end
+
+  defp empty_config?(config, keyword) do
+    case Keyword.get(config, keyword) do
+      nil -> true
+      "" -> true
+      _ -> false
+    end
   end
 end

@@ -25,7 +25,7 @@ defmodule TdAuth.Mixfile do
   def application do
     [
       mod: {TdAuth.Application, []},
-      extra_applications: [:logger, :runtime_tools, :exldap]
+      extra_applications: [:logger, :runtime_tools, :exldap, :esaml]
     ]
   end
 
@@ -58,13 +58,14 @@ defmodule TdAuth.Mixfile do
       {:cabbage, git: "https://github.com/Bluetab/cabbage", tag: "v0.3.7-alpha"},
       {:phoenix_swagger, "~> 0.8.0"},
       {:ex_json_schema, "~> 0.5"},
-      {:td_perms, git: "https://github.com/Bluetab/td-perms.git", tag: "2.10.0"},
+      {:td_perms, git: "https://github.com/Bluetab/td-perms.git", tag: "2.11.2"},
       {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git", tag: "2.11.0"},
       {:inflex, "~> 1.10.0"},
       {:prometheus_ex, "~> 3.0.2"},
       {:prometheus_plugs, "~> 1.1.5"},
       {:exldap, "~> 0.6"},
-      {:openid_connect, "~> 0.2.0"}
+      {:openid_connect, "~> 0.2.0"},
+      {:esaml, git: "https://github.com/Bluetab/esaml.git", branch: "feature/encrypted_assertion"}
     ]
   end
 
