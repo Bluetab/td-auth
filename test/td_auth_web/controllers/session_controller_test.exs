@@ -32,6 +32,19 @@ defmodule TdAuthWeb.SessionControllerTest do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
+  describe "init credential" do
+    test "init credential will fail if exist users", %{conn: conn} do
+      fixture(:user)
+      conn = get conn, Routes.session_path(conn, :init_credential)
+      assert conn.status ==  403
+    end
+
+    test "init credential will render a randomly generated user", %{conn: conn} do
+      conn = get conn, Routes.session_path(conn, :init_credential)
+      assert %{"password" => _, "user_name" => "init-admin"} = json_response(conn, 200)
+    end
+  end
+
   describe "create session " do
     setup [:create_user]
 

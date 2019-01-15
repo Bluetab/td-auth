@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.11.8] 2019-01-15
+
+### Changed
+
+- [TD-1357] removed default users from migration and added init_credential endpoint
+
 ## [2.11.7] 2019-01-15
 
 ### Changed

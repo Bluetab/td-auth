@@ -137,6 +137,11 @@ defmodule TdAuth.Accounts do
       |> delete_cache()
   end
 
+  def delete_user_nocache(%User{} = user) do
+    user
+      |> Repo.delete()
+      |> delete_acl_entries("user")
+  end
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
