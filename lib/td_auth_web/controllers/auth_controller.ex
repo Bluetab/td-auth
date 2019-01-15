@@ -2,6 +2,7 @@ defmodule TdAuthWeb.AuthController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
+  alias TdAuth.Saml.SamlWorker
   alias TdAuthWeb.AuthProvider.OIDC
   alias TdAuthWeb.SwaggerDefinitions
 
@@ -18,22 +19,40 @@ defmodule TdAuthWeb.AuthController do
   end
 
   def index(conn, _params) do
-    oidc_config = :td_auth
+    oidc_config =
+      :td_auth
       |> Application.get_env(:openid_connect_providers)
       |> Enum.into(%{})
       |> Map.get(:oidc, [])
+
     auth0_config = Application.get_env(:td_auth, :auth)
 
-    auth_methods = %{}
-    |> add_oidc_auth(oidc_config)
-    |> add_auth0_auth(auth0_config)
+    auth_methods =
+      %{}
+      |> add_oidc_auth(oidc_config)
+      |> add_auth0_auth(auth0_config)
+      |> add_saml_auth()
 
     render(conn, "index.json", auth_methods: auth_methods)
   end
 
+  defp add_saml_auth(auth_methods) do
+    case SamlWorker.auth_urls() do
+      [idp, sp] ->
+        auth_methods
+        |> Map.put(:saml_idp, idp)
+        |> Map.put(:saml_sp, sp)
+
+      _ ->
+        auth_methods
+    end
+  end
+
   defp add_oidc_auth(auth_methods, config) do
     case empty_config?(config, :client_id) do
-      true -> auth_methods
+      true ->
+        auth_methods
+
       _ ->
         oidc_url = OIDC.authentication_url()
         Map.put(auth_methods, :oidc, oidc_url)
@@ -42,7 +61,9 @@ defmodule TdAuthWeb.AuthController do
 
   defp add_auth0_auth(auth_methods, auth0_config) do
     case empty_config?(auth0_config, :domain) do
-      true -> auth_methods
+      true ->
+        auth_methods
+
       _ ->
         auth0 = %{
           domain: auth0_config[:domain],
@@ -52,14 +73,15 @@ defmodule TdAuthWeb.AuthController do
           responseType: auth0_config[:responseType],
           scope: auth0_config[:scope]
         }
+
         Map.put(auth_methods, :auth0, auth0)
     end
   end
 
   defp empty_config?(config, check_field) do
-  config
-  |> Enum.into(%{})
-  |> Map.get(check_field)
-  |> (fn v -> v == "" or is_nil(v) end).()
-end
+    config
+    |> Enum.into(%{})
+    |> Map.get(check_field)
+    |> (fn v -> v == "" or is_nil(v) end).()
+  end
 end

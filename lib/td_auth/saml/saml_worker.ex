@@ -21,15 +21,18 @@ defmodule TdAuth.Saml.SamlWorker do
     GenServer.start_link(__MODULE__, config, name: name)
   end
 
-  def authn() do
-    GenServer.call(__MODULE__, {:authn})
+  def auth_urls(relay_state \\ "") do
+    case GenServer.whereis(TdAuth.Saml.SamlWorker) do
+      nil -> []
+      _ -> GenServer.call(__MODULE__, {:authn, relay_state})
+    end
   end
 
   def validate(saml_response, saml_encoding \\ nil) do
     GenServer.call(__MODULE__, {:validate, saml_response, saml_encoding})
   end
 
-  def metadata() do
+  def metadata do
     GenServer.call(__MODULE__, {:metadata})
   end
 
@@ -42,13 +45,14 @@ defmodule TdAuth.Saml.SamlWorker do
 
   @impl true
   def handle_call({:metadata}, _from, %{sp: sp} = state) do
-    sp
-    |> :esaml_sp.generate_metadata()
-    |> (fn x -> [x] end).()
-    |> :xmerl.export(:xmerl_xml)
-    |> List.flatten()
+    metadata =
+      sp
+      |> :esaml_sp.generate_metadata()
+      |> (fn x -> [x] end).()
+      |> :xmerl.export(:xmerl_xml)
+      |> List.flatten()
 
-    {:reply, :ok, state}
+    {:reply, metadata, state}
   end
 
   @impl true
@@ -66,13 +70,19 @@ defmodule TdAuth.Saml.SamlWorker do
   end
 
   @impl true
-  def handle_call({:authn}, _from, %{idp: idp, sp: sp}) do
-    idp
-    |> esaml_idp_metadata(:entity_id)
-    |> :esaml_sp.generate_authn_request(sp)
-    |> encode_redirect(idp)
+  def handle_call({:authn, relay_state}, _from, %{idp: idp, sp: sp}) do
+    login_location = esaml_idp_metadata(idp, :login_location)
 
-    {:reply, :ok, %{idp: idp, sp: sp}}
+    entity_id = esaml_idp_metadata(idp, :entity_id)
+
+    authn_url =
+      entity_id
+      |> :esaml_sp.generate_authn_request(sp)
+      |> encode_redirect(login_location, relay_state)
+
+    auth_urls = [to_string(login_location) <> "idpinitiatedsignon", authn_url]
+
+    {:reply, auth_urls, %{idp: idp, sp: sp}}
   end
 
   defp map_profile(esaml_subject(name: name)) do
@@ -80,10 +90,8 @@ defmodule TdAuth.Saml.SamlWorker do
     %{user_name: name, full_name: name, email: name}
   end
 
-  defp encode_redirect(authn_request, idp) do
-    idp
-    |> esaml_idp_metadata(:login_location)
-    |> :esaml_binding.encode_http_redirect(authn_request, :undefined, "")
+  defp encode_redirect(authn_request, login_location, relay_state) do
+    :esaml_binding.encode_http_redirect(login_location, authn_request, :undefined, relay_state)
   end
 
   defp load_config(config) do
