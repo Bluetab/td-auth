@@ -76,16 +76,16 @@ config :td_auth, :openid_connect_providers,
   ]
 
 config :td_auth, :saml,
-  contact_name: "${SAML_CONTACT_NAME}",
   contact_email: "${SAML_CONTACT_EMAIL}",
+  contact_name: "${SAML_CONTACT_NAME}",
   idp_metadata_url: "${SAML_IDP_METADATA_URL}",
-  org_name: "${SAML_ORG_NAME}",
   org_display_name: "${SAML_ORG_DISPLAY_NAME}",
+  org_name: "${SAML_ORG_NAME}",
   org_url: "${SAML_ORG_URL}",
-  sp_id: "${SAML_SP_ID}",
-  sp_key: "${SAML_SP_KEY}",
   sp_cert: "${SAML_SP_CERT}",
   sp_consume_uri: "${SAML_CONSUME_URI}",
+  sp_id: "${SAML_SP_ID}",
+  sp_key: "${SAML_SP_KEY}",
   sp_metadata_uri: "${SAML_METADATA_URI}",
   sp_trusted_fingerprints: "${SAML_TRUSTED_FINGERPRINTS}"
 

@@ -21,9 +21,9 @@ defmodule TdAuth.Saml.SamlWorker do
     GenServer.start_link(__MODULE__, config, name: name)
   end
 
-  def auth_urls(relay_state \\ "") do
+  def auth_url(relay_state \\ "") do
     case GenServer.whereis(TdAuth.Saml.SamlWorker) do
-      nil -> []
+      nil -> nil
       _ -> GenServer.call(__MODULE__, {:authn, relay_state})
     end
   end
@@ -70,19 +70,24 @@ defmodule TdAuth.Saml.SamlWorker do
   end
 
   @impl true
-  def handle_call({:authn, relay_state}, _from, %{idp: idp, sp: sp}) do
+  def handle_call({:authn, relay_state}, _from, %{idp: idp, sp: sp} = state) do
     login_location = esaml_idp_metadata(idp, :login_location)
+    idp_id = esaml_idp_metadata(idp, :entity_id)
 
-    entity_id = esaml_idp_metadata(idp, :entity_id)
+    url =
+      case String.contains?(to_string(idp_id), "/adfs/") do
+        true ->
+          sp_id = esaml_sp(sp, :entity_id)
+          idp_params = %{"loginToRp" => to_string(sp_id)} |> URI.encode_query()
+          to_string(login_location) <> "idpinitiatedsignon?" <> idp_params
 
-    authn_url =
-      entity_id
-      |> :esaml_sp.generate_authn_request(sp)
-      |> encode_redirect(login_location, relay_state)
+        false ->
+          idp_id
+          |> :esaml_sp.generate_authn_request(sp)
+          |> encode_redirect(login_location, relay_state)
+      end
 
-    auth_urls = [to_string(login_location) <> "idpinitiatedsignon", authn_url]
-
-    {:reply, auth_urls, %{idp: idp, sp: sp}}
+    {:reply, url, state}
   end
 
   defp map_profile(esaml_subject(name: name)) do

@@ -37,14 +37,9 @@ defmodule TdAuthWeb.AuthController do
   end
 
   defp add_saml_auth(auth_methods) do
-    case SamlWorker.auth_urls() do
-      [idp, sp] ->
-        auth_methods
-        |> Map.put(:saml_idp, idp)
-        |> Map.put(:saml_sp, sp)
-
-      _ ->
-        auth_methods
+    case SamlWorker.auth_url() do
+      nil -> auth_methods
+      url -> Map.put(auth_methods, :saml_idp, url)
     end
   end
 
@@ -77,6 +72,8 @@ defmodule TdAuthWeb.AuthController do
         Map.put(auth_methods, :auth0, auth0)
     end
   end
+
+  defp empty_config?(nil, _), do: true
 
   defp empty_config?(config, check_field) do
     config
