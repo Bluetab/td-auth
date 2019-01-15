@@ -16,7 +16,6 @@ defmodule TdAuthWeb.GroupControllerTest do
     is_admin: false,
     email: "some@email.com"
   }
-  @admin_user_name "app-admin"
 
   def fixture(:group) do
     {:ok, group} = Accounts.create_group(@create_attrs)
@@ -33,7 +32,7 @@ defmodule TdAuthWeb.GroupControllerTest do
   end
 
   describe "index" do
-    @tag authenticated_user: @admin_user_name
+    @tag :admin_authenticated
     test "lists all groups", %{conn: conn} do
       conn = get(conn, Routes.group_path(conn, :index))
       assert json_response(conn, 200)["data"] == []
@@ -41,7 +40,7 @@ defmodule TdAuthWeb.GroupControllerTest do
   end
 
   describe "create group" do
-    @tag authenticated_user: @admin_user_name
+    @tag :admin_authenticated
     test "renders group when data is valid", %{conn: conn} do
       conn = post conn, Routes.group_path(conn, :create), group: @create_attrs
       assert %{"id" => id} = json_response(conn, 201)["data"]
@@ -50,13 +49,13 @@ defmodule TdAuthWeb.GroupControllerTest do
       assert json_response(conn, 200)
     end
 
-    @tag authenticated_user: @admin_user_name
+    @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn} do
       conn = post conn, Routes.group_path(conn, :create), group: @invalid_attrs
       assert json_response(conn, 422)["errors"] != %{}
     end
 
-    @tag authenticated_user: @admin_user_name
+    @tag :admin_authenticated
     test "renders errors when group is duplicated", %{conn: conn} do
       conn = post conn, Routes.group_path(conn, :create), group: @create_attrs
       conn = recycle_and_put_headers(conn)
@@ -68,7 +67,7 @@ defmodule TdAuthWeb.GroupControllerTest do
   describe "update group" do
     setup [:create_group]
 
-    @tag authenticated_user: @admin_user_name
+    @tag :admin_authenticated
     test "renders group when data is valid", %{conn: conn, group: %Group{id: id} = group} do
       conn = put conn, Routes.group_path(conn, :update, group), group: @update_attrs
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
@@ -77,7 +76,7 @@ defmodule TdAuthWeb.GroupControllerTest do
       assert json_response(conn, 200)
     end
 
-    @tag authenticated_user: @admin_user_name
+    @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn, group: group} do
       conn = put conn, Routes.group_path(conn, :update, group), group: @invalid_attrs
       assert json_response(conn, 422)["errors"] != %{}
@@ -103,7 +102,7 @@ defmodule TdAuthWeb.GroupControllerTest do
     setup [:create_group]
     setup [:create_user]
 
-    @tag authenticated_user: @admin_user_name
+    @tag :admin_authenticated
     test "renders user groups when data is valid", %{conn: conn, user: %User{id: user_id}} do
       conn =
         post conn, Routes.user_group_path(conn, :add_groups_to_user, user_id),

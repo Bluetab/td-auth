@@ -20,8 +20,14 @@ defmodule TdAuth.AuthenticationTest do
   end
 
   # Scenario: logging error
-  defgiven ~r/^a superadmin user logged in the application$/, _, state do
-    {_, status_code, json_resp} = session_create("app-admin", "mypass")
+  defgiven ~r/^application is initated and a admin user "(?<user_name>[^"]+)" is created with password "(?<user_passwd>[^"]+)"$/,
+          %{user_name: user_name, user_passwd: user_passwd},
+          state do
+    {_, _, %{"user_name" => ad_user_name, "password" => ad_password}} = init_auth()
+    {_, _, json_resp} = session_create(ad_user_name, ad_password)
+    user_create(json_resp["token"], %{user_name: user_name, password: user_passwd, is_admin: true, email: "some@email.com"})
+
+    {_, status_code, json_resp} = session_create(user_name, user_passwd)
     assert rc_created() == to_response_code(status_code)
     {:ok, Map.merge(state, %{app_token: json_resp["token"]})}
   end

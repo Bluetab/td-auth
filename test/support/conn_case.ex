@@ -41,7 +41,17 @@ defmodule TdAuthWeb.ConnCase do
 
     cond do
       tags[:admin_authenticated] ->
-        user = Accounts.get_user_by_name(@admin_user_name)
+        user = case Accounts.get_user_by_name(@admin_user_name) do
+          nil ->
+            {:ok, user} = Accounts.create_user_nocache(%{
+                user_name: @admin_user_name,
+                password: "mypass",
+                email: "no@email.com",
+                is_admin: true
+              })
+            user
+          user -> user
+        end
         user = Map.put(user, :is_admin, true)
         create_user_auth_conn(user)
       tags[:authenticated_user] ->

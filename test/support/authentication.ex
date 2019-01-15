@@ -44,6 +44,12 @@ defmodule TdAuthWeb.Authentication do
     [@headers, {"authorization", "Bearer #{token}"}]
   end
 
+  def init_auth do
+    %HTTPoison.Response{status_code: status_code, body: resp} =
+      HTTPoison.get!(Routes.session_url(@endpoint, :init_credential), [@headers])
+    {:ok, status_code, resp |> JSON.decode!()}
+  end
+
   def session_create(user_name, user_password) do
     body = %{user: %{user_name: user_name, password: user_password}} |> JSON.encode!()
 

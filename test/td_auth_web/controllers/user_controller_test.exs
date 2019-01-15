@@ -21,7 +21,7 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "index with authenticated user tag" do
-    @tag authenticated_user: @admin_user_name
+    @tag :admin_authenticated
     test "list all users with some user name", %{conn: conn, jwt: _jwt, swagger_schema: schema} do
       conn = get conn, Routes.user_path(conn, :index)
       validate_resp_schema(conn, schema, "UsersResponseData")

@@ -41,7 +41,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
     test "init credential will render a randomly generated user", %{conn: conn} do
       conn = get conn, Routes.session_path(conn, :init_credential)
-      assert %{"password" => _, "user_name" => "init-admin"} = json_response(conn, 200)
+      assert %{"password" => _, "user_name" => "init-admin"} = json_response(conn, 201)
     end
   end
 

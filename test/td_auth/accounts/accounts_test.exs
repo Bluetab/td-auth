@@ -20,7 +20,7 @@ defmodule TdAuth.AccountsTest do
 
     test "list_users/0 returns all users" do
       user_fixture()
-      assert length(Accounts.list_users()) == 2
+      assert length(Accounts.list_users()) == 1
     end
 
     test "get_user!/1 returns the user with given id" do

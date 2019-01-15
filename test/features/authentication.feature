@@ -3,7 +3,7 @@ Feature: User Authentication
   without any permission
 
   Background:
-  Given a superadmin user logged in the application
+  Given application is initated and a admin user "app-admin" is created with password "mypass"
 
   Scenario: logging
     When user "app-admin" tries to log into the application with password "mypass"
