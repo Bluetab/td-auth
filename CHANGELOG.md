@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.11.4] 2019-01-15
+
+### Changed
+
+- [TD-1326] support for SAML authentication flow
+
 ## [2.11.3] 2019-01-07
 
 ### Changed
