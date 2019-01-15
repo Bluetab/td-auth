@@ -76,15 +76,17 @@ config :td_auth, :openid_connect_providers,
   ]
 
 config :td_auth, :saml,
+  contact_name: "${SAML_CONTACT_NAME}",
+  contact_email: "${SAML_CONTACT_EMAIL}",
   idp_metadata_url: "${SAML_IDP_METADATA_URL}",
-  sp_id: "${SAML_SP_ID}",
   org_name: "${SAML_ORG_NAME}",
   org_display_name: "${SAML_ORG_DISPLAY_NAME}",
   org_url: "${SAML_ORG_URL}",
-  contact_name: "${SAML_CONTACT_NAME}",
-  contact_email: "${SAML_CONTACT_EMAIL}",
+  sp_id: "${SAML_SP_ID}",
+  sp_key: "${SAML_SP_KEY}",
+  sp_cert: "${SAML_SP_CERT}",
   consume_uri: "${SAML_CONSUME_URI}",
   metadata_uri: "${SAML_METADATA_URI}",
-  trusted_fingerprint: "${SAML_TRUSTED_FINGERPRINT}"
+  sp_trusted_fingerprints: "${SAML_TRUSTED_FINGERPRINTS}"
 
 config :td_perms, redis_host: "${REDIS_HOST}"
