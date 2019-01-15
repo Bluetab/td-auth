@@ -85,8 +85,8 @@ config :td_auth, :saml,
   sp_id: "${SAML_SP_ID}",
   sp_key: "${SAML_SP_KEY}",
   sp_cert: "${SAML_SP_CERT}",
-  consume_uri: "${SAML_CONSUME_URI}",
-  metadata_uri: "${SAML_METADATA_URI}",
+  sp_consume_uri: "${SAML_CONSUME_URI}",
+  sp_metadata_uri: "${SAML_METADATA_URI}",
   sp_trusted_fingerprints: "${SAML_TRUSTED_FINGERPRINTS}"
 
 config :td_perms, redis_host: "${REDIS_HOST}"

@@ -171,7 +171,7 @@ defmodule TdAuthWeb.SessionController do
       create_session(conn, user)
     else
       error ->
-        Logger.info("While authenticating using active directory ... #{inspect(error)}")
+        Logger.info("While authenticating using SAML ... #{inspect(error)}")
 
         conn
         |> put_status(:unauthorized)
