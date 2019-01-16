@@ -46,7 +46,7 @@ defmodule TdAuthWeb.Authentication do
 
   def init_auth do
     %HTTPoison.Response{status_code: status_code, body: resp} =
-      HTTPoison.get!(Routes.session_url(@endpoint, :init_credential), [@headers])
+      HTTPoison.get!(Routes.session_url(@endpoint, :api_init), [@headers])
     {:ok, status_code, resp |> JSON.decode!()}
   end
 

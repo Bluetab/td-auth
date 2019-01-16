@@ -35,12 +35,12 @@ defmodule TdAuthWeb.SessionControllerTest do
   describe "init credential" do
     test "init credential will fail if exist users", %{conn: conn} do
       fixture(:user)
-      conn = get conn, Routes.session_path(conn, :init_credential)
+      conn = get conn, Routes.session_path(conn, :api_init)
       assert conn.status ==  403
     end
 
     test "init credential will render a randomly generated user", %{conn: conn} do
-      conn = get conn, Routes.session_path(conn, :init_credential)
+      conn = get conn, Routes.session_path(conn, :api_init)
       assert %{"password" => _, "user_name" => "init-admin"} = json_response(conn, 201)
     end
   end

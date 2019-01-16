@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.11.9] 2019-01-16
+
+### Changed
+
+- rename init endpoint to api_init
+
 ## [2.11.8] 2019-01-15
 
 ### Changed
