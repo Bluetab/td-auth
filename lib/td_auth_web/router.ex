@@ -18,7 +18,6 @@ defmodule TdAuthWeb.Router do
   scope "/", TdAuthWeb do
     pipe_through(:api_unsecured)
     post("/callback", SessionController, :create)
-    get("/api_init", SessionController, :api_init)
   end
 
   scope "/api", TdAuthWeb do
@@ -26,6 +25,7 @@ defmodule TdAuthWeb.Router do
     get("/auth", AuthController, :index)
     get("/ping", PingController, :ping)
     post("/sessions", SessionController, :create)
+    get("/init", SessionController, :init)
   end
 
   scope "/api", TdAuthWeb do

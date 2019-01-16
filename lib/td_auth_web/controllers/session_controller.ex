@@ -34,7 +34,7 @@ defmodule TdAuthWeb.SessionController do
     |> GuardianPlug.sign_in(resource, custom_claims)
   end
 
-  swagger_path :api_init do
+  swagger_path :init do
     description("Initializes admin user")
     produces("application/json")
 
@@ -48,7 +48,7 @@ defmodule TdAuthWeb.SessionController do
     response(403, "Forbidden")
   end
 
-  def api_init(conn, _params) do
+  def init(conn, _params) do
     case length(Accounts.list_users) do
       0 ->
         password = String.slice(Bcrypt.hashpwsalt("password"), 35, 8)
