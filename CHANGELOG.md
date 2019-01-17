@@ -1,16 +1,16 @@
 # Changelog
 
+## [2.11.11] 2019-01-17
+
+### Changed
+
+- [TD-1326] include SAML name attribute in profile mapping
+
 ## [2.11.10] 2019-01-16
 
 ### Changed
 
 - rename init endpoint to api/init
-
-## [2.11.9] 2019-01-16
-
-### Changed
-
-- rename init endpoint to api_init
 
 ## [2.11.8] 2019-01-15
 

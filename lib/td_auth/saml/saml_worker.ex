@@ -5,6 +5,8 @@ defmodule TdAuth.Saml.SamlWorker do
 
   use GenServer
 
+  alias TdAuth.Saml
+
   require Logger
   require Record
 
@@ -13,9 +15,6 @@ defmodule TdAuth.Saml.SamlWorker do
   Record.defrecord(:esaml_org, Record.extract(:esaml_org, from_lib: @esaml_lib))
   Record.defrecord(:esaml_contact, Record.extract(:esaml_contact, from_lib: @esaml_lib))
   Record.defrecord(:esaml_sp, Record.extract(:esaml_sp, from_lib: @esaml_lib))
-  Record.defrecord(:esaml_idp_metadata, Record.extract(:esaml_idp_metadata, from_lib: @esaml_lib))
-  Record.defrecord(:esaml_assertion, Record.extract(:esaml_assertion, from_lib: @esaml_lib))
-  Record.defrecord(:esaml_subject, Record.extract(:esaml_subject, from_lib: @esaml_lib))
 
   def start_link(config, name \\ __MODULE__) do
     GenServer.start_link(__MODULE__, config, name: name)
@@ -45,58 +44,20 @@ defmodule TdAuth.Saml.SamlWorker do
 
   @impl true
   def handle_call({:metadata}, _from, %{sp: sp} = state) do
-    metadata =
-      sp
-      |> :esaml_sp.generate_metadata()
-      |> (fn x -> [x] end).()
-      |> :xmerl.export(:xmerl_xml)
-      |> List.flatten()
-
+    metadata = Saml.generate_metadata(sp)
     {:reply, metadata, state}
   end
 
   @impl true
   def handle_call({:validate, saml_response, saml_encoding}, _from, %{sp: sp} = state) do
-    xml = :esaml_binding.decode_response(saml_encoding, saml_response)
-
-    reply =
-      case :esaml_sp.validate_assertion(xml, sp) do
-        {:ok, esaml_assertion(subject: subject)} -> {:ok, map_profile(subject)}
-        {:error, x} -> {:error, x}
-        _ -> {:error, :invalid_assertion}
-      end
-
+    reply = Saml.decode_and_validate_assertion(sp, saml_response, saml_encoding)
     {:reply, reply, state}
   end
 
   @impl true
   def handle_call({:authn, relay_state}, _from, %{idp: idp, sp: sp} = state) do
-    login_location = esaml_idp_metadata(idp, :login_location)
-    idp_id = esaml_idp_metadata(idp, :entity_id)
-
-    url =
-      case String.contains?(to_string(idp_id), "/adfs/") do
-        true ->
-          sp_id = esaml_sp(sp, :entity_id)
-          idp_params = %{"loginToRp" => to_string(sp_id)} |> URI.encode_query()
-          to_string(login_location) <> "idpinitiatedsignon?" <> idp_params
-
-        false ->
-          idp_id
-          |> :esaml_sp.generate_authn_request(sp)
-          |> encode_redirect(login_location, relay_state)
-      end
-
+    url = Saml.generate_authn_redirect_url(idp, sp, relay_state)
     {:reply, url, state}
-  end
-
-  defp map_profile(esaml_subject(name: name)) do
-    name = to_string(name)
-    %{user_name: name, full_name: name, email: name}
-  end
-
-  defp encode_redirect(authn_request, login_location, relay_state) do
-    :esaml_binding.encode_http_redirect(login_location, authn_request, :undefined, relay_state)
   end
 
   defp load_config(config) do
