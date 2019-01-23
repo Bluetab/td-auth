@@ -32,6 +32,9 @@ config :td_auth, :auth,
   domain: "${AUTH_DOMAIN}",
   clientID: "${AUTH_CLIENT_ID}",
   audience: "${AUTH_AUDIENCE}",
+  redirectUri: "${AUTH_REDIRECT_URI}",
+  scope: "${AUTH_SCOPE}",
+  response_type: "token id_token",
   userinfo: "/userinfo",
   profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}
 

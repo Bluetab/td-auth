@@ -65,7 +65,7 @@ defmodule TdAuthWeb.AuthController do
           clientID: auth0_config[:clientID],
           redirectUri: auth0_config[:redirectUri],
           audience: auth0_config[:audience],
-          responseType: auth0_config[:responseType],
+          responseType: auth0_config[:response_type],
           scope: auth0_config[:scope]
         }
 

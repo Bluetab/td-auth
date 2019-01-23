@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.11.12] 2019-01-23
+
+### Fixed
+
+- Variable Auth0 Congiguration
+
 ## [2.11.11] 2019-01-17
 
 ### Changed
@@ -60,7 +66,7 @@
 
 ### Changed
 
-- [TD-1172] Fixed missing authorization for update_acl_entry 
+- [TD-1172] Fixed missing authorization for update_acl_entry
 
 ## [2.10.0] 2018-12-11
 
