@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- Name variables Auth0 configuration
+
 ## [2.12.0] 2019-01-24
 
 ### Changed
@@ -10,7 +15,7 @@
 
 ### Fixed
 
-- Variable Auth0 Congiguration
+- Variable Auth0 Configuration
 
 ## [2.11.11] 2019-01-17
 

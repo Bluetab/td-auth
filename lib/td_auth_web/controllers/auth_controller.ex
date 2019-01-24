@@ -62,13 +62,12 @@ defmodule TdAuthWeb.AuthController do
       _ ->
         auth0 = %{
           domain: auth0_config[:domain],
-          clientID: auth0_config[:clientID],
-          redirectUri: auth0_config[:redirectUri],
-          audience: auth0_config[:audience],
+          clientID: auth0_config[:client_id],
+          redirectUri: auth0_config[:redirect_uri],
+          audience: Enum.join([auth0_config[:audience], auth0_config[:userinfo]], ""),
           responseType: auth0_config[:response_type],
           scope: auth0_config[:scope]
         }
-
         Map.put(auth_methods, :auth0, auth0)
     end
   end
