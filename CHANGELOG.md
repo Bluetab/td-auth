@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.12.0] 2019-01-24
+
+### Changed
+
+- [TD-1379] SAML authentication: allow certain roles to be rejected
+
 ## [2.11.12] 2019-01-23
 
 ### Fixed
