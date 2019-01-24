@@ -3,6 +3,7 @@ defmodule TdAuth.Saml do
   Auth provider for SAML.
   """
 
+  require Logger
   require Record
 
   @esaml_lib "esaml/include/esaml.hrl"
@@ -33,22 +34,35 @@ defmodule TdAuth.Saml do
     :esaml_binding.encode_http_redirect(login_location, authn_request, :undefined, relay_state)
   end
 
-  def decode_and_validate_assertion(sp, saml_response, saml_encoding) do
+  def decode_and_validate_assertion(sp, saml_response, saml_encoding, reject_roles) do
     xml = :esaml_binding.decode_response(saml_encoding, saml_response)
 
     case :esaml_sp.validate_assertion(xml, sp) do
-      {:ok, assertion} -> map_assertion_to_profile(assertion)
+      {:ok, assertion} -> map_assertion_to_profile(assertion, reject_roles)
       {:error, x} -> {:error, x}
       _ -> {:error, :invalid_assertion}
     end
   end
 
-  def map_assertion_to_profile(esaml_assertion(subject: subject, attributes: attributes)) do
-    {:ok, map_profile(subject, attributes)}
+  def map_assertion_to_profile(
+        esaml_assertion(subject: subject, attributes: attributes),
+        reject_roles
+      ) do
+    case accept_attributes?(attributes, reject_roles) do
+      true -> {:ok, map_profile(subject, attributes)}
+      _ -> {:error, :rejected}
+    end
   end
 
   def map_assertion_to_profile(_, _) do
     {:error, :invalid_assertion}
+  end
+
+  def accept_attributes?(attributes, reject_roles) do
+    role = Keyword.get(attributes, :role)
+    role_rejected = Enum.member?(reject_roles, role)
+    if role_rejected, do: Logger.info("Rejected assertion for #{inspect(attributes)}")
+    not role_rejected
   end
 
   defp map_profile(subject, nil = _attributes) do

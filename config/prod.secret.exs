@@ -90,6 +90,7 @@ config :td_auth, :saml,
   sp_id: "${SAML_SP_ID}",
   sp_key: "${SAML_SP_KEY}",
   sp_metadata_uri: "${SAML_METADATA_URI}",
-  sp_trusted_fingerprints: "${SAML_TRUSTED_FINGERPRINTS}"
+  sp_trusted_fingerprints: "${SAML_TRUSTED_FINGERPRINTS}",
+  reject_roles: "${SAML_REJECT_ROLES}"
 
 config :td_perms, redis_host: "${REDIS_HOST}"

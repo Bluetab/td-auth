@@ -49,8 +49,12 @@ defmodule TdAuth.Saml.SamlWorker do
   end
 
   @impl true
-  def handle_call({:validate, saml_response, saml_encoding}, _from, %{sp: sp} = state) do
-    reply = Saml.decode_and_validate_assertion(sp, saml_response, saml_encoding)
+  def handle_call(
+        {:validate, saml_response, saml_encoding},
+        _from,
+        %{sp: sp, reject_roles: reject_roles} = state
+      ) do
+    reply = Saml.decode_and_validate_assertion(sp, saml_response, saml_encoding, reject_roles)
     {:reply, reply, state}
   end
 
@@ -63,7 +67,7 @@ defmodule TdAuth.Saml.SamlWorker do
   defp load_config(config) do
     saml_config =
       config
-      |> Keyword.drop([:sp_key, :sp_cert, :sp_trusted_fingerprints])
+      |> Keyword.drop([:sp_key, :sp_cert, :sp_trusted_fingerprints, :reject_roles])
       |> Enum.map(fn {k, v} -> {k, to_charlist(v)} end)
       |> Keyword.merge(config, fn _k, v1, _v2 -> v1 end)
 
@@ -102,6 +106,12 @@ defmodule TdAuth.Saml.SamlWorker do
 
     idp = :esaml_util.load_metadata(saml_config[:idp_metadata_url])
 
-    %{sp: :esaml_sp.setup(sp), idp: idp}
+    reject_roles =
+      saml_config
+      |> Keyword.get(:reject_roles, "")
+      |> String.split(";")
+      |> Enum.map(&to_charlist(&1))
+
+    %{sp: :esaml_sp.setup(sp), idp: idp, reject_roles: reject_roles}
   end
 end
