@@ -24,8 +24,9 @@ defmodule TdAuthWeb.Router do
     pipe_through(:api_unsecured)
     get("/auth", AuthController, :index)
     get("/ping", PingController, :ping)
+    get("/passphrase", PingController, :passphrase)
     post("/sessions", SessionController, :create)
-    get("/init", SessionController, :init)
+    post("/init", UserController, :init)
   end
 
   scope "/api", TdAuthWeb do

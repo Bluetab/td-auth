@@ -34,42 +34,6 @@ defmodule TdAuthWeb.SessionController do
     |> GuardianPlug.sign_in(resource, custom_claims)
   end
 
-  swagger_path :init do
-    description("Initializes admin user")
-    produces("application/json")
-
-    response(201, "Created",
-      Schema.new do
-        properties do
-          user_name(:string, "Username", required: false)
-          password(:object, "Password", required: false)
-        end
-      end)
-    response(403, "Forbidden")
-  end
-
-  def init(conn, _params) do
-    case length(Accounts.list_users) do
-      0 ->
-        password = String.slice(Bcrypt.hashpwsalt("password"), 35, 8)
-        user = %{
-          password: password,
-          user_name: "init-admin",
-          email: "auto-generated@bluetab.net",
-          is_admin: true
-        }
-        Accounts.create_user(user)
-        conn
-          |> put_status(:created)
-          |> render("user.json", user: user)
-      _ ->
-        conn
-          |> put_status(:forbidden)
-          |> put_view(ErrorView)
-          |> render("403.json")
-    end
-  end
-
   swagger_path :create do
     description("Creates a user session")
     produces("application/json")
@@ -119,8 +83,10 @@ defmodule TdAuthWeb.SessionController do
 
       json ->
         params = JSON.decode!(json)
-        [saml_response, saml_encoding] = ["SAMLResponse", "SAMLEncoding"]
-        |> Enum.map(&(Map.get(params, &1)))
+
+        [saml_response, saml_encoding] =
+          ["SAMLResponse", "SAMLEncoding"]
+          |> Enum.map(&Map.get(params, &1))
 
         authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding)
     end

@@ -40,14 +40,12 @@ defmodule TdAuthWeb.Authentication do
     {:ok, %{conn: conn, jwt: jwt, claims: full_claims}}
   end
 
-  def get_header(token) do
-    [@headers, {"authorization", "Bearer #{token}"}]
+  def get_default_headers do
+    [@headers]
   end
 
-  def init_auth do
-    %HTTPoison.Response{status_code: status_code, body: resp} =
-      HTTPoison.get!(Routes.session_url(@endpoint, :init), [@headers])
-    {:ok, status_code, resp |> JSON.decode!()}
+  def get_jwt_headers(token) do
+    [@headers, {"authorization", "Bearer #{token}"}]
   end
 
   def session_create(user_name, user_password) do
@@ -60,7 +58,7 @@ defmodule TdAuthWeb.Authentication do
   end
 
   def session_destroy(token) do
-    headers = get_header(token)
+    headers = get_jwt_headers(token)
 
     %HTTPoison.Response{status_code: status_code, body: _resp} =
       HTTPoison.delete!(Routes.session_url(@endpoint, :destroy), headers, [])

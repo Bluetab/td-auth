@@ -8,9 +8,23 @@ defmodule TdAuthWeb.UserControllerTest do
   alias TdAuth.Accounts.User
   alias TdPerms.TaxonomyCache
 
-  @create_attrs %{password: "some password_hash", user_name: "some user_name", is_admin: false, email: "some@email.com", groups: ["Group"]}
-  @create_second_attrs %{password: "some password_hash", user_name: "some user_name 2", is_admin: false}
-  @update_attrs %{password: "some updated password_hash", user_name: "some updated user_name", groups: ["GroupNew"]}
+  @create_attrs %{
+    password: "some password_hash",
+    user_name: "some user_name",
+    is_admin: false,
+    email: "some@email.com",
+    groups: ["Group"]
+  }
+  @create_second_attrs %{
+    password: "some password_hash",
+    user_name: "some user_name 2",
+    is_admin: false
+  }
+  @update_attrs %{
+    password: "some updated password_hash",
+    user_name: "some updated user_name",
+    groups: ["GroupNew"]
+  }
   @update_is_admin %{user_name: "some updated user_name", is_admin: true}
   @invalid_attrs %{password: nil, user_name: nil, email: nil}
   @admin_user_name "app-admin"
@@ -23,9 +37,9 @@ defmodule TdAuthWeb.UserControllerTest do
   describe "index with authenticated user tag" do
     @tag :admin_authenticated
     test "list all users with some user name", %{conn: conn, jwt: _jwt, swagger_schema: schema} do
-      conn = get conn, Routes.user_path(conn, :index)
+      conn = get(conn, Routes.user_path(conn, :index))
       validate_resp_schema(conn, schema, "UsersResponseData")
-      [admin_user|_tail] = json_response(conn, 200)["data"]
+      [admin_user | _tail] = json_response(conn, 200)["data"]
       assert admin_user["user_name"] == @admin_user_name
     end
   end
@@ -33,9 +47,9 @@ defmodule TdAuthWeb.UserControllerTest do
   describe "index" do
     @tag :admin_authenticated
     test "list all users", %{conn: conn, jwt: _jwt, swagger_schema: schema} do
-      conn = get conn, Routes.user_path(conn, :index)
+      conn = get(conn, Routes.user_path(conn, :index))
       validate_resp_schema(conn, schema, "UsersResponseData")
-      [admin_user|_tail] = json_response(conn, 200)["data"]
+      [admin_user | _tail] = json_response(conn, 200)["data"]
       assert admin_user["user_name"] == @admin_user_name
     end
   end
@@ -44,14 +58,15 @@ defmodule TdAuthWeb.UserControllerTest do
     setup [:create_user]
 
     test "create user with a non admin user renders error", %{conn: conn} do
-      {:ok, %{conn: conn, jwt: _jwt, claims: _full_claims}} = create_user_auth_conn(conn, @create_attrs.user_name)
+      {:ok, %{conn: conn, jwt: _jwt, claims: _full_claims}} =
+        create_user_auth_conn(conn, @create_attrs.user_name)
+
       conn = post conn, Routes.user_path(conn, :create), user: @create_second_attrs
       assert response(conn, 403)
     end
   end
 
   describe "create user" do
-
     @tag :admin_authenticated
     test "renders user when data is valid", %{conn: conn, swagger_schema: schema} do
       conn = post conn, Routes.user_path(conn, :create), user: @create_attrs
@@ -60,7 +75,7 @@ defmodule TdAuthWeb.UserControllerTest do
 
       conn = recycle_and_put_headers(conn)
 
-      conn = get conn, Routes.user_path(conn, :show, id)
+      conn = get(conn, Routes.user_path(conn, :show, id))
       validate_resp_schema(conn, schema, "UserResponse")
       user_data = json_response(conn, 200)["data"]
       assert user_data["id"] == id && user_data["user_name"] == "some user_name"
@@ -75,7 +90,6 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "get user" do
-
     @tag :admin_authenticated
     test "renders user with configured acls", %{conn: conn, swagger_schema: schema} do
       domain = %{id: :rand.uniform(1000), parent_ids: [], name: "MyDomain"}
@@ -86,20 +100,22 @@ defmodule TdAuthWeb.UserControllerTest do
       {:ok, _} = TaxonomyCache.put_domain(domain)
 
       insert(:acl_entry,
-            principal_id: user.id,
-            principal_type: "user",
-            resource_id: domain.id,
-            resource_type: "domain",
-            role: role)
+        principal_id: user.id,
+        principal_type: "user",
+        resource_id: domain.id,
+        resource_type: "domain",
+        role: role
+      )
 
       insert(:acl_entry,
-            principal_id: group.id,
-            principal_type: "group",
-            resource_id: domain.id,
-            resource_type: "domain",
-            role: role)
+        principal_id: group.id,
+        principal_type: "group",
+        resource_id: domain.id,
+        resource_type: "domain",
+        role: role
+      )
 
-      conn = get conn, Routes.user_path(conn, :show, user.id)
+      conn = get(conn, Routes.user_path(conn, :show, user.id))
       validate_resp_schema(conn, schema, "UserResponse")
       user_data = json_response(conn, 200)["data"]
       assert Map.has_key?(user_data, "acls")
@@ -114,7 +130,6 @@ defmodule TdAuthWeb.UserControllerTest do
       assert group_acl["resource"]["name"] == domain.name
       assert group_acl["role"]["name"] == role.name
       assert group_acl["group"]["name"] == group.name
-
     end
   end
 
@@ -122,14 +137,18 @@ defmodule TdAuthWeb.UserControllerTest do
     setup [:create_user]
 
     @tag :admin_authenticated
-    test "renders user when data is valid", %{conn: conn, swagger_schema: schema, user: %User{id: id} = user} do
+    test "renders user when data is valid", %{
+      conn: conn,
+      swagger_schema: schema,
+      user: %User{id: id} = user
+    } do
       conn = put conn, Routes.user_path(conn, :update, user), user: @update_attrs
       validate_resp_schema(conn, schema, "UserResponse")
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
       conn = recycle_and_put_headers(conn)
 
-      conn = get conn, Routes.user_path(conn, :show, id)
+      conn = get(conn, Routes.user_path(conn, :show, id))
       validate_resp_schema(conn, schema, "UserResponse")
       user_data = json_response(conn, 200)["data"]
       assert user_data["id"] == id && user_data["user_name"] == "some updated user_name"
@@ -149,27 +168,43 @@ defmodule TdAuthWeb.UserControllerTest do
       persisted_user = Accounts.get_user_by_name(updated_user["user_name"])
       assert persisted_user.is_admin == @update_is_admin.is_admin
     end
-
   end
 
   describe "delete user" do
-   setup [:create_user]
+    setup [:create_user]
 
-   @tag :admin_authenticated
-   test "deletes chosen user", %{conn: conn, user: user} do
-     conn = delete conn, Routes.user_path(conn, :delete, user)
-     assert response(conn, 204)
+    @tag :admin_authenticated
+    test "deletes chosen user", %{conn: conn, user: user} do
+      conn = delete(conn, Routes.user_path(conn, :delete, user))
+      assert response(conn, 204)
 
-     conn = recycle_and_put_headers(conn)
+      conn = recycle_and_put_headers(conn)
 
-     assert_error_sent 404, fn ->
-       get conn, Routes.user_path(conn, :show, user)
-     end
-   end
+      assert_error_sent 404, fn ->
+        get(conn, Routes.user_path(conn, :show, user))
+      end
+    end
+  end
+
+  describe "init credential" do
+    test "init credential will fail if exist users", %{conn: conn} do
+      fixture(:user)
+      conn = post conn, Routes.user_path(conn, :init), user: @create_attrs
+      assert conn.status == 403
+    end
+
+    test "init credential will render a randomly generated user", %{
+      conn: conn,
+      swagger_schema: schema
+    } do
+      conn = post conn, Routes.user_path(conn, :init), user: @create_attrs
+      validate_resp_schema(conn, schema, "UserResponse")
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+    end
   end
 
   defp create_user(_) do
-   user = fixture(:user)
+    user = fixture(:user)
     {:ok, user: user}
   end
 end
