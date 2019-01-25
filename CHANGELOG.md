@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.12.1] 2019-01-25
+## [2.12.2] 2019-01-25
 
 ### Changed
 - `/api/init` is now a POST method allowing initial credentials to be specified

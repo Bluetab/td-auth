@@ -68,6 +68,7 @@ defmodule TdAuthWeb.AuthController do
           responseType: auth0_config[:response_type],
           scope: auth0_config[:scope]
         }
+
         Map.put(auth_methods, :auth0, auth0)
     end
   end

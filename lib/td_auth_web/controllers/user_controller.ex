@@ -86,7 +86,11 @@ defmodule TdAuthWeb.UserController do
   def init(conn, %{"user" => user_params}) do
     case length(Accounts.list_users()) do
       0 ->
-        user_params = Map.put(user_params, "is_admin", true)
+        user_params =
+          user_params
+          |> Map.put("is_admin", true)
+          |> Map.put("is_protected", true)
+
         conn |> do_create(user_params)
 
       _ ->

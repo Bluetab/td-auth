@@ -4,7 +4,6 @@ defmodule TdAuthWeb.SessionController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
-  alias Comeonin.Bcrypt
   alias Poison, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User

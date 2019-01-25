@@ -24,7 +24,7 @@ defmodule TdAuth.AuthenticationTest do
            %{user_name: user_name, user_passwd: user_passwd},
            state do
     {_, status_code, _} =
-      user_init(%{user_name: user_name, password: user_passwd, email: "some@email.com"})
+      user_init(%{user_name: user_name, password: user_passwd, email: "admin@email.com"})
 
     assert rc_created() == to_response_code(status_code)
 
