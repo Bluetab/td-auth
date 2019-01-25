@@ -1,9 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [2.12.1] 2019-01-25
 
 ### Changed
-- Name variables Auth0 configuration
+- `/api/init` is now a POST method allowing initial credentials to be specified
+- Improve naming of Auth0 configuration variables
 
 ## [2.12.0] 2019-01-24
 
