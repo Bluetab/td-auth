@@ -12,6 +12,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           token :string, "token"
           refresh_token :string, "refresh token", required: true
           has_permissions :boolean, "has_permissions", required: false
+          refresh_token :string, "access_method"
         end
       end,
       Session: swagger_schema do
@@ -160,6 +161,11 @@ defmodule TdAuthWeb.SwaggerDefinitions do
       UserChangePassword: swagger_schema do
         properties do
           old_password :string, "current password", required: true
+          new_password :string, "new password", required: true
+        end
+      end,
+      UserUpdatePassword: swagger_schema do
+        properties do
           new_password :string, "new password", required: true
         end
       end,

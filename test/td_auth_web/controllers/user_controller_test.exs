@@ -28,6 +28,8 @@ defmodule TdAuthWeb.UserControllerTest do
   @update_is_admin %{user_name: "some updated user_name", is_admin: true}
   @invalid_attrs %{password: nil, user_name: nil, email: nil}
   @admin_user_name "app-admin"
+  @valid_password "123456"
+  @invalid_password ""
 
   def fixture(:user) do
     {:ok, user} = Accounts.create_user(@create_attrs)
@@ -168,6 +170,24 @@ defmodule TdAuthWeb.UserControllerTest do
       persisted_user = Accounts.get_user_by_name(updated_user["user_name"])
       assert persisted_user.is_admin == @update_is_admin.is_admin
     end
+  end
+
+  describe "update password" do
+
+    @tag :admin_authenticated
+    test "ok when data is valid", %{conn: conn} do
+      conn = post conn, Routes.user_path(conn, :update_password), new_password: @valid_password
+      #validate_resp_schema(conn, schema, "UserUpdatePassword")
+      assert response(conn, 200)
+    end
+
+    @tag :admin_authenticated
+    test "error when data is invalid", %{conn: conn} do
+      conn = post conn, Routes.user_path(conn, :update_password), new_password: @invalid_password
+      #validate_resp_schema(conn, schema, "UserUpdatePassword")
+      assert response(conn, 422)
+    end
+
   end
 
   describe "delete user" do

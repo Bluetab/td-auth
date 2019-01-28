@@ -49,7 +49,7 @@ defmodule TdAuthWeb.Authentication do
   end
 
   def session_create(user_name, user_password) do
-    body = %{user: %{user_name: user_name, password: user_password}} |> JSON.encode!()
+    body = %{user: %{user_name: user_name, password: user_password}, access_method: nil} |> JSON.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.post!(Routes.session_url(@endpoint, :create), body, [@headers], [])

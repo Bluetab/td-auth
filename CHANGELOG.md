@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.12.3] 2019-01-28
+
+### Added
+
+- [TD-980] An user can change his password if he is logged with username and password
+
 ## [2.12.2] 2019-01-25
 
 ### Changed

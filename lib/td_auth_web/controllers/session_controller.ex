@@ -91,16 +91,16 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}}) do
-    authenticate_and_create_session(conn, user_name, password)
+  def create(conn, %{"access_method" => access_method, "user" => %{"user_name" => user_name, "password" => password}}) do
+    authenticate_and_create_session(conn, user_name, password, access_method)
   end
 
   def create(conn, _params) do
     authenticate_using_auth0_and_create_session(conn)
   end
 
-  defp create_session(conn, user) do
-    tokens = create_tokens(conn, user)
+  defp create_session(conn, user, access_method) do
+    tokens = create_tokens(conn, user, access_method)
     create_session_with_tokens(conn, tokens)
   end
 
@@ -110,13 +110,18 @@ defmodule TdAuthWeb.SessionController do
     |> render("show.json", token: tokens)
   end
 
-  defp create_tokens(conn, user) do
+  defp create_tokens(conn, user, access_method) do
     user_claims = retrieve_user_claims(user)
     acl_entries = retrieve_acl_with_permissions(user, user_claims.gids)
 
+    custom_claims = user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
     custom_claims =
-      user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
-
+      if access_method !== nil && access_method == "alternative_login" do
+        user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
+        custom_claims |> Map.put(:access_method, access_method)
+      else
+        user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
+      end
     conn = handle_sign_in(conn, user, custom_claims)
     token = GuardianPlug.current_token(conn)
 
@@ -170,7 +175,7 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding) do
     with {:ok, profile} <- SamlWorker.validate(saml_response, saml_encoding),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user)
+      create_session(conn, user, nil)
     else
       error ->
         Logger.info("While authenticating using SAML ... #{inspect(error)}")
@@ -185,7 +190,7 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_using_active_directory_and_create_session(conn, user_name, password) do
     with {:ok, profile} <- ActiveDirectory.authenticate(user_name, password),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user)
+            create_session(conn, user, nil)
     else
       error ->
         Logger.info("While authenticating using active directory ... #{inspect(error)}")
@@ -200,7 +205,7 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_using_ldap_and_create_session(conn, user_name, password) do
     with {:ok, profile} <- Ldap.authenticate(user_name, password),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user)
+      create_session(conn, user, nil)
     else
       error ->
         Logger.info("While authenticating using ldap ... #{inspect(error)}")
@@ -212,12 +217,11 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp authenticate_and_create_session(conn, user_name, password) do
+  defp authenticate_and_create_session(conn, user_name, password, access_method) do
     user = Accounts.get_user_by_name(user_name)
-
     case User.check_password(user, password) do
       true ->
-        create_session(conn, user)
+        create_session(conn, user, access_method)
 
       _ ->
         conn
@@ -232,7 +236,7 @@ defmodule TdAuthWeb.SessionController do
 
     with {:ok, profile} <- OIDC.authenticate(authorization_header),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user)
+      create_session(conn, user, nil)
     else
       error ->
         Logger.info("While authenticating using OpenID Connect... #{inspect(error)}")
@@ -249,7 +253,7 @@ defmodule TdAuthWeb.SessionController do
 
     with {:ok, profile} <- Auth0.authenticate(authorization_header),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user)
+      create_session(conn, user, nil)
     else
       error ->
         Logger.info("While authenticating using auth0... #{inspect(error)}")

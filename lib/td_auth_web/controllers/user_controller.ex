@@ -69,6 +69,10 @@ defmodule TdAuthWeb.UserController do
     description("Creates initial admin user if no users exist")
     produces("application/json")
 
+    parameters do
+      user(:body, Schema.ref(:UserCreate), "User create attrs")
+    end
+
     response(
       201,
       "Created",
@@ -214,6 +218,32 @@ defmodule TdAuthWeb.UserController do
       _error ->
         conn
         |> send_resp(:unprocessable_entity, "")
+    end
+  end
+
+  swagger_path :update_password do
+    description "Updates User password without the old password"
+    produces "application/json"
+    parameters do
+      new_password :body, Schema.ref(:UserUpdatePassword), "User change password attrs"
+    end
+    response 200, "OK"
+    response 400, "Client Error"
+  end
+
+  def update_password(conn, %{"new_password" => new_password}) do
+    user = conn.assigns[:current_resource]
+
+    user = user.id
+            |> Accounts.get_user!()
+            |> Repo.preload(:groups)
+    with true <- new_password != "", {:ok, %User{} = _user1} <- Accounts.update_user(user, %{password: new_password})
+    do
+      send_resp(conn, :ok, "")
+    else
+      _error ->
+        conn
+          |> send_resp(:unprocessable_entity, "")
     end
   end
 

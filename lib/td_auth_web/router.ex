@@ -37,6 +37,8 @@ defmodule TdAuthWeb.Router do
     get("/sessions", SessionController, :ping)
     delete("/sessions", SessionController, :destroy)
 
+    post("/update_password", UserController, :update_password)
+
     resources "/users", UserController, except: [:new, :edit] do
       patch("/change_password", UserController, :change_password)
       get("/groups", GroupController, :user_groups)

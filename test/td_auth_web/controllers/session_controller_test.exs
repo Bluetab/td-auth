@@ -32,14 +32,14 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup [:create_user]
 
     test "create valid user session", %{conn: conn, swagger_schema: schema} do
-      conn = post conn, Routes.session_path(conn, :create), user: @valid_attrs
+      conn = post conn, Routes.session_path(conn, :create), access_method: "access_method", user: @valid_attrs
       validate_resp_schema(conn, schema, "Token")
       assert conn.status == 201
     end
 
     test "create invalid user session", %{conn: conn} do
-      conn = post conn, Routes.session_path(conn, :create), user: @invalid_attrs
-      assert conn.status == 401
+      conn = post conn, Routes.session_path(conn, :create), access_method: "access_method", user: @invalid_attrs
+      assert conn.status ==  401
     end
   end
 
@@ -104,7 +104,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup [:create_user]
 
     test "refresh session with valid refresh token", %{conn: conn, swagger_schema: schema} do
-      conn = post conn, Routes.session_path(conn, :create), user: @valid_attrs
+      conn = post conn, Routes.session_path(conn, :create), access_method: "access_method", user: @valid_attrs
       validate_resp_schema(conn, schema, "Token")
       token_resp = json_response(conn, 201)
       token = token_resp["token"]
