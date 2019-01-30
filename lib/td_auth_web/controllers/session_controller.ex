@@ -91,8 +91,8 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  def create(conn, %{"access_method" => access_method, "user" => %{"user_name" => user_name, "password" => password}}) do
-    authenticate_and_create_session(conn, user_name, password, access_method)
+  def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}}) do
+    authenticate_and_create_session(conn, user_name, password, "alternative_login")
   end
 
   def create(conn, _params) do

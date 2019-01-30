@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.12.4] 2019-01-30 
+
+### Changed
+
+- Removed access_method variable from session create
+
 ## [2.12.3] 2019-01-28
 
 ### Added
