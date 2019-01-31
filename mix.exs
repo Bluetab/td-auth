@@ -7,7 +7,7 @@ defmodule TdAuth.Mixfile do
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "2.12.2-local"
+          nil -> "2.12.5-local"
           v -> v
         end,
       elixir: "~> 1.6",
@@ -65,7 +65,7 @@ defmodule TdAuth.Mixfile do
       {:prometheus_plugs, "~> 1.1.5"},
       {:exldap, "~> 0.6"},
       {:openid_connect, "~> 0.2.0"},
-      {:esaml, git: "https://github.com/Bluetab/esaml.git", branch: "feature/encrypted_assertion"}
+      {:esaml, "~> 4.1.0"}
     ]
   end
 

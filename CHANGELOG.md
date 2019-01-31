@@ -1,6 +1,12 @@
 # Changelog
 
-## [2.12.4] 2019-01-30 
+## [2.12.5] 2019-01-31
+
+### Changed
+
+- Updated esaml to v4.1.0
+
+## [2.12.4] 2019-01-30
 
 ### Changed
 
@@ -15,6 +21,7 @@
 ## [2.12.2] 2019-01-25
 
 ### Changed
+
 - `/api/init` is now a POST method allowing initial credentials to be specified
 - Improve naming of Auth0 configuration variables
 
