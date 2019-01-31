@@ -67,7 +67,13 @@ defmodule TdAuth.Saml.SamlWorker do
   defp load_config(config) do
     saml_config =
       config
-      |> Keyword.drop([:sp_key, :sp_cert, :sp_trusted_fingerprints, :reject_roles])
+      |> Keyword.drop([
+        :sp_key,
+        :sp_cert,
+        :sp_trusted_fingerprints,
+        :reject_roles,
+        :sp_idp_signs_envelopes
+      ])
       |> Enum.map(fn {k, v} -> {k, to_charlist(v)} end)
       |> Keyword.merge(config, fn _k, v1, _v2 -> v1 end)
 
@@ -99,6 +105,7 @@ defmodule TdAuth.Saml.SamlWorker do
         entity_id: saml_config[:sp_id],
         consume_uri: saml_config[:sp_consume_uri],
         metadata_uri: saml_config[:sp_metadata_uri],
+        idp_signs_envelopes: saml_config[:sp_idp_signs_envelopes] == "true",
         trusted_fingerprints: trusted_fingerprints,
         org: org,
         tech: contact
