@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-1087] control role name uniqueness on changeset
+
 ## [2.12.5] 2019-01-31
 
 ### Changed
