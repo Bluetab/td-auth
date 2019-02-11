@@ -28,6 +28,7 @@ defmodule TdAuth.Permissions.Role do
     |> Changeset.cast(attrs, [:name, :is_default])
     |> Changeset.validate_required([:name, :is_default])
     |> Changeset.unique_constraint(:is_default)
+    |> Changeset.unique_constraint(:name)
   end
 
   @doc """
