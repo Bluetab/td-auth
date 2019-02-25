@@ -23,6 +23,7 @@ defmodule TdAuthWeb.AclEntryView do
       principal_id: acl_entry.principal_id,
       resource_type: acl_entry.resource_type,
       resource_id: acl_entry.resource_id,
+      description: acl_entry.description,
       role_id: acl_entry.role_id
     }
   end
@@ -53,10 +54,11 @@ defmodule TdAuthWeb.AclEntryView do
   end
 
   defp resource_acl_entry(
-         %{id: id, principal_type: principal_type, role: %{id: role_id, name: role_name}} =
+         %{description: description, id: id, principal_type: principal_type, role: %{id: role_id, name: role_name}} =
            acl_entry
        ) do
     %{
+      description: description,
       acl_entry_id: id,
       principal_type: principal_type,
       principal: render_principal(acl_entry),

@@ -7,8 +7,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   alias TdAuth.Permissions.Role
   import TdAuthWeb.Authentication, only: :functions
 
-  @update_attrs %{resource_id: 43, resource_type: "domain"}
-  @invalid_attrs %{principal_id: nil, principal_type: nil, resource_id: nil, resource_type: nil}
+  @update_attrs %{resource_id: 43, resource_type: "domain", description: "description"}
+  @invalid_attrs %{principal_id: nil, principal_type: nil, resource_id: nil, resource_type: nil, description: nil}
 
   setup_all do
     :ok
@@ -33,9 +33,9 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       # domain = insert(:domain)
       role = Role.role_get_or_create_by_name("watch")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id, role_id: role.id)
-      acl_entry_attrs = acl_entry_attrs |> Map.from_struct
+      acl_entry_attrs = acl_entry_attrs |> Map.from_struct |> Map.put(:description, "description")
       conn = post conn, Routes.acl_entry_path(conn, :create), acl_entry: acl_entry_attrs
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"id" => id, "description" => description} = json_response(conn, 201)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
 
       conn = recycle_and_put_headers(conn)
@@ -47,7 +47,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
         "principal_type" => "user",
         "resource_id" => user.id,
         "resource_type" => "domain",
-        "role_id" => role.id
+        "role_id" => role.id,
+        "description" => description
       }
     end
 
@@ -57,7 +58,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       # domain = insert(:domain)
       role = Role.role_get_or_create_by_name("watch")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id, role_id: role.id)
-      acl_entry_attrs = acl_entry_attrs |> Map.from_struct
+      acl_entry_attrs = acl_entry_attrs |> Map.from_struct |> Map.put(:description, "description")
       conn = post conn, Routes.acl_entry_path(conn, :create), acl_entry: acl_entry_attrs
       assert %{"id" => _id} = json_response(conn, 201)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
@@ -81,10 +82,10 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       # domain = insert(:domain)
       role = Role.role_get_or_create_by_name("create")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id)
-      acl_entry_attrs = acl_entry_attrs |> Map.from_struct
+      acl_entry_attrs = acl_entry_attrs |> Map.from_struct |> Map.put(:description, "description")
       acl_entry_attrs = Map.put(acl_entry_attrs, "role_name", role.name)
       conn = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"id" => id, "description" => description} = json_response(conn, 201)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
 
       conn = recycle_and_put_headers(conn)
@@ -96,7 +97,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
                "principal_type" => "user",
                "resource_id" => user.id,
                "resource_type" => "domain",
-               "role_id" => role.id
+               "role_id" => role.id,
+               "description" => description
              }
     end
 
@@ -110,7 +112,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
         principal_type: "user",
         resource_id: "1",
         resource_type: "domain",
-        role_name: role.name
+        role_name: role.name,
+        description: "description"
       }
       conn = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert json_response(conn, 403)
@@ -138,7 +141,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
         principal_type: "user",
         resource_id: domain_id,
         resource_type: "domain",
-        role_name: "role1"
+        role_name: "role1",
+        description: "description"
       }
       resp = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert json_response(resp, 201)
@@ -149,7 +153,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
         principal_type: "user",
         resource_id: domain_id,
         resource_type: "domain",
-        role_name: "role2"
+        role_name: "role2",
+        description: "description"
       }
       resp = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert json_response(resp, 200)
@@ -161,7 +166,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       # domain = insert(:domain)
       role = Role.role_get_or_create_by_name("watch")
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id)
-      acl_entry_attrs = acl_entry_attrs |> Map.from_struct
+      acl_entry_attrs = acl_entry_attrs |> Map.from_struct |> Map.put(:description, "description")
       acl_entry_attrs = Map.put(acl_entry_attrs, "role_name", role.name)
       conn = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
       assert %{"id" => _id} = json_response(conn, 201)["data"]
@@ -171,10 +176,10 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
       conn = recycle_and_put_headers(conn)
       acl_entry_attrs = build(:acl_entry_resource, principal_id: user.id, resource_id: user.id)
-      acl_entry_attrs = acl_entry_attrs |> Map.from_struct
+      acl_entry_attrs = acl_entry_attrs |> Map.from_struct |> Map.put(:description, "description")
       acl_entry_attrs = Map.put(acl_entry_attrs, "role_name", role.name)
       conn = post conn, Routes.acl_entry_path(conn, :create_or_update), acl_entry: acl_entry_attrs
-      assert %{"id" => id} = json_response(conn, 200)["data"]
+      assert %{"id" => id, "description" => description} = json_response(conn, 200)["data"]
       validate_resp_schema(conn, schema, "AclEntryResponse")
 
       conn = recycle_and_put_headers(conn)
@@ -186,7 +191,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
                "principal_type" => "user",
                "resource_id" => user.id,
                "resource_type" => "domain",
-               "role_id" => role.id
+               "role_id" => role.id,
+               "description" => description
              }
     end
   end
@@ -208,7 +214,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
         "principal_type" => acl_entry.principal_type,
         "resource_id" => @update_attrs.resource_id,
         "resource_type" => @update_attrs.resource_type,
-        "role_id" => role_id
+        "role_id" => role_id,
+        "description" => @update_attrs.description
        }
     end
 

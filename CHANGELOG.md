@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] 2019-02-25
+
+### Changed
+
+- [TD-1463] Added a description field to acl_entries
+
 ## [2.13.0] 2019-02-11
 
 ### Changed

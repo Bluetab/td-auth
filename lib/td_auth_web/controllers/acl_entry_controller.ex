@@ -50,7 +50,6 @@ defmodule TdAuthWeb.AclEntryController do
   def create(conn, %{"acl_entry" => acl_entry_params}) do
     acl_entry = AclEntry.cast(acl_entry_params)
     current_resource = conn.assigns[:current_resource]
-
     if current_resource |> can?(create(acl_entry)) do
       with {:ok, %AclEntry{} = acl_entry} <- AclEntry.create_acl_entry(acl_entry_params) do
         conn
@@ -93,16 +92,17 @@ defmodule TdAuthWeb.AclEntryController do
       principal_type: acl_entry.principal_type,
       principal_id: acl_entry.principal_id,
       resource_type: acl_entry.resource_type,
-      resource_id: acl_entry.resource_id
+      resource_id: acl_entry.resource_id,
+      description: acl_entry.description
     }
 
     acl_entry = AclEntry.get_acl_entry_by_principal_and_resource(acl_query_params)
 
-    if acl_entry do
-      update(conn, %{"id" => acl_entry.id, "acl_entry" => acl_entry_params})
-    else
-      create(conn, %{"acl_entry" => acl_entry_params})
-    end
+      if acl_entry do
+        update(conn, %{"id" => acl_entry.id, "acl_entry" => acl_entry_params})
+      else
+        create(conn, %{"acl_entry" => acl_entry_params})
+      end
   end
 
   swagger_path :show do
@@ -138,7 +138,6 @@ defmodule TdAuthWeb.AclEntryController do
   def update(conn, %{"id" => id, "acl_entry" => acl_entry_params}) do
     current_resource = conn.assigns[:current_resource]
     acl_entry = AclEntry.get_acl_entry!(id)
-
     if current_resource |> can?(update(acl_entry)) do
       with {:ok, %AclEntry{} = acl_entry} <-
              AclEntry.update_acl_entry(acl_entry, acl_entry_params) do

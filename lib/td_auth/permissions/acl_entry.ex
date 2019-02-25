@@ -17,6 +17,7 @@ defmodule TdAuth.Permissions.AclEntry do
     field(:principal_type, :string)
     field(:resource_id, :integer)
     field(:resource_type, :string)
+    field(:description, :string)
     belongs_to(:role, Role)
 
     timestamps()
@@ -34,10 +35,11 @@ defmodule TdAuth.Permissions.AclEntry do
   @doc false
   def changeset(%AclEntry{} = acl_entry, attrs) do
     acl_entry
-    |> cast(attrs, [:principal_type, :principal_id, :resource_type, :resource_id, :role_id])
+    |> cast(attrs, [:principal_type, :principal_id, :resource_type, :resource_id, :role_id, :description])
     |> validate_required([:principal_type, :principal_id, :resource_type, :resource_id, :role_id])
     |> validate_inclusion(:principal_type, ["user", "group"])
     |> validate_inclusion(:resource_type, ["domain"])
+    |> validate_length(:description, max: 30)
     |> unique_constraint(:unique_principal_resource, name: :principal_resource_index)
   end
 
