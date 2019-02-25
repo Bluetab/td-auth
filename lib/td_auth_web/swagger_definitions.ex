@@ -292,6 +292,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
             resource_id(:integer, "id of resource", required: true)
             resource_type(:string, "type of resource: domain", required: true)
             role_id(:integer, "id of role", required: true)
+            description(:string, "desctiption of acl")
           end
         end,
       AclEntryCreateUpdate:
@@ -363,6 +364,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
                   role_id(:integer, "role id")
                   role_name(:string, "role name")
                   acl_entry_id(:integer, "acl entry id")
+                  description(:string, "acl description")
                 end
               end
             )
