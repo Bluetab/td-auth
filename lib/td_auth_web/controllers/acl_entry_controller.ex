@@ -98,18 +98,11 @@ defmodule TdAuthWeb.AclEntryController do
 
     acl_entry = AclEntry.get_acl_entry_by_principal_and_resource(acl_query_params)
 
-    if is_nil(Map.get(acl_query_params, :description)) || String.length(Map.get(acl_query_params, :description)) <= 30 do
       if acl_entry do
         update(conn, %{"id" => acl_entry.id, "acl_entry" => acl_entry_params})
       else
         create(conn, %{"acl_entry" => acl_entry_params})
       end
-    else
-      conn
-      |> put_status(:unprocessable_entity)
-      |> put_view(ErrorView)
-      |> render("422.json")
-    end
   end
 
   swagger_path :show do
