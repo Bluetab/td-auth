@@ -1,10 +1,11 @@
 # Changelog
 
-## [Unreleased] 2019-02-25
+## [Unreleased] 2019-02-26
 
 ### Changed
 
 - [TD-1463] Added a description field to acl_entries
+- [TD-1463] Description field has now 120 charactes length
 
 ## [2.13.0] 2019-02-11
 
