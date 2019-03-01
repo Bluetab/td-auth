@@ -39,7 +39,7 @@ defmodule TdAuth.Permissions.AclEntry do
     |> validate_required([:principal_type, :principal_id, :resource_type, :resource_id, :role_id])
     |> validate_inclusion(:principal_type, ["user", "group"])
     |> validate_inclusion(:resource_type, ["domain"])
-    |> validate_length(:description, max: 30)
+    |> validate_length(:description, max: 120)
     |> unique_constraint(:unique_principal_resource, name: :principal_resource_index)
   end
 
