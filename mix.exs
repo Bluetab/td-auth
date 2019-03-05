@@ -1,18 +1,17 @@
 defmodule TdAuth.Mixfile do
   use Mix.Project
-  alias Mix.Tasks.Phx.Swagger.Generate, as: PhxSwaggerGenerate
 
   def project do
     [
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "2.12.5-local"
+          nil -> "2.14.0-local"
           v -> v
         end,
       elixir: "~> 1.6",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext, :phoenix_swagger] ++ Mix.compilers(),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers() ++ [:phoenix_swagger],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -79,14 +78,7 @@ defmodule TdAuth.Mixfile do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate", "test"],
-      compile: ["compile", &pxh_swagger_generate/1]
+      test: ["ecto.create --quiet", "ecto.migrate", "test"]
     ]
-  end
-
-  defp pxh_swagger_generate(_) do
-    if Mix.env() in [:dev, :prod] do
-      PhxSwaggerGenerate.run(["priv/static/swagger.json"])
-    end
   end
 end
