@@ -6,7 +6,7 @@ defmodule TdAuth.Mixfile do
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "2.12.5-local"
+          nil -> "2.14.0-local"
           v -> v
         end,
       elixir: "~> 1.6",
