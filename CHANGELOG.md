@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-1544] Added a connection parameter to Auth0 config
+
 ## [2.14.0] 2019-03-04
 
 ### Changed
