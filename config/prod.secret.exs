@@ -36,7 +36,8 @@ config :td_auth, :auth,
   scope: "${AUTH0_SCOPE}",
   response_type: "token id_token",
   userinfo: "/userinfo",
-  profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}
+  profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"},
+  connection: "${AUTH0_CONNECTION}"
 
 config :td_auth, TdAuth.Auth.Auth,
   allowed_algos: ["RS256"],

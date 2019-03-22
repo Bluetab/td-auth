@@ -66,7 +66,8 @@ defmodule TdAuthWeb.AuthController do
           redirectUri: auth0_config[:redirect_uri],
           audience: Enum.join([auth0_config[:audience], auth0_config[:userinfo]], ""),
           responseType: auth0_config[:response_type],
-          scope: auth0_config[:scope]
+          scope: auth0_config[:scope],
+          connection: auth0_config[:connection]
         }
 
         Map.put(auth_methods, :auth0, auth0)
