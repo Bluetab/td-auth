@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- [TD-1636] Use alpine:3.9 as base image for docker runtime
+
 ## [2.16.0] 2019-04-01
 
 ### Added
