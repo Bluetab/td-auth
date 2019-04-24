@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] 2019-04-23
+
+### Changed
+
+- [TD-1605] Remove acl entry from cache at delete
+
 ## [2.17.0] 2019-04-17
 
 ### Changed
