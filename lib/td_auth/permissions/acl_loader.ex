@@ -24,6 +24,10 @@ defmodule TdAuth.AclLoader do
     GenServer.call(TdAuth.AclLoader, {:delete, resource_type, resource_id})
   end
 
+  def delete_acl(resource_type, resource_id, role, user) do
+    GenServer.call(TdAuth.AclLoader, {:delete_acl, resource_type, resource_id, role, user})
+  end
+
   @impl true
   def init(state) do
     if @cache_acl_on_startup, do: schedule_work(:load_cache, 0)
@@ -43,6 +47,12 @@ defmodule TdAuth.AclLoader do
       {:ok, _} = AclCache.delete_acl_role_users(resource_type, resource_id, role)
     end)
     {:ok, _} = AclCache.delete_acl_roles(resource_type, resource_id)
+    {:reply, :ok, state}
+  end
+
+  @impl true
+  def handle_call({:delete_acl, resource_type, resource_id, role, user}, _from, state) do
+    AclCache.delete_acl_role_user(resource_type, resource_id, role, user)
     {:reply, :ok, state}
   end
 

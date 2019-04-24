@@ -35,7 +35,14 @@ defmodule TdAuth.Permissions.AclEntry do
   @doc false
   def changeset(%AclEntry{} = acl_entry, attrs) do
     acl_entry
-    |> cast(attrs, [:principal_type, :principal_id, :resource_type, :resource_id, :role_id, :description])
+    |> cast(attrs, [
+      :principal_type,
+      :principal_id,
+      :resource_type,
+      :resource_id,
+      :role_id,
+      :description
+    ])
     |> validate_required([:principal_type, :principal_id, :resource_type, :resource_id, :role_id])
     |> validate_inclusion(:principal_type, ["user", "group"])
     |> validate_inclusion(:resource_type, ["domain"])
@@ -236,7 +243,9 @@ defmodule TdAuth.Permissions.AclEntry do
 
   """
   def delete_acl_entry(%AclEntry{} = acl_entry) do
-    Repo.delete(acl_entry)
+    acl_entry
+    |> Repo.delete()
+    |> delete_from_cache
   end
 
   def delete_acl_entries(params, options \\ %{}) do
@@ -344,4 +353,20 @@ defmodule TdAuth.Permissions.AclEntry do
   end
 
   defp refresh_cache(response), do: response
+
+  defp delete_from_cache(
+         {:ok,
+          %{
+            principal_id: principal_id,
+            resource_type: resource_type,
+            resource_id: resource_id,
+            role_id: role_id
+          }} = response
+       ) do
+    role = Role.get_role!(role_id)
+    AclLoader.delete_acl(resource_type, resource_id, role.name, principal_id)
+    response
+  end
+
+  defp delete_from_cache(response), do: response
 end
