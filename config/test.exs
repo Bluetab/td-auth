@@ -17,7 +17,7 @@ config :td_auth, TdAuth.Repo,
   username: "postgres",
   password: "postgres",
   database: "td_auth_test",
-  hostname: "localhost",
+  hostname: "postgres",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 1
 
@@ -43,7 +43,7 @@ config :td_auth, cache_acl_on_startup: false
 config :td_auth, acl_removement: false
 
 # Redis configuration
-config :td_perms, redis_host: "localhost"
+config :td_perms, redis_host: "redis"
 
 config :td_auth, :openid_connect_providers,
   oidc: [
