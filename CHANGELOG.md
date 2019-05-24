@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] 2019-05-24
+
+### Added
+
+- [TD-1535] New permission manage_ingest_relations
+
 ## [2.19.0] 2019-05-14
 
 ### Fixed
