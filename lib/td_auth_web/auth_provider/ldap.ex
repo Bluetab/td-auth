@@ -20,6 +20,7 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
         after
           ldap_close(conn)
         end
+
       error ->
         Logger.info("Error while opening ldap connection... #{inspect(error)}")
         error
@@ -27,8 +28,7 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
   end
 
   defp ldap_open do
-    Exldap.open(get_ldap_server(), get_ldap_port(),
-                get_ldap_ssl(), get_ldap_connection_timeout())
+    Exldap.open(get_ldap_server(), get_ldap_port(), get_ldap_ssl(), get_ldap_connection_timeout())
   end
 
   defp ldap_close(conn) do
@@ -44,18 +44,19 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
       {:ok, conn} ->
         try do
           with {:ok, search_results} <- ldap_search(conn, user_name),
-            {:ok, entry} <- fetch_ldap_entry(search_results), 
-            :ok <- verify_user_credentials(conn, user_name, password, entry) do
-              build_profile(entry)
-            else
-              error -> Logger.info("Error creating profile... #{inspect(error)}")
-            end
+               {:ok, entry} <- fetch_ldap_entry(search_results),
+               :ok <- verify_user_credentials(conn, user_name, password, entry) do
+            build_profile(entry)
+          else
+            error -> Logger.info("Error creating profile... #{inspect(error)}")
+          end
         after
           ldap_close(conn)
         end
+
       error ->
-          Logger.info("Error while connecting to ldap... #{inspect(error)}")
-          error
+        Logger.info("Error while connecting to ldap... #{inspect(error)}")
+        error
     end
   end
 
@@ -75,29 +76,37 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
 
   defp get_ldap_bind(user_name) do
     bind_pattern = get_ldap_bind_pattern()
+
     bind_pattern
-    |> Interpolation.to_interpolatable
+    |> Interpolation.to_interpolatable()
     |> Interpolation.interpolate(%{user_name: user_name})
     |> elem(1)
   end
 
   defp ldap_connect do
-    Exldap.connect(get_ldap_server(), get_ldap_port(),
-                   get_ldap_ssl(), get_ldap_user_dn(),
-                   get_ldap_password(), get_ldap_connection_timeout())
+    Exldap.connect(
+      get_ldap_server(),
+      get_ldap_port(),
+      get_ldap_ssl(),
+      get_ldap_user_dn(),
+      get_ldap_password(),
+      get_ldap_connection_timeout()
+    )
   end
 
   defp ldap_search(conn, user_name) do
-    Exldap.search_field(conn, get_ldap_search_path(),
-                        get_ldap_search_field(), user_name)
+    Exldap.search_field(conn, get_ldap_search_path(), get_ldap_search_field(), user_name)
   end
 
   defp build_profile(entry) do
     mapping = get_ldap_profile_mapping()
-    profile = Enum.reduce(mapping, %{}, fn({k, v}, acc) ->
-      attr = Exldap.get_attribute!(entry, v)
-      Map.put(acc, k, attr)
-    end)
+
+    profile =
+      Enum.reduce(mapping, %{}, fn {k, v}, acc ->
+        attr = Exldap.get_attribute!(entry, v)
+        Map.put(acc, k, attr)
+      end)
+
     {:ok, profile}
   end
 
@@ -148,5 +157,4 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
     timeout = Application.get_env(:td_auth, :ldap)[:connection_timeout]
     String.to_integer(timeout)
   end
-
 end
