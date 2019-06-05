@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] 2019-06-05
+
+### Changed
+
+- [TD-1699] New flow for ldap authentication
+
 ## [2.20.0] 2019-05-27
 
 ### Added
