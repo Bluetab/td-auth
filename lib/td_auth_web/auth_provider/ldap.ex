@@ -7,7 +7,7 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
 
   def authenticate(user_name, password) do
     case ldap_authenticate() do
-      {:ok} -> create_profile(user_name, password)
+      :ok -> create_profile(user_name, password)
       error -> error
     end
   end
