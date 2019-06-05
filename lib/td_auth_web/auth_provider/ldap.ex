@@ -12,7 +12,7 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
     end
   end
 
-  defp ldap_authenticate() do
+  defp ldap_authenticate do
     case ldap_open() do
       {:ok, conn} ->
         try do
