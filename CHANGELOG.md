@@ -2,6 +2,10 @@
 
 ## [Unreleased] 2019-06-05
 
+### Added
+
+- [TD-1702] New permission view_data_structures_profile
+
 ### Changed
 
 - [TD-1699] New flow for ldap authentication
