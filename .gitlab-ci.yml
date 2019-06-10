@@ -1,5 +1,5 @@
 variables:
-  VERSION: "3.0.0"
+  VERSION: "2.21.1"
   APP_NAME: "td_auth"
   COMPOSE_FILE: "ci/docker-compose.yml"
   COMPOSE_PROJECT_NAME: "${APP_NAME}_${CI_PIPELINE_ID}"
