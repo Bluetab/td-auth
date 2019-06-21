@@ -17,6 +17,13 @@ defmodule TdAuthWeb.ErrorView do
     %{errors: %{detail: "Internal server error"}}
   end
 
+  def render("proxy_login_disabled.json", _assigns) do
+    %{errors: %{
+      detail: "Proxy login is not enabled.",
+      code: "proxy_login_disabled"
+    }}
+  end
+
   # In case no render clause matches or no
   # template is found, let's render it as 500
   def template_not_found(_template, assigns) do

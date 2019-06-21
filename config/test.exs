@@ -54,3 +54,5 @@ config :td_auth, :openid_connect_providers,
     scope: "openid profile",
     response_type: "id_token"
   ]
+
+config :td_auth, :nonce_cache, TdAuth.NonceCacheMock

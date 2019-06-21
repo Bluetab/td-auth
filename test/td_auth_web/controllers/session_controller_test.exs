@@ -6,6 +6,7 @@ defmodule TdAuthWeb.SessionControllerTest do
   alias Poison, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Auth.Auth
+  alias TdAuth.NonceCacheMock
   alias TdAuthWeb.ApiServices.MockAuthService
 
   import TdAuthWeb.Authentication, only: :functions
@@ -21,6 +22,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
   setup_all do
     start_supervised(MockAuthService)
+    start_supervised(NonceCacheMock)
     :ok
   end
 
@@ -32,14 +34,22 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup [:create_user]
 
     test "create valid user session", %{conn: conn, swagger_schema: schema} do
-      conn = post conn, Routes.session_path(conn, :create), access_method: "access_method", user: @valid_attrs
+      conn =
+        post conn, Routes.session_path(conn, :create),
+          access_method: "access_method",
+          user: @valid_attrs
+
       validate_resp_schema(conn, schema, "Token")
       assert conn.status == 201
     end
 
     test "create invalid user session", %{conn: conn} do
-      conn = post conn, Routes.session_path(conn, :create), access_method: "access_method", user: @invalid_attrs
-      assert conn.status ==  401
+      conn =
+        post conn, Routes.session_path(conn, :create),
+          access_method: "access_method",
+          user: @invalid_attrs
+
+      assert conn.status == 401
     end
   end
 
@@ -98,13 +108,79 @@ defmodule TdAuthWeb.SessionControllerTest do
       user = Accounts.get_user_by_name(profile[:nickname])
       assert !user
     end
+
+    test "create session proxy login when not allowed", %{conn: conn} do
+      Application.put_env(:td_auth, :allow_proxy_login, false)
+      conn = put_req_header(conn, "proxy-remote-user", "user_name")
+
+      conn = post(conn, Routes.session_path(conn, :create))
+      assert conn.status == 302
+
+      [location] = for {"location", value} <- conn.resp_headers, do: value
+      assert [^location, nonce] = Regex.run(~r/^\/proxy_login#nonce=(.*)$/, location)
+
+      conn = ConnTest.recycle(conn)
+
+      conn =
+        post conn, Routes.session_path(conn, :create), auth_realm: "proxy_login", nonce: nonce
+
+      resp = json_response(conn, 401)
+
+      assert resp == %{
+               "errors" => %{
+                 "code" => "proxy_login_disabled",
+                 "detail" => "Proxy login is not enabled."
+               }
+             }
+    end
+
+    test "create session proxy login when is allowed and user is invalid", %{conn: conn} do
+      Application.put_env(:td_auth, :allow_proxy_login, true)
+      conn = put_req_header(conn, "proxy-remote-user", "user_name")
+
+      conn = post(conn, Routes.session_path(conn, :create))
+      assert conn.status == 302
+
+      [location] = for {"location", value} <- conn.resp_headers, do: value
+      assert [^location, nonce] = Regex.run(~r/^\/proxy_login#nonce=(.*)$/, location)
+
+      conn = ConnTest.recycle(conn)
+
+      conn =
+        post conn, Routes.session_path(conn, :create), auth_realm: "proxy_login", nonce: nonce
+
+      resp = json_response(conn, 401)
+      assert resp == %{"errors" => %{"detail" => "Invalid credentials"}}
+    end
+
+    test "create session proxy login when is allowed and user is valid", %{conn: conn} do
+      Application.put_env(:td_auth, :allow_proxy_login, true)
+      conn = put_req_header(conn, "proxy-remote-user", "usuariotemporal")
+
+      conn = post(conn, Routes.session_path(conn, :create))
+      assert conn.status == 302
+
+      [location] = for {"location", value} <- conn.resp_headers, do: value
+      assert [^location, nonce] = Regex.run(~r/^\/proxy_login#nonce=(.*)$/, location)
+
+      conn = ConnTest.recycle(conn)
+
+      conn =
+        post conn, Routes.session_path(conn, :create), auth_realm: "proxy_login", nonce: nonce
+
+      assert conn.status == 201
+    end
   end
 
   describe "refresh session" do
     setup [:create_user]
 
     test "refresh session with valid refresh token", %{conn: conn, swagger_schema: schema} do
-      conn = post conn, Routes.session_path(conn, :create), access_method: "access_method", user: @valid_attrs
+      conn =
+        post conn, Routes.session_path(conn, :create),
+          access_method: "access_method",
+          user: @valid_attrs
+
       validate_resp_schema(conn, schema, "Token")
       token_resp = json_response(conn, 201)
       token = token_resp["token"]
