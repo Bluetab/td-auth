@@ -19,8 +19,9 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuthWeb.AuthProvider.OIDC
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
-  alias TdPerms.NonceCache
   alias TdPerms.TaxonomyCache
+
+  @nonce_cache Application.get_env(:td_auth, :nonce_cache)
 
   def swagger_definitions do
     SwaggerDefinitions.session_swagger_definitions()
@@ -49,7 +50,7 @@ defmodule TdAuthWeb.SessionController do
     nonce =
       params
       |> Jason.encode!()
-      |> NonceCache.create_nonce()
+      |> @nonce_cache.create_nonce()
 
     redirect(conn, to: "/saml#nonce=#{nonce}")
   end
@@ -72,8 +73,8 @@ defmodule TdAuthWeb.SessionController do
     authenticate_using_oidc_and_create_session(conn)
   end
 
-  def create(conn, %{"auth_realm" => "saml", "nonce" => nonce}) do
-    case NonceCache.pop(nonce) do
+  def create(conn, %{"auth_realm" => auth_realm, "nonce" => nonce}) do
+    case @nonce_cache.pop(nonce) do
       nil ->
         conn
         |> put_status(:unauthorized)
@@ -81,13 +82,7 @@ defmodule TdAuthWeb.SessionController do
         |> render("401.json")
 
       json ->
-        params = JSON.decode!(json)
-
-        [saml_response, saml_encoding] =
-          ["SAMLResponse", "SAMLEncoding"]
-          |> Enum.map(&Map.get(params, &1))
-
-        authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding)
+        create_nonce_session(conn, auth_realm, json)
     end
   end
 
@@ -95,8 +90,25 @@ defmodule TdAuthWeb.SessionController do
     authenticate_and_create_session(conn, user_name, password, "alternative_login")
   end
 
+  def create(%{req_headers: headers} = conn, params) do
+    create(conn, Map.new(headers), params)
+  end
   def create(conn, _params) do
-    authenticate_using_auth0_and_create_session(conn)
+    create(conn, nil, nil)
+  end
+
+  defp create(conn, %{"proxy-remote-user" => user_name}, _params) do
+    nonce = @nonce_cache.create_nonce(user_name)
+    redirect(conn, to: "/proxy_login#nonce=#{nonce}")
+  end
+  defp create(conn, %{"authorization" => authorization}, _params) do
+     authenticate_using_auth0_and_create_session(conn, authorization)
+  end
+  defp create(conn, _headers, _params) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(ErrorView)
+    |> render("422.json")
   end
 
   defp create_session(conn, user, access_method) do
@@ -133,6 +145,26 @@ defmodule TdAuthWeb.SessionController do
       Guardian.encode_and_sign(user, %{}, token_type: "refresh")
 
     %{token: token, refresh_token: refresh_token}
+  end
+
+  def create_nonce_session(conn, "saml", json) do
+    params = JSON.decode!(json)
+
+    [saml_response, saml_encoding] =
+      ["SAMLResponse", "SAMLEncoding"]
+      |> Enum.map(&Map.get(params, &1))
+
+    authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding)
+  end
+  def create_nonce_session(conn, "proxy_login", user_name) do
+    allow_proxy_login = Application.get_env(:td_auth, :allow_proxy_login)
+    authenticate_proxy_login(conn, user_name, allow_proxy_login)
+  end
+  def create_nonce_session(conn, _, _) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(ErrorView)
+    |> render("422.json")
   end
 
   defp has_user_permissions?(%User{is_admin: true}, _acl_entries), do: true
@@ -217,6 +249,24 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
+  defp authenticate_proxy_login(conn, user_name, true) do
+    case Accounts.get_user_by_name(user_name) do
+      nil ->
+        conn
+        |> put_status(:unauthorized)
+        |> put_view(ErrorView)
+        |> render("401.json")
+      user ->
+        create_session(conn, user, "proxy_login")
+    end
+  end
+  defp authenticate_proxy_login(conn, _, _) do
+    conn
+        |> put_status(:unauthorized)
+        |> put_view(ErrorView)
+        |> render("proxy_login_disabled.json")
+  end
+
   defp authenticate_and_create_session(conn, user_name, password, access_method) do
     user = Accounts.get_user_by_name(user_name)
     case User.check_password(user, password) do
@@ -248,9 +298,7 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp authenticate_using_auth0_and_create_session(conn) do
-    authorization_header = get_req_header(conn, "authorization")
-
+  defp authenticate_using_auth0_and_create_session(conn, authorization_header) do
     with {:ok, profile} <- Auth0.authenticate(authorization_header),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
       create_session(conn, user, nil)

@@ -12,6 +12,8 @@ config :td_auth,
 # Hashing algorithm
 config :td_auth, hashing_module: Comeonin.Bcrypt
 
+config :td_auth, allow_proxy_login: false
+
 # Configures the endpoint
 config :td_auth, TdAuthWeb.Endpoint,
   url: [host: "localhost"],
@@ -35,6 +37,8 @@ config :td_auth, TdAuth.Auth.Guardian,
   issuer: "tdauth",
   token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
+
+config :td_auth, :nonce_cache, TdPerms.NonceCache
 
 # ------------ ldap ----------
 

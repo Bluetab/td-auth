@@ -15,17 +15,10 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
   end
 
   defp fetch_access_token(authorization_header) do
-    fetch_access_token_from_header(authorization_header)
-  end
-
-  defp fetch_access_token_from_header([]), do: {:error, :no_access_token_found}
-
-  defp fetch_access_token_from_header([token | tail]) do
-    trimmed_token = String.trim(token)
-
+    trimmed_token = String.trim(authorization_header)
     case Regex.run(~r/^Bearer (.*)$/, trimmed_token) do
       [_, match] -> {:ok, String.trim(match)}
-      _ -> fetch_access_token_from_header(tail)
+      _ -> {:error, :no_access_token_found}
     end
   end
 
