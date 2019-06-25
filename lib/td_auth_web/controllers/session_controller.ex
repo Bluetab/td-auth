@@ -249,7 +249,7 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp authenticate_proxy_login(conn, user_name, true) do
+  defp authenticate_proxy_login(conn, user_name, "true") do
     case Accounts.get_user_by_name(user_name) do
       nil ->
         conn

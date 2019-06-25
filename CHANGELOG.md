@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-1594] fix allow_proxy_login config to accept environment value
+
 ## [3.0.0] 2019-06-25
 
 ### Added
