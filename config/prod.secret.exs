@@ -8,6 +8,9 @@ use Mix.Config
 # file or create a script for recreating it, since it's
 # kept out of version control and might be hard to recover
 # or recreate for your teammates (or yourself later on).
+
+config :td_auth, allow_proxy_login: "${TD_AUTH_ALLOW_PROXY_LOGIN}"
+
 config :td_auth, TdAuthWeb.Endpoint,
   secret_key_base: "fZFsyAqGLetD8LXb4tbkrHT04TLU8RaNaYyTOZOlw95hybq9zbGsAGsNlLOqlb0+"
 

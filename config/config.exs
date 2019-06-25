@@ -12,7 +12,7 @@ config :td_auth,
 # Hashing algorithm
 config :td_auth, hashing_module: Comeonin.Bcrypt
 
-config :td_auth, allow_proxy_login: false
+config :td_auth, allow_proxy_login: "false"
 
 # Configures the endpoint
 config :td_auth, TdAuthWeb.Endpoint,

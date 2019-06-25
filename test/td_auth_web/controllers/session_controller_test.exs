@@ -110,7 +110,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create session proxy login when not allowed", %{conn: conn} do
-      Application.put_env(:td_auth, :allow_proxy_login, false)
+      Application.put_env(:td_auth, :allow_proxy_login, "false")
       conn = put_req_header(conn, "proxy-remote-user", "user_name")
 
       conn = post(conn, Routes.session_path(conn, :create))
@@ -135,7 +135,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create session proxy login when is allowed and user is invalid", %{conn: conn} do
-      Application.put_env(:td_auth, :allow_proxy_login, true)
+      Application.put_env(:td_auth, :allow_proxy_login, "true")
       conn = put_req_header(conn, "proxy-remote-user", "user_name")
 
       conn = post(conn, Routes.session_path(conn, :create))
@@ -154,7 +154,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create session proxy login when is allowed and user is valid", %{conn: conn} do
-      Application.put_env(:td_auth, :allow_proxy_login, true)
+      Application.put_env(:td_auth, :allow_proxy_login, "true")
       conn = put_req_header(conn, "proxy-remote-user", "usuariotemporal")
 
       conn = post(conn, Routes.session_path(conn, :create))
