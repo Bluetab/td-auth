@@ -6,11 +6,9 @@ defmodule TdAuth.UserLoader do
   use GenServer
 
   alias TdAuth.Accounts
-  alias TdPerms.UserCache
+  alias TdCache.UserCache
 
   require Logger
-
-  @cache_users_on_startup Application.get_env(:td_auth, :cache_users_on_startup)
 
   def start_link(name \\ nil) do
     GenServer.start_link(__MODULE__, nil, name: name)
@@ -26,7 +24,12 @@ defmodule TdAuth.UserLoader do
 
   @impl true
   def init(state) do
-    if @cache_users_on_startup, do: schedule_work(:load_cache, 0)
+    unless Application.get_env(:td_auth, :env) == :test do
+      schedule_work(:load_cache, 0)
+    end
+
+    name = String.replace_prefix("#{__MODULE__}", "Elixir.", "")
+    Logger.info("Running #{name}")
     {:ok, state}
   end
 
@@ -38,8 +41,8 @@ defmodule TdAuth.UserLoader do
 
   @impl true
   def handle_call({:delete, user_id}, _from, state) do
-    UserCache.delete_user(user_id)
-    {:reply, :ok, state}
+    reply = UserCache.delete(user_id)
+    {:reply, reply, state}
   end
 
   @impl true
@@ -67,7 +70,7 @@ defmodule TdAuth.UserLoader do
     results =
       users
       |> Enum.map(&Map.take(&1, [:id, :user_name, :full_name, :email]))
-      |> Enum.map(&UserCache.put_user(&1))
+      |> Enum.map(&UserCache.put/1)
       |> Enum.map(fn {res, _} -> res end)
 
     if Enum.any?(results, &(&1 != :ok)) do

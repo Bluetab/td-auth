@@ -2,17 +2,15 @@ defmodule TdAuth.AclRemover do
   @moduledoc """
   GenServer used to remove from acl_entries the deleted domains
   """
+
   use GenServer
+
   alias TdAuth.Permissions.AclEntry
-  alias TdPerms.TaxonomyCache
+  alias TdCache.TaxonomyCache
+
   require Logger
 
-  @acl_removement_frequency Application.get_env(
-                              :td_auth,
-                              :acl_removement_frequency
-                            )
-
-  @acl_removement Application.get_env(:td_auth, :acl_removement)
+  @hourly 60 * 60 * 1000
 
   def start_link(opts \\ %{}) do
     GenServer.start_link(__MODULE__, opts)
@@ -20,12 +18,11 @@ defmodule TdAuth.AclRemover do
 
   def init(state) do
     # Schedule work to be performed at some point
-    if @acl_removement, do: schedule_work()
-    {:ok, state}
-  end
+    if Application.get_env(:td_auth, :env) == :prod do
+      schedule_work()
+    end
 
-  defp schedule_work do
-    Process.send_after(self(), :work, @acl_removement_frequency)
+    {:ok, state}
   end
 
   def handle_info(:work, state) do
@@ -39,5 +36,9 @@ defmodule TdAuth.AclRemover do
 
     schedule_work()
     {:noreply, state}
+  end
+
+  defp schedule_work(millis \\ @hourly) do
+    Process.send_after(self(), :work, millis)
   end
 end

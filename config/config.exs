@@ -5,6 +5,9 @@
 # is restricted to this project.
 use Mix.Config
 
+# Environment
+config :td_auth, :env, Mix.env()
+
 # General application configuration
 config :td_auth,
   ecto_repos: [TdAuth.Repo]
@@ -37,8 +40,6 @@ config :td_auth, TdAuth.Auth.Guardian,
   issuer: "tdauth",
   token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
-
-config :td_auth, :nonce_cache, TdPerms.NonceCache
 
 # ------------ ldap ----------
 
@@ -78,12 +79,7 @@ config :td_auth, :phoenix_swagger,
     "priv/static/swagger.json" => [router: TdAuthWeb.Router]
   }
 
-config :td_auth, cache_users_on_startup: true
-config :td_auth, cache_acl_on_startup: true
-config :td_auth, acl_removement: true
-config :td_auth, acl_removement_frequency: 36_00_000
-
-config :td_perms,
+config :td_cache,
   permissions: [
     :is_admin,
     :create_acl_entry,

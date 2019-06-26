@@ -57,14 +57,14 @@ defmodule TdAuth.Mixfile do
       {:cabbage, git: "https://github.com/Bluetab/cabbage", tag: "v0.3.7-alpha"},
       {:phoenix_swagger, "~> 0.8.0"},
       {:ex_json_schema, "~> 0.5"},
-      {:td_perms, git: "https://github.com/Bluetab/td-perms.git", tag: "2.21.4"},
       {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git", tag: "2.11.0"},
       {:inflex, "~> 1.10.0"},
       {:prometheus_ex, "~> 3.0.2"},
       {:prometheus_plugs, "~> 1.1.5"},
       {:exldap, "~> 0.6"},
       {:openid_connect, "~> 0.2.0"},
-      {:esaml, "~> 4.1.0"}
+      {:esaml, "~> 4.1.0"},
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "3.0.0"}
     ]
   end
 

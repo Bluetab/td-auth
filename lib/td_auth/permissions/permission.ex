@@ -53,7 +53,7 @@ defmodule TdAuth.Permissions.Permission do
   }
 
   schema "permissions" do
-    field :name, :string
+    field(:name, :string)
 
     timestamps()
   end
@@ -69,5 +69,4 @@ defmodule TdAuth.Permissions.Permission do
     |> validate_required([:name])
     |> unique_constraint(:name)
   end
-
 end

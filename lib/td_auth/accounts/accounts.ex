@@ -22,11 +22,11 @@ defmodule TdAuth.Accounts do
 
   """
   def list_users do
-    Repo.all(from u in User, where: u.is_protected == false)
+    Repo.all(from(u in User, where: u.is_protected == false))
   end
 
   def list_users(ids) do
-    Repo.all(from u in User, where: u.id in ^ids)
+    Repo.all(from(u in User, where: u.id in ^ids))
   end
 
   def list_users_by_group_id(group_id) do
@@ -57,7 +57,7 @@ defmodule TdAuth.Accounts do
   end
 
   def exist_user?(user_name) do
-    Repo.one(from u in User, select: count(u.id), where: u.user_name == ^user_name) > 0
+    Repo.one(from(u in User, select: count(u.id), where: u.user_name == ^user_name)) > 0
   end
 
   @doc """
@@ -112,6 +112,7 @@ defmodule TdAuth.Accounts do
   def create_or_update_user(profile) do
     user_name = Map.get(profile, "user_name") || Map.get(profile, :user_name)
     user = get_user_by_name(user_name)
+
     case user do
       nil -> create_user(profile)
       u -> update_user(u, profile)
@@ -132,16 +133,17 @@ defmodule TdAuth.Accounts do
   """
   def delete_user(%User{} = user) do
     user
-      |> Repo.delete()
-      |> delete_acl_entries("user")
-      |> delete_cache()
+    |> Repo.delete()
+    |> delete_acl_entries("user")
+    |> delete_cache()
   end
 
   def delete_user_nocache(%User{} = user) do
     user
-      |> Repo.delete()
-      |> delete_acl_entries("user")
+    |> Repo.delete()
+    |> delete_acl_entries("user")
   end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
@@ -169,7 +171,7 @@ defmodule TdAuth.Accounts do
   end
 
   def list_groups(ids) do
-    Repo.all(from u in Group, where: u.id in ^ids)
+    Repo.all(from(u in Group, where: u.id in ^ids))
   end
 
   @doc """
@@ -277,8 +279,9 @@ defmodule TdAuth.Accounts do
   def delete_group_from_user(%User{} = user, %Group{} = group) do
     user = Repo.preload(user, :groups)
     groups = Enum.filter(user.groups, &(&1.name != group.name))
+
     user
-    |> Changeset.change
+    |> Changeset.change()
     |> Changeset.put_assoc(:groups, groups)
     |> Repo.update()
   end
@@ -288,7 +291,7 @@ defmodule TdAuth.Accounts do
     user
     |> Repo.preload(:groups)
     |> User.link_to_groups_changeset(groups)
-    |> Repo.update
+    |> Repo.update()
   end
 
   defp delete_acl_entries({:ok, %{id: id} = resource}, principal_type) do
@@ -300,11 +303,13 @@ defmodule TdAuth.Accounts do
     UserLoader.refresh(id)
     {:ok, user}
   end
+
   defp refresh_cache(result), do: result
+
   defp delete_cache({:ok, %{id: id} = user}) do
     UserLoader.delete(id)
     {:ok, user}
   end
-  defp delete_cache(result), do: result
 
+  defp delete_cache(result), do: result
 end

@@ -7,8 +7,8 @@ defmodule TdAuth.Accounts.Group do
   alias TdAuth.Accounts.User
 
   schema "groups" do
-    field :name, :string
-    field :description, :string
+    field(:name, :string)
+    field(:description, :string)
     many_to_many(:users, User, join_through: "users_groups")
 
     timestamps()

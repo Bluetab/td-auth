@@ -5,7 +5,7 @@ defmodule TdBg.Canada.Abilities do
   alias TdAuth.Auth.Session
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Role
-  alias TdPerms.Permissions, as: PermissionCache
+  alias TdCache.Permissions
 
   defimpl Canada.Can, for: Session do
     # administrator is superpowerful
@@ -28,8 +28,8 @@ defmodule TdBg.Canada.Abilities do
     end
 
     def can?(session, :create_or_update, %{resource_type: "domain", resource_id: domain_id}) do
-      (authorized?(session, :create_acl_entry, domain_id)
-      or authorized?(session, :update_acl_entry, domain_id))
+      authorized?(session, :create_acl_entry, domain_id) or
+        authorized?(session, :update_acl_entry, domain_id)
     end
 
     def can?(session, :delete, %{resource_type: "domain", resource_id: domain_id}) do
@@ -38,23 +38,23 @@ defmodule TdBg.Canada.Abilities do
 
     def can?(%Session{jti: jti}, :list, Group) do
       permissions = [:create_acl_entry, :update_acl_entry]
-      PermissionCache.has_any_permission_on_resource_type?(jti, permissions, "domain")
+      Permissions.has_any_permission_on_resource_type?(jti, permissions, "domain")
     end
 
     def can?(%Session{jti: jti}, :list, User) do
       permissions = [:create_acl_entry, :update_acl_entry]
-      PermissionCache.has_any_permission_on_resource_type?(jti, permissions, "domain")
+      Permissions.has_any_permission_on_resource_type?(jti, permissions, "domain")
     end
 
     def can?(%Session{jti: jti}, :list, Role) do
       permissions = [:create_acl_entry, :update_acl_entry]
-      PermissionCache.has_any_permission_on_resource_type?(jti, permissions, "domain")
+      Permissions.has_any_permission_on_resource_type?(jti, permissions, "domain")
     end
 
     def can?(%Session{} = _session, _action, _entity), do: false
 
     defp authorized?(%Session{jti: jti}, permission, domain_id) do
-      PermissionCache.has_permission?(jti, permission, "domain", domain_id)
+      Permissions.has_permission?(jti, permission, "domain", domain_id)
     end
   end
 end

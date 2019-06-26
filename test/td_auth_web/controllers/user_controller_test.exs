@@ -6,7 +6,7 @@ defmodule TdAuthWeb.UserControllerTest do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
-  alias TdPerms.TaxonomyCache
+  alias TdCache.TaxonomyCache
 
   @create_attrs %{
     password: "some password_hash",
@@ -173,21 +173,19 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "update password" do
-
     @tag :admin_authenticated
     test "ok when data is valid", %{conn: conn} do
       conn = post conn, Routes.user_path(conn, :update_password), new_password: @valid_password
-      #validate_resp_schema(conn, schema, "UserUpdatePassword")
+      # validate_resp_schema(conn, schema, "UserUpdatePassword")
       assert response(conn, 200)
     end
 
     @tag :admin_authenticated
     test "error when data is invalid", %{conn: conn} do
       conn = post conn, Routes.user_path(conn, :update_password), new_password: @invalid_password
-      #validate_resp_schema(conn, schema, "UserUpdatePassword")
+      # validate_resp_schema(conn, schema, "UserUpdatePassword")
       assert response(conn, 422)
     end
-
   end
 
   describe "delete user" do
