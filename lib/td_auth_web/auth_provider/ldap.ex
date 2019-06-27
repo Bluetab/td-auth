@@ -3,7 +3,7 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
   require Logger
 
   alias Gettext.Interpolation
-  alias Poison, as: JSON
+  alias Jason, as: JSON
 
   def authenticate(user_name, password) do
     case ldap_authenticate() do

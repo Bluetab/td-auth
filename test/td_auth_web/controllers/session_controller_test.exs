@@ -2,8 +2,8 @@ defmodule TdAuthWeb.SessionControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  alias Jason, as: JSON
   alias Phoenix.ConnTest
-  alias Poison, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Auth.Auth
   alias TdAuthWeb.ApiServices.MockAuthService

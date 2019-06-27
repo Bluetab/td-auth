@@ -1,9 +1,11 @@
 defmodule TdAuthWeb.User do
   @moduledoc false
 
-  alias Poison, as: JSON
-  alias TdAuthWeb.Router.Helpers, as: Routes
   import TdAuthWeb.Authentication, only: :functions
+
+  alias Jason, as: JSON
+  alias TdAuthWeb.Router.Helpers, as: Routes
+
   @endpoint TdAuthWeb.Endpoint
 
   def user_init(user_params) do

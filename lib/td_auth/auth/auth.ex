@@ -2,6 +2,7 @@ defmodule TdAuth.Auth.Auth do
   @moduledoc false
   use Guardian, otp_app: :td_auth
 
+  alias Jason, as: JSON
   alias TdAuth.Auth.Session
 
   def subject_for_token(_resource, _claims) do
@@ -17,7 +18,7 @@ defmodule TdAuth.Auth.Auth do
     # Here we'll look up our resource from the claims, the subject can be
     # found in the `"sub"` key. In `above subject_for_token/2` we returned
     # the resource id so here we'll rely on that to look it up.
-    sub = Poison.decode!(claims["sub"])
+    sub = JSON.decode!(claims["sub"])
 
     resource = %Session{
       id: sub["id"],
