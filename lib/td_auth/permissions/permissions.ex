@@ -8,7 +8,7 @@ defmodule TdAuth.Permissions do
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Permission
   alias TdAuth.Repo
-  alias TdPerms.Permissions, as: Perms
+  alias TdCache.Permissions
 
   @doc """
   Returns the list of permissions.
@@ -75,8 +75,8 @@ defmodule TdAuth.Permissions do
 
   def retrieve_acl_with_permissions(user_id, gids) do
     %{user_id: user_id, gids: gids}
-      |> AclEntry.list_acl_entries_by_user_with_groups
-      |> Enum.map(&(acl_entry_to_permissions/1))
+    |> AclEntry.list_acl_entries_by_user_with_groups()
+    |> Enum.map(&acl_entry_to_permissions/1)
   end
 
   def cache_session_permissions([], _jti, _exp), do: []
@@ -91,13 +91,17 @@ defmodule TdAuth.Permissions do
   end
 
   def cache_session_permissions!(_jti, _exp, []), do: []
+
   def cache_session_permissions!(jti, exp, acl_entries) when is_list(acl_entries) do
-    Perms.cache_session_permissions!(jti, exp, acl_entries)
+    Permissions.cache_session_permissions!(jti, exp, acl_entries)
   end
 
-  defp acl_entry_to_permissions(%{resource_type: resource_type, resource_id: resource_id, role: %{permissions: permissions}}) do
-    permission_names = permissions |> Enum.map(&(&1.name))
+  defp acl_entry_to_permissions(%{
+         resource_type: resource_type,
+         resource_id: resource_id,
+         role: %{permissions: permissions}
+       }) do
+    permission_names = permissions |> Enum.map(& &1.name)
     %{resource_type: resource_type, resource_id: resource_id, permissions: permission_names}
   end
-
 end

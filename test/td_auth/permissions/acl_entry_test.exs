@@ -4,7 +4,8 @@ defmodule TdAuth.Permissions.AclEntryTest do
   alias TdAuth.Accounts
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Role
-  alias TdPerms.AclCache
+  alias TdCache.AclCache
+  alias TdCache.Redix
 
   describe "acl_entries" do
     @update_attrs %{
@@ -121,8 +122,15 @@ defmodule TdAuth.Permissions.AclEntryTest do
 
     test "delete_acl_entry/1 deletes the acl_entry" do
       acl_entry = acl_entry_fixture()
-      key = AclCache.create_acl_role_users_key(acl_entry.resource_id, acl_entry.resource_type, acl_entry.role.name)
-      assert {:ok, 0} = Redix.command(:redix, ["EXISTS", "#{key}"])
+
+      key =
+        AclCache.create_acl_role_users_key(
+          acl_entry.resource_id,
+          acl_entry.resource_type,
+          acl_entry.role.name
+        )
+
+      assert not Redix.exists?("#{key}")
       assert {:ok, %AclEntry{}} = AclEntry.delete_acl_entry(acl_entry)
       assert_raise Ecto.NoResultsError, fn -> AclEntry.get_acl_entry!(acl_entry.id) end
     end

@@ -5,6 +5,7 @@
 ### Changed
 
 - [TD-1594] fix allow_proxy_login config to accept environment value
+- [TD-1618] Cache improvements (use td-cache instead of td-perms)
 
 ## [3.0.0] 2019-06-25
 

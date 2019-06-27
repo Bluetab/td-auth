@@ -158,7 +158,9 @@ defmodule TdAuth.Permissions.Role do
       nil ->
         {:ok, role} = create_role(%{name: role_name})
         role
-      role -> role
+
+      role ->
+        role
     end
   end
 
@@ -193,5 +195,4 @@ defmodule TdAuth.Permissions.Role do
     |> Repo.preload(:permissions)
     |> Map.get(:permissions)
   end
-
 end

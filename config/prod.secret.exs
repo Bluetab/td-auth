@@ -98,4 +98,4 @@ config :td_auth, :saml,
   sp_trusted_fingerprints: "${SAML_TRUSTED_FINGERPRINTS}",
   reject_roles: "${SAML_REJECT_ROLES}"
 
-config :td_perms, redis_host: "${REDIS_HOST}"
+config :td_cache, redis_host: "${REDIS_HOST}"

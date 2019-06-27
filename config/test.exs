@@ -38,12 +38,8 @@ config :td_auth, TdAuth.Auth.Auth,
   token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
 
-config :td_auth, cache_users_on_startup: false
-config :td_auth, cache_acl_on_startup: false
-config :td_auth, acl_removement: false
-
 # Redis configuration
-config :td_perms, redis_host: "redis"
+config :td_cache, redis_host: "redis"
 
 config :td_auth, :openid_connect_providers,
   oidc: [
@@ -54,5 +50,3 @@ config :td_auth, :openid_connect_providers,
     scope: "openid profile",
     response_type: "id_token"
   ]
-
-config :td_auth, :nonce_cache, TdAuth.NonceCacheMock

@@ -19,9 +19,8 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuthWeb.AuthProvider.OIDC
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
-  alias TdPerms.TaxonomyCache
-
-  @nonce_cache Application.get_env(:td_auth, :nonce_cache)
+  alias TdCache.NonceCache
+  alias TdCache.TaxonomyCache
 
   def swagger_definitions do
     SwaggerDefinitions.session_swagger_definitions()
@@ -50,7 +49,7 @@ defmodule TdAuthWeb.SessionController do
     nonce =
       params
       |> Jason.encode!()
-      |> @nonce_cache.create_nonce()
+      |> NonceCache.create_nonce()
 
     redirect(conn, to: "/saml#nonce=#{nonce}")
   end
@@ -74,7 +73,7 @@ defmodule TdAuthWeb.SessionController do
   end
 
   def create(conn, %{"auth_realm" => auth_realm, "nonce" => nonce}) do
-    case @nonce_cache.pop(nonce) do
+    case NonceCache.pop(nonce) do
       nil ->
         conn
         |> put_status(:unauthorized)
@@ -93,17 +92,20 @@ defmodule TdAuthWeb.SessionController do
   def create(%{req_headers: headers} = conn, params) do
     create(conn, Map.new(headers), params)
   end
+
   def create(conn, _params) do
     create(conn, nil, nil)
   end
 
   defp create(conn, %{"proxy-remote-user" => user_name}, _params) do
-    nonce = @nonce_cache.create_nonce(user_name)
+    nonce = NonceCache.create_nonce(user_name)
     redirect(conn, to: "/proxy_login#nonce=#{nonce}")
   end
+
   defp create(conn, %{"authorization" => authorization}, _params) do
-     authenticate_using_auth0_and_create_session(conn, authorization)
+    authenticate_using_auth0_and_create_session(conn, authorization)
   end
+
   defp create(conn, _headers, _params) do
     conn
     |> put_status(:unprocessable_entity)
@@ -126,7 +128,9 @@ defmodule TdAuthWeb.SessionController do
     user_claims = retrieve_user_claims(user)
     acl_entries = retrieve_acl_with_permissions(user, user_claims.gids)
 
-    custom_claims = user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
+    custom_claims =
+      user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
+
     custom_claims =
       if access_method !== nil && access_method == "alternative_login" do
         user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
@@ -134,6 +138,7 @@ defmodule TdAuthWeb.SessionController do
       else
         user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
       end
+
     conn = handle_sign_in(conn, user, custom_claims)
     token = GuardianPlug.current_token(conn)
 
@@ -156,10 +161,12 @@ defmodule TdAuthWeb.SessionController do
 
     authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding)
   end
+
   def create_nonce_session(conn, "proxy_login", user_name) do
     allow_proxy_login = Application.get_env(:td_auth, :allow_proxy_login)
     authenticate_proxy_login(conn, user_name, allow_proxy_login)
   end
+
   def create_nonce_session(conn, _, _) do
     conn
     |> put_status(:unprocessable_entity)
@@ -222,7 +229,7 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_using_active_directory_and_create_session(conn, user_name, password) do
     with {:ok, profile} <- ActiveDirectory.authenticate(user_name, password),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-            create_session(conn, user, nil)
+      create_session(conn, user, nil)
     else
       error ->
         Logger.info("While authenticating using active directory ... #{inspect(error)}")
@@ -256,19 +263,22 @@ defmodule TdAuthWeb.SessionController do
         |> put_status(:unauthorized)
         |> put_view(ErrorView)
         |> render("401.json")
+
       user ->
         create_session(conn, user, "proxy_login")
     end
   end
+
   defp authenticate_proxy_login(conn, _, _) do
     conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("proxy_login_disabled.json")
+    |> put_status(:unauthorized)
+    |> put_view(ErrorView)
+    |> render("proxy_login_disabled.json")
   end
 
   defp authenticate_and_create_session(conn, user_name, password, access_method) do
     user = Accounts.get_user_by_name(user_name)
+
     case User.check_password(user, password) do
       true ->
         create_session(conn, user, access_method)

@@ -6,7 +6,6 @@ defmodule TdAuthWeb.SessionControllerTest do
   alias Poison, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Auth.Auth
-  alias TdAuth.NonceCacheMock
   alias TdAuthWeb.ApiServices.MockAuthService
 
   import TdAuthWeb.Authentication, only: :functions
@@ -22,7 +21,6 @@ defmodule TdAuthWeb.SessionControllerTest do
 
   setup_all do
     start_supervised(MockAuthService)
-    start_supervised(NonceCacheMock)
     :ok
   end
 
