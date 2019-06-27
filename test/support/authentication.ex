@@ -3,12 +3,15 @@ defmodule TdAuthWeb.Authentication do
   This module defines the functions required to
   add auth headers to requests
   """
+
+  import Plug.Conn
+
+  alias Jason, as: JSON
   alias Phoenix.ConnTest
-  alias Poison, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Auth.Guardian
   alias TdAuthWeb.Router.Helpers, as: Routes
-  import Plug.Conn
+
   @endpoint TdAuthWeb.Endpoint
   @headers {"Content-type", "application/json"}
 
@@ -49,7 +52,9 @@ defmodule TdAuthWeb.Authentication do
   end
 
   def session_create(user_name, user_password) do
-    body = %{user: %{user_name: user_name, password: user_password}, access_method: nil} |> JSON.encode!()
+    body =
+      %{user: %{user_name: user_name, password: user_password}, access_method: nil}
+      |> JSON.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.post!(Routes.session_url(@endpoint, :create), body, [@headers], [])

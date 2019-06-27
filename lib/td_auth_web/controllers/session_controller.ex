@@ -4,7 +4,7 @@ defmodule TdAuthWeb.SessionController do
   use TdAuthWeb, :controller
   use PhoenixSwagger
 
-  alias Poison, as: JSON
+  alias Jason, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
   alias TdAuth.Auth.Guardian
@@ -48,7 +48,7 @@ defmodule TdAuthWeb.SessionController do
   def create(conn, %{"SAMLResponse" => _} = params) do
     nonce =
       params
-      |> Jason.encode!()
+      |> JSON.encode!()
       |> NonceCache.create_nonce()
 
     redirect(conn, to: "/saml#nonce=#{nonce}")

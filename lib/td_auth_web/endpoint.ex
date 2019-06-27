@@ -5,9 +5,7 @@ defmodule TdAuthWeb.Endpoint do
   #
   # You should set gzip to true if you are running phoenix.digest
   # when deploying your static files in production.
-  plug Plug.Static,
-    at: "/", from: :td_auth, gzip: false,
-    only: ~w(swagger.json)
+  plug Plug.Static, at: "/", from: :td_auth, gzip: false, only: ~w(swagger.json)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -21,7 +19,7 @@ defmodule TdAuthWeb.Endpoint do
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Poison
+    json_decoder: Jason
 
   plug Plug.MethodOverride
   plug Plug.Head

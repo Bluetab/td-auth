@@ -2,7 +2,9 @@ defmodule TdAuth.Accounts.User do
   @moduledoc false
 
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
@@ -10,7 +12,7 @@ defmodule TdAuth.Accounts.User do
 
   @hash Application.get_env(:td_auth, :hashing_module)
 
-  @derive {Poison.Encoder, only: [:id, :user_name, :is_admin]}
+  @derive {Jason.Encoder, only: [:id, :user_name, :is_admin]}
   schema "users" do
     field(:password_hash, :string)
     field(:user_name, :string)
