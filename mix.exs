@@ -54,7 +54,7 @@ defmodule TdAuth.Mixfile do
       {:ex_machina, "~> 2.2.2", only: :test},
       {:cors_plug, "~> 1.2"},
       {:httpoison, "~> 1.0"},
-      {:cabbage, git: "https://github.com/Bluetab/cabbage", tag: "v0.3.7-alpha"},
+      {:cabbage, only: [:test], git: "https://github.com/Bluetab/cabbage", tag: "v0.3.7-alpha"},
       {:phoenix_swagger, "~> 0.8.0"},
       {:ex_json_schema, "~> 0.5"},
       {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git", tag: "2.11.0"},
@@ -64,7 +64,7 @@ defmodule TdAuth.Mixfile do
       {:exldap, "~> 0.6"},
       {:openid_connect, "~> 0.2.0"},
       {:esaml, "~> 4.1.0"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "3.0.0"}
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "3.0.5"}
     ]
   end
 
