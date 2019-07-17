@@ -125,7 +125,8 @@ config :td_cache,
     :view_deprecated_ingests,
     :manage_confidential_structures,
     :manage_ingest_relations,
-    :view_data_structures_profile
+    :view_data_structures_profile,
+    :view_quality_rule
   ]
 
 # Import environment specific config. This must remain at the bottom
