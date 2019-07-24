@@ -4,6 +4,7 @@
 
 ### Added
 
+- [TD-1775] Permission manage quality rule implementations
 - [TD-1776] Permission view_quality_rule
 
 ## [3.2.0] 2019-07-24
