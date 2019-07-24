@@ -1,11 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-1776] Permission view_quality_rule
+
 ## [3.2.0] 2019-07-24
 
 ### Changed
 
 - [TD-2002] Update td-cache and delete permissions list from config
-- [TD-1776] add permission view_quality_rule
 
 ## [3.1.0] 2019-07-08
 
