@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unrelease] 2019-08-06
+## [3.4.0] 2019-08-19
 
 ### Added
 
