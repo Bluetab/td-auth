@@ -28,8 +28,8 @@ defmodule TdAuthWeb.AclEntryView do
     }
   end
 
-  def render("resource_acl_entries.json", %{acl_entries: acl_entries, hypermedia: hypermedia}) do
-    render_many_hypermedia(acl_entries, hypermedia, AclEntryView, "resource_acl_entry.json")
+  def render("resource_acl_entries.json", %{hypermedia: hypermedia}) do
+    render_many_hypermedia(hypermedia, AclEntryView, "resource_acl_entry.json")
   end
 
   def render("resource_acl_entry.json", %{acl_entry: acl_entry}) do
@@ -54,8 +54,12 @@ defmodule TdAuthWeb.AclEntryView do
   end
 
   defp resource_acl_entry(
-         %{description: description, id: id, principal_type: principal_type, role: %{id: role_id, name: role_name}} =
-           acl_entry
+         %{
+           description: description,
+           id: id,
+           principal_type: principal_type,
+           role: %{id: role_id, name: role_name}
+         } = acl_entry
        ) do
     %{
       description: description,
