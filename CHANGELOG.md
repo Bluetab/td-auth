@@ -5,6 +5,7 @@
 ### Changed
 
 - Use td-cache 3.5.1
+- Use td-hypermedia 3.6.1
 
 ## [3.4.0] 2019-08-19
 
