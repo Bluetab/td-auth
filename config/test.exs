@@ -35,7 +35,8 @@ config :td_auth, TdAuth.Auth.Auth,
   allowed_algos: ["HS512"],
   issuer: "tdauth",
   verify_issuer: false,
-  token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}}
+  token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
+  secret_key: "SuperSecretTruedat"
 
 # Redis configuration
 config :td_cache, redis_host: "redis"
