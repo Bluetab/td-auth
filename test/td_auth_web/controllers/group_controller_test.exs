@@ -138,6 +138,28 @@ defmodule TdAuthWeb.GroupControllerTest do
     end
   end
 
+  describe "group_users" do
+    setup [:create_group]
+    setup [:create_user]
+
+    @tag :admin_authenticated
+    test "lists users of a groups", %{
+      conn: conn,
+      user: %User{id: user_id},
+      group: %Group{id: group_id}
+    } do
+      conn =
+        post conn, Routes.user_group_path(conn, :add_groups_to_user, user_id),
+          groups: [@create_attrs, @create_attrs2]
+
+      assert json_response(conn, 201)
+      conn = recycle_and_put_headers(conn)
+      conn = get(conn, Routes.group_group_path(conn, :group_users, group_id))
+      [group_user | _tail] = json_response(conn, 200)["data"]
+      assert group_user["user_name"] == @create_user_attrs.user_name
+    end
+  end
+
   defp create_group(_) do
     group = fixture(:group)
     {:ok, group: group}

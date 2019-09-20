@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- [TD-740] Group users endpoint
+
 ### Changed
 
 - Use td-cache 3.5.1
