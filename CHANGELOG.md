@@ -8,6 +8,10 @@
 
 ## [3.6.0] 2019-09-16
 
+### Added
+
+- [TD-740] Group users endpoint
+
 ### Changed
 
 - Use td-cache 3.5.1

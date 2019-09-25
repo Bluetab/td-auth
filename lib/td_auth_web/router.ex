@@ -47,7 +47,9 @@ defmodule TdAuthWeb.Router do
     end
 
     post("/users/search", UserController, :search)
-    resources("/groups", GroupController, except: [:new, :edit])
+    resources("/groups", GroupController, except: [:new, :edit]) do
+      get("/users", GroupController, :group_users)
+    end
     post("/groups/search", GroupController, :search)
 
     resources("/acl_entries", AclEntryController, except: [:new, :edit])

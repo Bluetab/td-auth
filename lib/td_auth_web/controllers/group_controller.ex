@@ -162,6 +162,29 @@ defmodule TdAuthWeb.GroupController do
     end
   end
 
+  swagger_path :group_users do
+    description "Group Users"
+    parameters do
+      group_id :path, :integer, "Group ID", required: true
+    end
+    response 200, "OK", Schema.ref(:UsersResponseData)
+  end
+
+  def group_users(conn, %{"group_id" => group_id}) do
+    case is_admin?(conn) do
+      true ->
+        users =
+          group_id
+          |> Accounts.list_users_by_group_id()
+        render(conn, "index.json", users: users)
+      _ ->
+        conn
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
+    end
+  end
+
   swagger_path :add_groups_to_user do
     description "Add groups to users"
     produces "application/json"
