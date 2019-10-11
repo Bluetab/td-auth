@@ -93,17 +93,17 @@ defmodule TdAuthWeb.SessionController do
     create(conn, Map.new(headers), params)
   end
 
-  def create(conn, _params) do
-    create(conn, nil, nil)
-  end
-
   defp create(conn, %{"proxy-remote-user" => user_name}, _params) do
-    nonce = NonceCache.create_nonce(user_name)
-    redirect(conn, to: "/proxy_login#nonce=#{nonce}")
+    allow_proxy_login = Application.get_env(:td_auth, :allow_proxy_login)
+    authenticate_proxy_login(conn, user_name, allow_proxy_login)
   end
 
   defp create(conn, %{"authorization" => authorization}, _params) do
     authenticate_using_auth0_and_create_session(conn, authorization)
+  end
+
+  def create(conn, _params) do
+    create(conn, nil, nil)
   end
 
   defp create(conn, _headers, _params) do
@@ -160,11 +160,6 @@ defmodule TdAuthWeb.SessionController do
       |> Enum.map(&Map.get(params, &1))
 
     authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding)
-  end
-
-  def create_nonce_session(conn, "proxy_login", user_name) do
-    allow_proxy_login = Application.get_env(:td_auth, :allow_proxy_login)
-    authenticate_proxy_login(conn, user_name, allow_proxy_login)
   end
 
   def create_nonce_session(conn, _, _) do

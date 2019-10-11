@@ -1,6 +1,12 @@
 # Changelog
 
-## [[3.7.0] 2019-09-30
+## [Unreleased] 2019-10-11
+
+### Changed
+
+- [TD-2181] Proxy login now returns token on first step
+
+## [3.7.0] 2019-09-30
 
 ### Changed
 
