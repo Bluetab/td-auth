@@ -44,16 +44,16 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
       {:ok, conn} ->
         try do
           with {:ok, search_results} <- ldap_search(conn, user_name),
-               {:ok, entry} <- fetch_ldap_entry(search_results),
-               :ok <- verify_user_credentials(conn, user_name, password, entry) do
-            build_profile(entry)
+               {:ok, entry} <- fetch_ldap_entry(search_results) do
+            verify_user_credentials(conn, user_name, password, entry)
           else
-            error -> Logger.info("Error creating profile... #{inspect(error)}")
+            error ->
+              Logger.info("Error creating profile... #{inspect(error)}")
+              error
           end
         after
           ldap_close(conn)
         end
-
       error ->
         Logger.info("Error while connecting to ldap... #{inspect(error)}")
         error
@@ -62,7 +62,14 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
 
   defp verify_user_credentials(conn, user_name, password, entry) do
     object_name = Map.get(entry, :object_name)
-    verify_credentials(conn, user_name, password, object_name)
+    description = Exldap.get_attribute!(entry, "description")
+    case verify_credentials(conn, user_name, password, object_name) do
+      :ok ->
+        profile = build_profile(entry)
+        {:ok, profile, description}
+      {:error, error} ->
+        {:verify_error, error, description}
+    end
   end
 
   defp verify_credentials(conn, user_name, password, nil) do
@@ -101,13 +108,10 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
   defp build_profile(entry) do
     mapping = get_ldap_profile_mapping()
 
-    profile =
-      Enum.reduce(mapping, %{}, fn {k, v}, acc ->
-        attr = Exldap.get_attribute!(entry, v)
-        Map.put(acc, k, attr)
-      end)
-
-    {:ok, profile}
+    Enum.reduce(mapping, %{}, fn {k, v}, acc ->
+      attr = Exldap.get_attribute!(entry, v)
+      Map.put(acc, k, attr)
+    end)
   end
 
   defp fetch_ldap_entry(search_results) do

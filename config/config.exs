@@ -51,7 +51,7 @@ config :td_auth, :ldap,
   user_dn: "cn=admin,dc=bluetab,dc=net",
   password: "temporal",
   connection_timeout: "5000",
-  profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"cn\",\"email\":\"cn\"}",
+  profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"givenName\",\"email\":\"mail\"}",
   bind_pattern: "cn=%{user_name},ou=people,dc=bluetab,dc=net",
   search_path: "ou=people,dc=bluetab,dc=net",
   search_field: "cn"
