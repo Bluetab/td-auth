@@ -112,16 +112,6 @@ defmodule TdAuthWeb.SessionControllerTest do
       conn = put_req_header(conn, "proxy-remote-user", "user_name")
 
       conn = post(conn, Routes.session_path(conn, :create))
-      assert conn.status == 302
-
-      [location] = for {"location", value} <- conn.resp_headers, do: value
-      assert [^location, nonce] = Regex.run(~r/^\/proxy_login#nonce=(.*)$/, location)
-
-      conn = ConnTest.recycle(conn)
-
-      conn =
-        post conn, Routes.session_path(conn, :create), auth_realm: "proxy_login", nonce: nonce
-
       resp = json_response(conn, 401)
 
       assert resp == %{
@@ -137,16 +127,6 @@ defmodule TdAuthWeb.SessionControllerTest do
       conn = put_req_header(conn, "proxy-remote-user", "user_name")
 
       conn = post(conn, Routes.session_path(conn, :create))
-      assert conn.status == 302
-
-      [location] = for {"location", value} <- conn.resp_headers, do: value
-      assert [^location, nonce] = Regex.run(~r/^\/proxy_login#nonce=(.*)$/, location)
-
-      conn = ConnTest.recycle(conn)
-
-      conn =
-        post conn, Routes.session_path(conn, :create), auth_realm: "proxy_login", nonce: nonce
-
       resp = json_response(conn, 401)
       assert resp == %{"errors" => %{"detail" => "Invalid credentials"}}
     end
@@ -156,16 +136,6 @@ defmodule TdAuthWeb.SessionControllerTest do
       conn = put_req_header(conn, "proxy-remote-user", "usuariotemporal")
 
       conn = post(conn, Routes.session_path(conn, :create))
-      assert conn.status == 302
-
-      [location] = for {"location", value} <- conn.resp_headers, do: value
-      assert [^location, nonce] = Regex.run(~r/^\/proxy_login#nonce=(.*)$/, location)
-
-      conn = ConnTest.recycle(conn)
-
-      conn =
-        post conn, Routes.session_path(conn, :create), auth_realm: "proxy_login", nonce: nonce
-
       assert conn.status == 201
     end
   end
