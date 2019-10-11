@@ -93,6 +93,10 @@ defmodule TdAuthWeb.SessionController do
     create(conn, Map.new(headers), params)
   end
 
+  def create(conn, _params) do
+    create(conn, nil, nil)
+  end
+
   defp create(conn, %{"proxy-remote-user" => user_name}, _params) do
     allow_proxy_login = Application.get_env(:td_auth, :allow_proxy_login)
     authenticate_proxy_login(conn, user_name, allow_proxy_login)
@@ -100,10 +104,6 @@ defmodule TdAuthWeb.SessionController do
 
   defp create(conn, %{"authorization" => authorization}, _params) do
     authenticate_using_auth0_and_create_session(conn, authorization)
-  end
-
-  def create(conn, _params) do
-    create(conn, nil, nil)
   end
 
   defp create(conn, _headers, _params) do
@@ -237,12 +237,22 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp authenticate_using_ldap_and_create_session(conn, user_name, password) do
-    with {:ok, profile} <- Ldap.authenticate(user_name, password),
+    with {:ok, profile, description} <- Ldap.authenticate(user_name, password),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user, nil)
+      tokens = create_tokens(conn, user, nil)
+      conn
+      |> put_status(:created)
+      |> render("show_ldap.json", token: tokens, description: description)
     else
+      {:verify_error, error, description} ->
+        Logger.info("Invalid verification of correct ldap user: #{inspect(error)}")
+
+        conn
+        |> put_status(:unauthorized)
+        |> put_view(ErrorView)
+        |> render("401_ldap.json", description: description)
       error ->
-        Logger.info("While authenticating using ldap ... #{inspect(error)}")
+        Logger.info("While authenticating using ldap: #{inspect(error)}")
 
         conn
         |> put_status(:unauthorized)
