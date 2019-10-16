@@ -20,7 +20,6 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
         after
           ldap_close(conn)
         end
-
       error ->
         Logger.info("Error while opening ldap connection... #{inspect(error)}")
         error
@@ -77,7 +76,7 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
     Exldap.verify_credentials(conn, bind, password)
   end
 
-  defp verify_credentials(conn, _user_name, password, object_name) do
+  defp verify_credentials(conn, user_name, password, object_name) do
     Exldap.verify_credentials(conn, object_name, password)
   end
 
