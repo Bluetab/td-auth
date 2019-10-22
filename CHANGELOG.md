@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-2170] permission to manage metadata
+
 ## [3.8.0] 2019-10-14
 
 ### Changed
