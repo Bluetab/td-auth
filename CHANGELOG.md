@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Default log format is now with UTC timestamp and includes PID and module metadata
+
 ## [3.9.0] 019-10-29
 
 ### Added
