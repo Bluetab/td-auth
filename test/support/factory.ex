@@ -45,7 +45,14 @@ defmodule TdAuth.Factory do
 
   def permission_factory do
     %TdAuth.Permissions.Permission {
-      name: "custom_permission"
+      name: "custom_permission",
+      permission_group: build(:permission_group)
+    }
+  end
+
+  def permission_group_factory do
+    %TdAuth.Permissions.PermissionGroup {
+      name: "custom_group"
     }
   end
 

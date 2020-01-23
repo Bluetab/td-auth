@@ -53,7 +53,7 @@ defmodule TdAuth.Mixfile do
       {:bcrypt_elixir, "~> 1.0"},
       {:ex_machina, "~> 2.2.2", only: :test},
       {:cors_plug, "~> 1.2"},
-      {:httpoison, "~> 1.0"},
+      {:httpoison, "~> 1.6.1"},
       {:cabbage, only: [:test], git: "https://github.com/Bluetab/cabbage", tag: "v0.3.7-alpha"},
       {:phoenix_swagger, "~> 0.8.0"},
       {:ex_json_schema, "~> 0.5"},

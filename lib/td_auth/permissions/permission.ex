@@ -4,6 +4,7 @@ defmodule TdAuth.Permissions.Permission do
   use Ecto.Schema
   import Ecto.Changeset
   alias TdAuth.Permissions.Permission
+  alias TdAuth.Permissions.PermissionGroup
 
   @permissions %{
     create_acl_entry: "create_acl_entry",
@@ -59,6 +60,7 @@ defmodule TdAuth.Permissions.Permission do
 
   schema "permissions" do
     field(:name, :string)
+    belongs_to(:permission_group, PermissionGroup)
 
     timestamps()
   end
@@ -70,7 +72,7 @@ defmodule TdAuth.Permissions.Permission do
   @doc false
   def changeset(%Permission{} = permission, attrs) do
     permission
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :permission_group_id])
     |> validate_required([:name])
     |> unique_constraint(:name)
   end
