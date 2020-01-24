@@ -108,6 +108,17 @@ defmodule TdAuth.PermissionsTest do
       assert permission_group.name == @update_attrs.name
     end
 
+    test "update_permission_group/2 with valid permission link the permission to the group" do
+      permission_group = insert(:permission_group)
+      permission = insert(:permission, permission_group: nil)
+
+      assert {:ok, %PermissionGroup{} = permission_group} =
+               Permissions.update_permission_group(permission_group, %{permissions: [permission]})
+
+      permission_group = Permissions.get_permission_group!(permission_group.id, permissions: :permission_group)
+      assert Enum.any?(permission_group.permissions, & &1.id == permission.id)
+    end
+
     test "update_permission_group/2 with invalid data returns error changeset" do
       permission_group = insert(:permission_group)
 

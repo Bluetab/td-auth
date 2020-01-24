@@ -5,6 +5,7 @@ defmodule TdAuth.Permissions do
 
   import Ecto.Query, warn: false
 
+  alias Ecto.Changeset
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Permission
   alias TdAuth.Repo
@@ -180,9 +181,17 @@ defmodule TdAuth.Permissions do
   """
   def update_permission_group(%PermissionGroup{} = permission_group, attrs) do
     permission_group
+    |> Repo.preload(:permissions)
     |> PermissionGroup.changeset(attrs)
+    |> assoc_with_permissions(attrs)
     |> Repo.update()
   end
+
+  defp assoc_with_permissions(changeset, %{"permissions" => permissions}), do: Changeset.put_assoc(changeset, :permissions, permissions)
+
+  defp assoc_with_permissions(changeset, %{permissions: permissions}), do: Changeset.put_assoc(changeset, :permissions, permissions)
+
+  defp assoc_with_permissions(changeset, _), do: changeset 
 
   @doc """
   Deletes a PermissionGroup.
