@@ -108,14 +108,19 @@ defmodule TdAuthWeb.PermissionController do
     response(200, "OK", Schema.ref(:PermissionsResponse))
   end
 
-  def permissions_to_group(conn, %{"permission_group_id" => permission_group_id, "permissions" => perms}) do
+  def permissions_to_group(conn, %{
+        "permission_group_id" => permission_group_id,
+        "permissions" => perms
+      }) do
     current_resource = conn.assigns[:current_resource]
     permission_group = Permissions.get_permission_group!(permission_group_id)
     permissions = Enum.map(perms, &Permissions.get_permission!(Map.get(&1, "id")))
+
     with true <- current_resource.is_admin,
-      {:ok, %PermissionGroup{permissions: permissions}} <- Permissions.update_permission_group(permission_group, %{permissions: permissions}) do
-        permissions = Permissions.preload_options(permissions, [:permission_group])  
-        render(conn, "index.json", permissions: permissions)
+         {:ok, %PermissionGroup{permissions: permissions}} <-
+           Permissions.update_permission_group(permission_group, %{permissions: permissions}) do
+      permissions = Permissions.preload_options(permissions, [:permission_group])
+      render(conn, "index.json", permissions: permissions)
     else
       false ->
         conn
@@ -123,7 +128,8 @@ defmodule TdAuthWeb.PermissionController do
         |> put_view(ErrorView)
         |> render("403.json")
 
-      error -> error
+      error ->
+        error
     end
   end
 end

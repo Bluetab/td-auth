@@ -187,11 +187,13 @@ defmodule TdAuth.Permissions do
     |> Repo.update()
   end
 
-  defp assoc_with_permissions(changeset, %{"permissions" => permissions}), do: Changeset.put_assoc(changeset, :permissions, permissions)
+  defp assoc_with_permissions(changeset, %{"permissions" => permissions}),
+    do: Changeset.put_assoc(changeset, :permissions, permissions)
 
-  defp assoc_with_permissions(changeset, %{permissions: permissions}), do: Changeset.put_assoc(changeset, :permissions, permissions)
+  defp assoc_with_permissions(changeset, %{permissions: permissions}),
+    do: Changeset.put_assoc(changeset, :permissions, permissions)
 
-  defp assoc_with_permissions(changeset, _), do: changeset 
+  defp assoc_with_permissions(changeset, _), do: changeset
 
   @doc """
   Deletes a PermissionGroup.

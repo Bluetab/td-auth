@@ -47,9 +47,11 @@ defmodule TdAuthWeb.Router do
     end
 
     post("/users/search", UserController, :search)
+
     resources("/groups", GroupController, except: [:new, :edit]) do
       get("/users", GroupController, :group_users)
     end
+
     post("/groups/search", GroupController, :search)
 
     resources("/acl_entries", AclEntryController, except: [:new, :edit])
@@ -62,11 +64,9 @@ defmodule TdAuthWeb.Router do
       except: [:new, :edit, :update, :delete, :create]
     )
 
-    resources "/permission_groups", PermissionGroupController,
-      except: [:new, :edit] do
-        patch("/permissions", PermissionController, :permissions_to_group)
-      end
-    
+    resources "/permission_groups", PermissionGroupController, except: [:new, :edit] do
+      patch("/permissions", PermissionController, :permissions_to_group)
+    end
 
     resources "/roles", RoleController, except: [:new, :edit] do
       get("/permissions", PermissionController, :get_role_permissions)
