@@ -43,10 +43,10 @@ defmodule TdAuth.PermissionsTest do
 
     @valid_attrs %{name: "group name"}
     @update_attrs %{name: "new group name"}
+    @groups ["taxonomy_membership", "taxonomy", "business_glossary", "data_dictionary", "data_quality", "ingests"]
 
     test "list_permission_groups/0 returns all permission_groups" do
-      permission_group = insert(:permission_group)
-      assert Permissions.list_permission_groups() == [permission_group]
+      assert Enum.map(Permissions.list_permission_groups(), & &1.name) == @groups
     end
 
     test "list_permission_groups/1 returns all permission_groups with preloaded options" do
@@ -54,8 +54,7 @@ defmodule TdAuth.PermissionsTest do
       permission = insert(:permission, permission_group: permission_group)
       permission_groups = Permissions.list_permission_groups(permissions: :permission_group)
 
-      assert length(permission_groups) == 1
-      assert List.first(permission_groups).permissions == [permission]
+      assert Enum.find(permission_groups, & &1.id == permission_group.id).permissions == [permission]
     end
 
     test "get_permission_group!/1 returns the permission_group with given id" do

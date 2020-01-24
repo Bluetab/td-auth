@@ -11,11 +11,13 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
+  @groups ["taxonomy_membership", "taxonomy", "business_glossary", "data_dictionary", "data_quality", "ingests"]
+
   describe "index" do
     @tag :admin_authenticated
     test "lists all permission_groups", %{conn: conn} do
       conn = get(conn, Routes.permission_group_path(conn, :index))
-      assert json_response(conn, 200)["data"] == []
+      assert Enum.map(json_response(conn, 200)["data"], & &1["name"]) == @groups
     end
   end
 

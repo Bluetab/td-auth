@@ -420,7 +420,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           type(:array)
           items(Schema.ref(:PermissionItem))
         end,
-      AddPermissionsToRole:
+      AddPermissions:
         swagger_schema do
           properties do
             permissions(Schema.ref(:PermissionItems))

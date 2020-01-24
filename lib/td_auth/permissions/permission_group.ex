@@ -19,6 +19,7 @@ defmodule TdAuth.Permissions.PermissionGroup do
   def changeset(permission_group, attrs) do
     permission_group
     |> cast(attrs, [:name])
+    |> cast_assoc(:permissions)
     |> validate_required([:name])
     |> unique_constraint(:name)
   end

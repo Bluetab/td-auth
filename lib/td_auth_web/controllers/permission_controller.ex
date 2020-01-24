@@ -5,6 +5,7 @@ defmodule TdAuthWeb.PermissionController do
   import Canada, only: [can?: 2]
 
   alias TdAuth.Permissions
+  alias TdAuth.Permissions.PermissionGroup
   alias TdAuth.Permissions.Role
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
@@ -70,7 +71,7 @@ defmodule TdAuthWeb.PermissionController do
 
     parameters do
       role_id(:path, :integer, "Role ID", required: true)
-      permissions(:body, Schema.ref(:AddPermissionsToRole), "Add Permissions to Role attrs")
+      permissions(:body, Schema.ref(:AddPermissions), "Add Permissions to Role attrs")
     end
 
     response(200, "OK", Schema.ref(:PermissionsResponse))
@@ -93,6 +94,36 @@ defmodule TdAuthWeb.PermissionController do
         |> put_status(:forbidden)
         |> put_view(ErrorView)
         |> render("403.json")
+    end
+  end
+
+  swagger_path :permissions_to_group do
+    description("Add Permissions to a Group")
+
+    parameters do
+      permission_group_id(:path, :integer, "Permission Group ID", required: true)
+      permissions(:body, Schema.ref(:AddPermissions), "Add Permissions to Role attrs")
+    end
+
+    response(200, "OK", Schema.ref(:PermissionsResponse))
+  end
+
+  def permissions_to_group(conn, %{"permission_group_id" => permission_group_id, "permissions" => perms}) do
+    current_resource = conn.assigns[:current_resource]
+    permission_group = Permissions.get_permission_group!(permission_group_id)
+    permissions = Enum.map(perms, &Permissions.get_permission!(Map.get(&1, "id")))
+    with true <- current_resource.is_admin,
+      {:ok, %PermissionGroup{permissions: permissions}} <- Permissions.update_permission_group(permission_group, %{permissions: permissions}) do
+        permissions = Permissions.preload_options(permissions, [:permission_group])  
+        render(conn, "index.json", permissions: permissions)
+    else
+      false ->
+        conn
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
+
+      error -> error
     end
   end
 end
