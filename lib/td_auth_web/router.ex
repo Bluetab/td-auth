@@ -62,6 +62,10 @@ defmodule TdAuthWeb.Router do
       except: [:new, :edit, :update, :delete, :create]
     )
 
+    resources("/permission_groups", PermissionGroupController,
+      except: [:new, :edit]
+    )
+
     resources "/roles", RoleController, except: [:new, :edit] do
       get("/permissions", PermissionController, :get_role_permissions)
       post("/permissions", PermissionController, :add_permissions_to_role)

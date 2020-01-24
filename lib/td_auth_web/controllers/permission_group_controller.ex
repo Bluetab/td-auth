@@ -12,11 +12,24 @@ defmodule TdAuthWeb.PermissionGroupController do
   end
 
   def create(conn, %{"permission_group" => permission_group_params}) do
-    with {:ok, %PermissionGroup{} = permission_group} <- Permissions.create_permission_group(permission_group_params) do
+    current_resource = conn.assigns[:current_resource]
+
+    with true <- current_resource.is_admin,
+         {:ok, %PermissionGroup{} = permission_group} <-
+           Permissions.create_permission_group(permission_group_params) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.permission_group_path(conn, :show, permission_group))
       |> render("show.json", permission_group: permission_group)
+    else
+      false ->
+        conn
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
+
+      error ->
+        error
     end
   end
 
@@ -26,18 +39,41 @@ defmodule TdAuthWeb.PermissionGroupController do
   end
 
   def update(conn, %{"id" => id, "permission_group" => permission_group_params}) do
+    current_resource = conn.assigns[:current_resource]
     permission_group = Permissions.get_permission_group!(id)
 
-    with {:ok, %PermissionGroup{} = permission_group} <- Permissions.update_permission_group(permission_group, permission_group_params) do
+    with true <- current_resource.is_admin,
+         {:ok, %PermissionGroup{} = permission_group} <-
+           Permissions.update_permission_group(permission_group, permission_group_params) do
       render(conn, "show.json", permission_group: permission_group)
+    else
+      false ->
+        conn
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
+
+      error ->
+        error
     end
   end
 
   def delete(conn, %{"id" => id}) do
+    current_resource = conn.assigns[:current_resource]
     permission_group = Permissions.get_permission_group!(id)
 
-    with {:ok, %PermissionGroup{}} <- Permissions.delete_permission_group(permission_group) do
+    with true <- current_resource.is_admin,
+         {:ok, %PermissionGroup{}} <- Permissions.delete_permission_group(permission_group) do
       send_resp(conn, :no_content, "")
+    else
+      false ->
+        conn
+        |> put_status(:forbidden)
+        |> put_view(ErrorView)
+        |> render("403.json")
+
+      error ->
+        error
     end
   end
 end

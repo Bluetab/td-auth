@@ -11,6 +11,6 @@ defmodule TdAuthWeb.PermissionGroupView do
   end
 
   def render("permission_group.json", %{permission_group: permission_group}) do
-    %{id: permission_group.id}
+    %{id: permission_group.id, name: permission_group.name}
   end
 end

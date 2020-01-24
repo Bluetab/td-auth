@@ -19,8 +19,10 @@ defmodule TdAuth.Permissions do
       [%Permission{}, ...]
 
   """
-  def list_permissions do
-    Repo.all(Permission)
+  def list_permissions(options \\ []) do
+    Permission
+    |> Repo.all()
+    |> preload_options(options)
   end
 
   @doc """
@@ -37,7 +39,11 @@ defmodule TdAuth.Permissions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_permission!(id), do: Repo.get!(Permission, id)
+  def get_permission!(id, options \\ []) do
+    Permission
+    |> Repo.get!(id)
+    |> preload_options(options)
+  end
 
   @doc """
   Gets a single permission by name.
@@ -116,8 +122,10 @@ defmodule TdAuth.Permissions do
       [%PermissionGroup{}, ...]
 
   """
-  def list_permission_groups do
-    Repo.all(PermissionGroup)
+  def list_permission_groups(options \\ []) do
+    PermissionGroup
+    |> Repo.all()
+    |> preload_options(options)
   end
 
   @doc """
@@ -189,7 +197,9 @@ defmodule TdAuth.Permissions do
 
   """
   def delete_permission_group(%PermissionGroup{} = permission_group) do
-    Repo.delete(permission_group)
+    permission_group
+    |> PermissionGroup.delete_changeset()
+    |> Repo.delete()
   end
 
   @doc """
@@ -205,9 +215,17 @@ defmodule TdAuth.Permissions do
     PermissionGroup.changeset(permission_group, %{})
   end
 
-  defp preload_options(%{} = entity, []), do: entity
+  def preload_options([], _), do: []
 
-  defp preload_options(%{} = entity, options) do 
+  def preload_options(%{} = entity, []), do: entity
+
+  def preload_options(entities, []) when is_list(entities), do: entities
+
+  def preload_options(%{} = entity, options) do
     Repo.preload(entity, options)
+  end
+
+  def preload_options(entities, options) when is_list(entities) do
+    Repo.preload(entities, options)
   end
 end
