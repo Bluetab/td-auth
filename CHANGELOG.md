@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Group api for permissions
+
 ## [3.11.0] 2019-11-25
 
 ### Changed
