@@ -10,7 +10,7 @@ defmodule TdAuth.Permissions.PermissionGroup do
 
   schema "permission_groups" do
     field(:name, :string)
-    has_many(:permissions, Permission)
+    has_many(:permissions, Permission, on_replace: :nilify)
 
     timestamps()
   end
