@@ -4,7 +4,7 @@
 
 ### Added
 
-- Group api for permissions
+- [TD-832] Group api for permissions
 
 ## [3.11.0] 2019-11-25
 
