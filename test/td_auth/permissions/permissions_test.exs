@@ -76,7 +76,8 @@ defmodule TdAuth.PermissionsTest do
     end
 
     test "get_permission_group!/2 raises Ecto.NoResultsError when group not found" do
-      assert_raise Ecto.NoResultsError, fn -> Permissions.get_permission_group!(1) end
+      %{id: id} = Enum.max_by(Permissions.list_permission_groups(), & &1.id)
+      assert_raise Ecto.NoResultsError, fn -> Permissions.get_permission_group!(id + 1) end
     end
 
     test "create_permission_group/1 with valid data creates a permission_group" do
