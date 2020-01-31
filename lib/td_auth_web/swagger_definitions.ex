@@ -405,6 +405,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             id(:integer, "unique identifier", required: true)
             name(:string, "permission name", required: true)
+            permission_group(:object, "permission group", required: false)
           end
         end,
       PermissionItem:
@@ -419,7 +420,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           type(:array)
           items(Schema.ref(:PermissionItem))
         end,
-      AddPermissionsToRole:
+      AddPermissions:
         swagger_schema do
           properties do
             permissions(Schema.ref(:PermissionItems))
@@ -442,6 +443,53 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             data(Schema.ref(:Permissions))
+          end
+        end
+    }
+  end
+
+  def permission_group_swagger_definitions do
+    %{
+      PermissionGroup:
+        swagger_schema do
+          title("PermissionGroup")
+          description("Groups of permissions")
+
+          properties do
+            id(:integer, "unique identifier", required: true)
+            name(:string, "group's name", required: true)
+          end
+        end,
+      PermissionGroupItem:
+        swagger_schema do
+          properties do
+            id(:integer, "unique identifier", required: true)
+            name(:string, "permission group name")
+          end
+        end,
+      PermissionGroupCreateUpdate:
+        swagger_schema do
+          properties do
+            permission_group(Schema.ref(:PermissionGroupItem))
+          end
+        end,
+      PermissionGroups:
+        swagger_schema do
+          title("Permission Groups")
+          description("A collection of groups")
+          type(:array)
+          items(Schema.ref(:PermissionGroup))
+        end,
+      PermissionGroupResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:PermissionGroup))
+          end
+        end,
+      PermissionGroupsResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:PermissionGroups))
           end
         end
     }

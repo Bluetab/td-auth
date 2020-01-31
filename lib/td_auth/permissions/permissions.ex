@@ -5,6 +5,7 @@ defmodule TdAuth.Permissions do
 
   import Ecto.Query, warn: false
 
+  alias Ecto.Changeset
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Permission
   alias TdAuth.Repo
@@ -19,8 +20,10 @@ defmodule TdAuth.Permissions do
       [%Permission{}, ...]
 
   """
-  def list_permissions do
-    Repo.all(Permission)
+  def list_permissions(options \\ []) do
+    Permission
+    |> Repo.all()
+    |> preload_options(options)
   end
 
   @doc """
@@ -37,7 +40,11 @@ defmodule TdAuth.Permissions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_permission!(id), do: Repo.get!(Permission, id)
+  def get_permission!(id, options \\ []) do
+    Permission
+    |> Repo.get!(id)
+    |> preload_options(options)
+  end
 
   @doc """
   Gets a single permission by name.
@@ -103,5 +110,133 @@ defmodule TdAuth.Permissions do
        }) do
     permission_names = permissions |> Enum.map(& &1.name)
     %{resource_type: resource_type, resource_id: resource_id, permissions: permission_names}
+  end
+
+  alias TdAuth.Permissions.PermissionGroup
+
+  @doc """
+  Returns the list of permission_groups.
+
+  ## Examples
+
+      iex> list_permission_groups()
+      [%PermissionGroup{}, ...]
+
+  """
+  def list_permission_groups(options \\ []) do
+    PermissionGroup
+    |> Repo.all()
+    |> preload_options(options)
+  end
+
+  @doc """
+  Gets a single permission_group.
+
+  Raises `Ecto.NoResultsError` if the Permission group does not exist.
+
+  ## Examples
+
+      iex> get_permission_group!(123)
+      %PermissionGroup{}
+
+      iex> get_permission_group!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_permission_group!(id, options \\ []) do
+    PermissionGroup
+    |> Repo.get!(id)
+    |> preload_options(options)
+  end
+
+  @doc """
+  Creates a permission_group.
+
+  ## Examples
+
+      iex> create_permission_group(%{field: value})
+      {:ok, %PermissionGroup{}}
+
+      iex> create_permission_group(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_permission_group(attrs \\ %{}) do
+    %PermissionGroup{}
+    |> PermissionGroup.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a permission_group.
+
+  ## Examples
+
+      iex> update_permission_group(permission_group, %{field: new_value})
+      {:ok, %PermissionGroup{}}
+
+      iex> update_permission_group(permission_group, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_permission_group(%PermissionGroup{} = permission_group, attrs) do
+    permission_group
+    |> Repo.preload(:permissions)
+    |> PermissionGroup.changeset(attrs)
+    |> assoc_with_permissions(attrs)
+    |> Repo.update()
+  end
+
+  defp assoc_with_permissions(changeset, %{"permissions" => permissions}),
+    do: Changeset.put_assoc(changeset, :permissions, permissions)
+
+  defp assoc_with_permissions(changeset, %{permissions: permissions}),
+    do: Changeset.put_assoc(changeset, :permissions, permissions)
+
+  defp assoc_with_permissions(changeset, _), do: changeset
+
+  @doc """
+  Deletes a PermissionGroup.
+
+  ## Examples
+
+      iex> delete_permission_group(permission_group)
+      {:ok, %PermissionGroup{}}
+
+      iex> delete_permission_group(permission_group)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_permission_group(%PermissionGroup{} = permission_group) do
+    permission_group
+    |> PermissionGroup.delete_changeset()
+    |> Repo.delete()
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking permission_group changes.
+
+  ## Examples
+
+      iex> change_permission_group(permission_group)
+      %Ecto.Changeset{source: %PermissionGroup{}}
+
+  """
+  def change_permission_group(%PermissionGroup{} = permission_group) do
+    PermissionGroup.changeset(permission_group, %{})
+  end
+
+  def preload_options([], _), do: []
+
+  def preload_options(%{} = entity, []), do: entity
+
+  def preload_options(entities, []) when is_list(entities), do: entities
+
+  def preload_options(%{} = entity, options) do
+    Repo.preload(entity, options)
+  end
+
+  def preload_options(entities, options) when is_list(entities) do
+    Repo.preload(entities, options)
   end
 end
