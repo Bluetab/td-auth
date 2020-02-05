@@ -1,9 +1,11 @@
-defmodule TdAuthWeb.AuthProvider.Ldap do
+defmodule TdAuth.Ldap.Ldap do
   @moduledoc false
   require Logger
 
   alias Gettext.Interpolation
   alias Jason, as: JSON
+
+  alias TdAuth.Ldap.LdapValidation
 
   def authenticate(user_name, password) do
     case ldap_authenticate() do
@@ -43,12 +45,12 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
       {:ok, conn} ->
         try do
           with {:ok, search_results} <- ldap_search(conn, user_name),
-               {:ok, entry} <- fetch_ldap_entry(search_results) do
-            verify_user_credentials(conn, user_name, password, entry)
+               {:ok, entry} <- fetch_ldap_entry(search_results),
+               {:ok, profile} <- verify_user_credentials(conn, user_name, password, entry),
+               {:ok, warnings} <- LdapValidation.validate_entry(conn, entry) do
+            {:ok, profile, warnings}
           else
-            error ->
-              Logger.info("Error creating profile... #{inspect(error)}")
-              error
+            error -> error
           end
         after
           ldap_close(conn)
@@ -61,13 +63,11 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
 
   defp verify_user_credentials(conn, user_name, password, entry) do
     object_name = Map.get(entry, :object_name)
-    description = Exldap.get_attribute!(entry, "description")
     case verify_credentials(conn, user_name, password, object_name) do
       :ok ->
         profile = build_profile(entry)
-        {:ok, profile, description}
-      {:error, error} ->
-        {:verify_error, error, description}
+        {:ok, profile}
+      {:error, error} -> {:ldap_error, %{type: error}}
     end
   end
 
@@ -76,7 +76,7 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
     Exldap.verify_credentials(conn, bind, password)
   end
 
-  defp verify_credentials(conn, user_name, password, object_name) do
+  defp verify_credentials(conn, _user_name, password, object_name) do
     Exldap.verify_credentials(conn, object_name, password)
   end
 
@@ -148,7 +148,7 @@ defmodule TdAuthWeb.AuthProvider.Ldap do
     Application.get_env(:td_auth, :ldap)[:bind_pattern]
   end
 
-  defp get_ldap_search_path do
+  def get_ldap_search_path do
     Application.get_env(:td_auth, :ldap)[:search_path]
   end
 

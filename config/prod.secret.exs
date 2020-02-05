@@ -60,7 +60,8 @@ config :td_auth, :ldap,
   # profile_mapping: "${LDAP_PROFILE_MAPPING}",
   bind_pattern: "${LDAP_BIND_PATTERN}",
   search_path: "${LDAP_SEARCH_PATH}",
-  search_field: "${LDAP_SEARCH_FIELD}"
+  search_field: "${LDAP_SEARCH_FIELD}",
+  validations_file: "${LDAP_ATTR_VALIDATIONS_FILE}"
 
 config :td_auth, :ad,
   server: "${AD_SERVER}",
