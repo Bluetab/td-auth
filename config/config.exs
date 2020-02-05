@@ -45,6 +45,9 @@ config :td_auth, TdAuth.Auth.Guardian,
 
 # ------------ ldap ----------
 
+config :td_auth, eldap_module: :eldap
+config :td_auth, exldap_module: Exldap
+
 config :td_auth, :ldap,
   server: "localhost",
   base: "dc=bluetab,dc=net",
@@ -56,7 +59,8 @@ config :td_auth, :ldap,
   profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"givenName\",\"email\":\"mail\"}",
   bind_pattern: "cn=%{user_name},ou=people,dc=bluetab,dc=net",
   search_path: "ou=people,dc=bluetab,dc=net",
-  search_field: "cn"
+  search_field: "cn",
+  validations_file: ""
 
 # ------------ oidc default ----------
 config :td_auth, :openid_connect_providers, oidc: []

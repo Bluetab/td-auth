@@ -5,11 +5,8 @@ defmodule TdAuthWeb.ErrorView do
     %{errors: %{detail: "Invalid credentials"}}
   end
 
-  def render("401_ldap.json", %{description: description}) do
-    %{
-      errors: %{detail: "Invalid credentials"},
-      ldap_description: description
-    }
+  def render("401_ldap.json", %{error: error}) do
+    %{error: error}
   end
 
   def render("404.json", _assigns) do

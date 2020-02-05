@@ -35,7 +35,7 @@ defmodule TdAuth.Application do
              [%{children: [acl_remover_worker], strategy: :one_for_one}]},
           type: :supervisor
         }
-      ] ++ oidc_workers() ++ saml_workers()
+      ] ++ oidc_workers() ++ saml_workers() ++ ldap_workers()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -48,6 +48,17 @@ defmodule TdAuth.Application do
   def config_change(changed, _new, removed) do
     Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp ldap_workers do
+    import Supervisor.Spec
+
+    validations_file =
+      :td_auth
+      |> Application.get_env(:ldap)
+      |> Keyword.get(:validations_file, "")
+
+    [worker(TdAuth.Ldap.LdapWorker, [validations_file])]
   end
 
   defp saml_workers do

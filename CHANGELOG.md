@@ -4,6 +4,7 @@
 
 ### Added
 
+- [TD-2330] Allow custom login validations based on Ldap attributes
 - [TD-832] Group api for permissions
 
 ## [3.11.0] 2019-11-25

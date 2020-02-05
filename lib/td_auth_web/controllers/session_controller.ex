@@ -9,13 +9,13 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Accounts.User
   alias TdAuth.Auth.Guardian
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
+  alias TdAuth.Ldap.Ldap
   alias TdAuth.Permissions
   alias TdAuth.Permissions.Role
   alias TdAuth.Repo
   alias TdAuth.Saml.SamlWorker
   alias TdAuthWeb.AuthProvider.ActiveDirectory
   alias TdAuthWeb.AuthProvider.Auth0
-  alias TdAuthWeb.AuthProvider.Ldap
   alias TdAuthWeb.AuthProvider.OIDC
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
@@ -237,23 +237,19 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp authenticate_using_ldap_and_create_session(conn, user_name, password) do
-    with {:ok, profile, description} <- Ldap.authenticate(user_name, password),
+    with {:ok, profile, validation_warnings} <- Ldap.authenticate(user_name, password),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
       tokens = create_tokens(conn, user, nil)
       conn
       |> put_status(:created)
-      |> render("show_ldap.json", token: tokens, description: description)
+      |> render("show_ldap.json", token: tokens, validation_warnings: validation_warnings)
     else
-      {:verify_error, error, description} ->
-        Logger.info("Invalid verification of correct ldap user: #{inspect(error)}")
-
+      {:ldap_error, error} ->
         conn
         |> put_status(:unauthorized)
         |> put_view(ErrorView)
-        |> render("401_ldap.json", description: description)
-      error ->
-        Logger.info("While authenticating using ldap: #{inspect(error)}")
-
+        |> render("401_ldap.json", error: error)
+      _ ->
         conn
         |> put_status(:unauthorized)
         |> put_view(ErrorView)

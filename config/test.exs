@@ -50,3 +50,6 @@ config :td_auth, :openid_connect_providers,
     scope: "openid profile",
     response_type: "id_token"
   ]
+
+config :td_auth, eldap_module: TdAuth.Ldap.EldapMock
+config :td_auth, exldap_module: TdAuth.Ldap.EldapMock

@@ -5,11 +5,11 @@ defmodule TdAuthWeb.SessionView do
     %{token: token.token, refresh_token: token.refresh_token}
   end
 
-  def render("show_ldap.json", %{token: token, description: description}) do
+  def render("show_ldap.json", %{token: token, validation_warnings: validation_warnings}) do
     %{
       token: token.token,
       refresh_token: token.refresh_token,
-      ldap_description: description
+      validation_warnings: validation_warnings
     }
   end
 
