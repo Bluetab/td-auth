@@ -125,23 +125,11 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp create_tokens(conn, user, access_method) do
-    user_claims = retrieve_user_claims(user)
-    acl_entries = retrieve_acl_with_permissions(user, user_claims.gids)
-
-    custom_claims =
-      user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
-
-    custom_claims =
-      if access_method !== nil && access_method == "alternative_login" do
-        user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
-        custom_claims |> Map.put(:access_method, access_method)
-      else
-        user_claims |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
-      end
-
-    conn = handle_sign_in(conn, user, custom_claims)
+    gids = Enum.map(user.groups, & &1.id)
+    acl_entries = retrieve_acl_with_permissions(user, gids)
+    claims = claims(user, gids, acl_entries, access_method)
+    conn = handle_sign_in(conn, user, claims)
     token = GuardianPlug.current_token(conn)
-
     # Load permissions cache
     %{"jti" => jti, "exp" => exp} = conn |> GuardianPlug.current_claims()
     Permissions.cache_session_permissions(acl_entries, jti, exp)
@@ -324,15 +312,17 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp retrieve_user_claims(user) do
-    user = user |> Repo.preload(:groups)
-
-    %{
-      user_name: user.user_name,
-      is_admin: user.is_admin,
-      gids: user.groups |> Enum.map(& &1.id)
-    }
+  defp claims(user, gids, acl_entries, access_method) do
+    user
+    |> Map.take([:user_name, :is_admin])
+    |> Map.merge(%{gids: gids})
+    |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
+    |> with_access_method(access_method)
   end
+
+  defp with_access_method(claims, "alternative_login" = access_method), do: Map.put(claims, :access_method, access_method)
+
+  defp with_access_method(claims, _), do: claims
 
   def ping(conn, _params) do
     conn
