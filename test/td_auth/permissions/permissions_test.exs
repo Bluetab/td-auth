@@ -43,7 +43,7 @@ defmodule TdAuth.PermissionsTest do
 
     @valid_attrs %{name: "group name"}
     @update_attrs %{name: "new group name"}
-    @groups ["taxonomy_membership", "taxonomy", "business_glossary", "data_dictionary", "data_quality", "ingests"]
+    @groups ["taxonomy_membership", "taxonomy", "business_glossary", "data_dictionary", "data_quality", "ingests", "dashboards", "lineage"]
 
     test "list_permission_groups/0 returns all permission_groups" do
       assert Enum.map(Permissions.list_permission_groups(), & &1.name) == @groups

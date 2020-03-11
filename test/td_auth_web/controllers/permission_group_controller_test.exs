@@ -11,7 +11,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
-  @groups ["taxonomy_membership", "taxonomy", "business_glossary", "data_dictionary", "data_quality", "ingests"]
+  @groups ["taxonomy_membership", "taxonomy", "business_glossary", "data_dictionary", "data_quality", "ingests", "dashboards", "lineage"]
 
   describe "index" do
     @tag :admin_authenticated
