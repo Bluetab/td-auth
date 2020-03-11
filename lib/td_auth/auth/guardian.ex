@@ -28,7 +28,8 @@ defmodule TdAuth.Auth.Guardian do
       user_name: sub["user_name"],
       gids: claims["gids"],
       jti: claims["jti"],
-      exp: claims["exp"]
+      exp: claims["exp"],
+      groups: claims["groups"]
     }
 
     {:ok, resource}

@@ -130,8 +130,7 @@ defmodule TdAuthWeb.SessionController do
     claims = claims(user, gids, acl_entries, access_method)
     conn = handle_sign_in(conn, user, claims)
     token = GuardianPlug.current_token(conn)
-    # Load permissions cache
-    %{"jti" => jti, "exp" => exp} = conn |> GuardianPlug.current_claims()
+    %{"jti" => jti, "exp" => exp} = GuardianPlug.current_claims(conn)
     Permissions.cache_session_permissions(acl_entries, jti, exp)
 
     {:ok, refresh_token, _full_claims} =
@@ -177,20 +176,22 @@ defmodule TdAuthWeb.SessionController do
         role ->
           permissions =
             role
-            |> Repo.preload(:permissions)
+            |> Repo.preload(permissions: :permission_group)
             |> Map.get(:permissions)
-            |> Enum.map(& &1.name)
+
+          names = Enum.map(permissions, & &1.name)
+          groups = Enum.map(permissions, & &1.permission_group)
 
           TaxonomyCache.get_root_domain_ids()
           |> Enum.map(
             &%{
-              permissions: permissions,
+              permissions: names,
+              groups: groups,
               resource_type: "domain",
               resource_id: &1
             }
           )
       end
-
     acl_entries ++ default_acl_entries
   end
 
@@ -228,6 +229,7 @@ defmodule TdAuthWeb.SessionController do
     with {:ok, profile, validation_warnings} <- Ldap.authenticate(user_name, password),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
       tokens = create_tokens(conn, user, nil)
+
       conn
       |> put_status(:created)
       |> render("show_ldap.json", token: tokens, validation_warnings: validation_warnings)
@@ -237,6 +239,7 @@ defmodule TdAuthWeb.SessionController do
         |> put_status(:unauthorized)
         |> put_view(ErrorView)
         |> render("401_ldap.json", error: error)
+
       _ ->
         conn
         |> put_status(:unauthorized)
@@ -317,12 +320,24 @@ defmodule TdAuthWeb.SessionController do
     |> Map.take([:user_name, :is_admin])
     |> Map.merge(%{gids: gids})
     |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
+    |> Map.put(:groups, permission_groups(user, acl_entries))
     |> with_access_method(access_method)
   end
 
-  defp with_access_method(claims, "alternative_login" = access_method), do: Map.put(claims, :access_method, access_method)
+  defp with_access_method(claims, "alternative_login" = access_method),
+    do: Map.put(claims, :access_method, access_method)
 
   defp with_access_method(claims, _), do: claims
+
+  defp permission_groups(%User{is_admin: true}, _acl_entries), do: []
+
+  defp permission_groups(_user, acl_entries) do
+    acl_entries
+    |> Enum.map(&(&1.groups || []))
+    |> List.flatten()
+    |> Enum.uniq_by(& &1.id)
+    |> Enum.map(& &1.name)
+  end
 
   def ping(conn, _params) do
     conn

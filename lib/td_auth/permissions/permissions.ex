@@ -108,8 +108,15 @@ defmodule TdAuth.Permissions do
          resource_id: resource_id,
          role: %{permissions: permissions}
        }) do
-    permission_names = permissions |> Enum.map(& &1.name)
-    %{resource_type: resource_type, resource_id: resource_id, permissions: permission_names}
+    groups = Enum.map(permissions, & &1.permission_group)
+    permissions = Enum.map(permissions, & &1.name)
+
+    %{
+      resource_type: resource_type,
+      resource_id: resource_id,
+      permissions: permissions,
+      groups: groups
+    }
   end
 
   alias TdAuth.Permissions.PermissionGroup
