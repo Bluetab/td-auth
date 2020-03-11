@@ -7,6 +7,7 @@ defmodule TdAuthWeb.SessionControllerTest do
   alias TdAuth.Accounts
   alias TdAuth.Auth.Auth
   alias TdAuthWeb.ApiServices.MockAuthService
+  alias TdCache.TaxonomyCache
 
   import TdAuthWeb.Authentication, only: :functions
 
@@ -36,6 +37,27 @@ defmodule TdAuthWeb.SessionControllerTest do
         post conn, Routes.session_path(conn, :create),
           access_method: "access_method",
           user: @valid_attrs
+
+      validate_resp_schema(conn, schema, "Token")
+      assert conn.status == 201
+    end
+
+    test "create session with claims", %{conn: conn, swagger_schema: schema, user: user} do
+      permission_fixture(user)
+
+      conn =
+        post conn, Routes.session_path(conn, :create),
+          access_method: "access_method",
+          user: @valid_attrs
+
+      token = json_response(conn, 201)["token"]
+      assert {:ok, claims} = Auth.decode_and_verify(token, %{"typ" => "access"})
+
+      assert claims["groups"] == [
+               "create_permission_group",
+               "view_permission_group",
+               "update_permission_group"
+             ]
 
       validate_resp_schema(conn, schema, "Token")
       assert conn.status == 201
@@ -178,5 +200,41 @@ defmodule TdAuthWeb.SessionControllerTest do
   defp create_user(_) do
     user = fixture(:user)
     {:ok, user: user}
+  end
+
+  defp permission_fixture(user) do
+    create_permission_group = insert(:permission_group, name: "create_permission_group")
+    view_permission_group = insert(:permission_group, name: "view_permission_group")
+    update_permission_group = insert(:permission_group, name: "update_permission_group")
+
+    create = insert(:permission, name: "create", permission_group: create_permission_group)
+    view = insert(:permission, name: "view", permission_group: view_permission_group)
+    update = insert(:permission, name: "update", permission_group: update_permission_group)
+
+    owner = insert(:role, name: "owner", permissions: [create])
+    viewer = insert(:role, name: "viewer", permissions: [view])
+    insert(:role, is_default: true, name: "default", permissions: [create, update])
+
+    domain = %{id: :rand.uniform(1000), parent_ids: [], name: "MyDomain"}
+    domain1 = %{id: domain.id + 1, parent_ids: [], name: "MyDomain1"}
+
+    {:ok, _} = TaxonomyCache.put_domain(domain)
+    {:ok, _} = TaxonomyCache.put_domain(domain1)
+
+    insert(:acl_entry,
+      resource_id: domain.id,
+      principal_id: user.id,
+      principal_type: "user",
+      resource_type: "domain",
+      role: owner
+    )
+
+    insert(:acl_entry,
+      resource_id: domain1.id,
+      principal_id: user.id,
+      principal_type: "user",
+      resource_type: "domain",
+      role: viewer
+    )
   end
 end

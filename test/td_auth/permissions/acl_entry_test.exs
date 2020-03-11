@@ -131,6 +131,7 @@ defmodule TdAuth.Permissions.AclEntryTest do
       assert p_id == group.principal_id
       assert p_type == group.principal_type
       assert role == viewer
+      assert role.permissions == [view]
       assert Enum.map(role.permissions, & &1.permission_group) == [group_permission_group]
     end
 
