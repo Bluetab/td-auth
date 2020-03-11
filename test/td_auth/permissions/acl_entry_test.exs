@@ -69,6 +69,71 @@ defmodule TdAuth.Permissions.AclEntryTest do
       assert acl_entries == [acl_entry]
     end
 
+    test "list_acl_entries_by_principal/1 returns all acl_entries filtered by principal" do
+      user_permission_group = insert(:permission_group, name: "user_permission_group")
+      group_permission_group = insert(:permission_group, name: "group_permission_group")
+
+      create = insert(:permission, name: "create", permission_group: user_permission_group)
+      view = insert(:permission, name: "view", permission_group: group_permission_group)
+
+      owner = insert(:role, name: "owner", permissions: [create])
+      viewer = insert(:role, name: "viewer", permissions: [view])
+
+      principal = insert(:group)
+
+      user =
+        insert(:acl_entry,
+          resource_id: 1,
+          principal_id: principal.id + 1,
+          principal_type: "user",
+          resource_type: "domain",
+          role: owner
+        )
+
+      group =
+        insert(:acl_entry,
+          resource_id: 1,
+          principal_id: principal.id,
+          principal_type: "group",
+          resource_type: "domain",
+          role: viewer
+        )
+
+      user_entries =
+        AclEntry.list_acl_entries_by_principal(%{
+          principal_id: user.principal_id,
+          principal_type: user.principal_type
+        })
+
+      group_entries =
+        AclEntry.list_acl_entries_by_principal(%{
+          principal_id: group.principal_id,
+          principal_type: group.principal_type
+        })
+
+      empty =
+        AclEntry.list_acl_entries_by_principal(%{
+          principal_id: user.principal_id,
+          principal_type: "foo"
+        })
+
+      assert empty == []
+      assert length(user_entries) == 1
+      assert length(group_entries) == 1
+      assert %AclEntry{principal_id: p_id, principal_type: p_type, role: role} = hd(user_entries)
+      assert p_id == user.principal_id
+      assert p_type == user.principal_type
+      assert role == owner
+      assert role.permissions == [create]
+      assert Enum.map(role.permissions, & &1.permission_group) == [user_permission_group]
+
+      assert %AclEntry{principal_id: p_id, principal_type: p_type, role: role} = hd(group_entries)
+      assert p_id == group.principal_id
+      assert p_type == group.principal_type
+      assert role == viewer
+      assert Enum.map(role.permissions, & &1.permission_group) == [group_permission_group]
+    end
+
     test "get_acl_entry!/1 returns the acl_entry with given id" do
       acl_entry = acl_entry_fixture()
       get_acl_entry = AclEntry.get_acl_entry!(acl_entry.id)

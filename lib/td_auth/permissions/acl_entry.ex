@@ -155,7 +155,7 @@ defmodule TdAuth.Permissions.AclEntry do
         )
       )
 
-    acl_entries |> Repo.preload(role: [:permissions])
+    Repo.preload(acl_entries, role: [permissions: :permission_group])
   end
 
   def list_acl_entries_by_user(%{user_id: user_id}) do
@@ -168,10 +168,7 @@ defmodule TdAuth.Permissions.AclEntry do
 
   def list_acl_entries_by_user_with_groups(%{user_id: user_id, gids: gids}) do
     user_acl_entries = list_acl_entries_by_user(%{user_id: user_id})
-
-    group_acl_entries =
-      gids
-      |> Enum.flat_map(&list_acl_entries_by_group(%{group_id: &1}))
+    group_acl_entries = Enum.flat_map(gids, &list_acl_entries_by_group(%{group_id: &1}))
 
     user_acl_entries ++ group_acl_entries
   end
