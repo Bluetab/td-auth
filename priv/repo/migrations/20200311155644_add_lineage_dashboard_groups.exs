@@ -1,15 +1,19 @@
 defmodule TdAuth.Repo.Migrations.AddLineageDashboardGroups do
   use Ecto.Migration
-  alias TdAuth.Permissions
+  import Ecto.Query
+
+  alias TdAuth.Repo
   
   @names ["dashboards", "lineage"]
 
-  def change do
-    @names
-    |> Enum.each(&load_group/1)
+  def up do
+    records = Enum.map(@names, &%{name: &1, inserted_at: DateTime.utc_now(), updated_at: DateTime.utc_now()})
+    Repo.insert_all("permission_groups", records)
   end
 
-  defp load_group(name) do
-    Permissions.create_permission_group(%{name: name})
+  def down do
+    from(p in "permission_groups")
+    |> where([p], p.name in ^@names)
+    |> Repo.delete_all()      
   end
 end
