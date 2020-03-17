@@ -55,7 +55,9 @@ defmodule TdAuth.Permissions.Permission do
     manage_quality_rule_implementations: "manage_quality_rule_implementations",
     execute_quality_rule: "execute_quality_rule",
     link_data_structure: "link_data_structure",
-    manage_structures_metadata: "manage_structures_metadata"
+    manage_structures_metadata: "manage_structures_metadata",
+    view_dashboard: "view_dashboard",
+    view_lineage: "view_lineage"
   }
 
   schema "permissions" do
