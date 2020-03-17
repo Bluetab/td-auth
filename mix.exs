@@ -64,7 +64,7 @@ defmodule TdAuth.Mixfile do
       {:exldap, "~> 0.6"},
       {:openid_connect, "~> 0.2.0"},
       {:esaml, "~> 4.1.0"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", branch: "feature/td-2281"}
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "3.18.0"}
     ]
   end
 
