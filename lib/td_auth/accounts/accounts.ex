@@ -8,9 +8,13 @@ defmodule TdAuth.Accounts do
   alias Ecto.Changeset
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
-  alias TdAuth.Permissions.AclEntry
+  alias TdAuth.Accounts.UserLoader
+  alias TdAuth.Permissions.AclEntries
   alias TdAuth.Repo
-  alias TdAuth.UserLoader
+
+  def user_exists? do
+    Repo.exists?(User)
+  end
 
   @doc """
   Returns the list of users.
@@ -21,12 +25,21 @@ defmodule TdAuth.Accounts do
       [%User{}, ...]
 
   """
-  def list_users do
-    Repo.all(from(u in User, where: u.is_protected == false))
+  def list_users(opts \\ []) do
+    filter_clauses = Keyword.put_new(opts, :is_protected, false)
+
+    User
+    |> do_where(filter_clauses)
+    |> Repo.all()
   end
 
-  def list_users(ids) do
-    Repo.all(from(u in User, where: u.id in ^ids))
+  defp do_where(queryable, filter_clauses) do
+    Enum.reduce(filter_clauses, queryable, fn
+      {:is_protected, is_protected}, q -> where(q, is_protected: ^is_protected)
+      {:id, {:in, ids}}, q -> where(q, [u], u.id in ^ids)
+      {:preload, preloads}, q -> preload(q, ^preloads)
+      _, q -> q
+    end)
   end
 
   def list_users_by_group_id(group_id) do
@@ -48,16 +61,12 @@ defmodule TdAuth.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_user!(id, opts \\ []), do: get!(User, id, opts)
 
   def get_user_by_name(user_name) do
     User
     |> Repo.get_by(user_name: String.downcase(user_name))
     |> Repo.preload(:groups)
-  end
-
-  def exist_user?(user_name) do
-    Repo.one(from(u in User, select: count(u.id), where: u.user_name == ^user_name)) > 0
   end
 
   @doc """
@@ -72,19 +81,11 @@ defmodule TdAuth.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_user(attrs \\ %{}) do
-    attrs
-    |> create_user_nocache
-    |> refresh_cache
-  end
-
-  @doc """
-  Creates a user without updating user cache.
-  """
-  def create_user_nocache(attrs \\ %{}) do
+  def create_user(attrs) do
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
+    |> refresh_cache()
   end
 
   @doc """
@@ -103,7 +104,7 @@ defmodule TdAuth.Accounts do
     user
     |> User.update_changeset(attrs)
     |> Repo.update()
-    |> refresh_cache
+    |> refresh_cache()
   end
 
   @doc """
@@ -134,27 +135,27 @@ defmodule TdAuth.Accounts do
   def delete_user(%User{} = user) do
     user
     |> Repo.delete()
-    |> delete_acl_entries("user")
     |> delete_cache()
   end
 
-  def delete_user_nocache(%User{} = user) do
-    user
-    |> Repo.delete()
-    |> delete_acl_entries("user")
+  @doc """
+  Returns the acl entries associated with a user or its groups.
+  """
+  def get_user_acls(%User{id: user_id}) do
+    get_user_acls(user_id)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user changes.
-
-  ## Examples
-
-      iex> change_user(user)
-      %Ecto.Changeset{source: %User{}}
-
+  Returns the acl entries associated with a user_id or its groups.
   """
-  def change_user(%User{} = user) do
-    User.changeset(user, %{})
+  def get_user_acls(user_id) do
+    group_ids =
+      "users_groups"
+      |> where(user_id: ^user_id)
+      |> select([ug], ug.group_id)
+      |> Repo.all()
+
+    AclEntries.list_acl_entries(resource_type: "domain", user_groups: {user_id, group_ids})
   end
 
   @doc """
@@ -188,7 +189,7 @@ defmodule TdAuth.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_group!(id), do: Repo.get!(Group, id)
+  def get_group!(id, opts \\ []), do: get!(Group, id, opts)
 
   @doc """
   Gets a single group.
@@ -216,9 +217,11 @@ defmodule TdAuth.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_group(attrs \\ %{}) do
+  def create_group(params \\ %{}) do
+    params = put_users(params)
+
     %Group{}
-    |> Group.changeset(attrs)
+    |> Group.changeset(params)
     |> Repo.insert()
   end
 
@@ -238,11 +241,23 @@ defmodule TdAuth.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_group(%Group{} = group, attrs) do
+  def update_group(%Group{} = group, params) do
+    params = put_users(params)
+
     group
-    |> Group.changeset(attrs)
+    |> Group.changeset(params)
     |> Repo.update()
   end
+
+  defp put_users(%{"user_ids" => user_ids} = params) do
+    users = list_users(id: {:in, user_ids})
+
+    params
+    |> Map.delete("user_ids")
+    |> Map.put("users", users)
+  end
+
+  defp put_users(params), do: params
 
   @doc """
   Deletes a Group.
@@ -257,25 +272,9 @@ defmodule TdAuth.Accounts do
 
   """
   def delete_group(%Group{} = group) do
-    group
-    |> Repo.delete()
-    |> delete_acl_entries("group")
+    Repo.delete(group)
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking group changes.
-
-  ## Examples
-
-      iex> change_group(group)
-      %Ecto.Changeset{source: %Group{}}
-
-  """
-  def change_group(%Group{} = group) do
-    Group.changeset(group, %{})
-  end
-
-  @doc false
   def delete_group_from_user(%User{} = user, %Group{} = group) do
     user = Repo.preload(user, :groups)
     groups = Enum.filter(user.groups, &(&1.name != group.name))
@@ -286,7 +285,6 @@ defmodule TdAuth.Accounts do
     |> Repo.update()
   end
 
-  @doc false
   def add_groups_to_user(%User{} = user, groups) do
     user
     |> Repo.preload(:groups)
@@ -294,9 +292,16 @@ defmodule TdAuth.Accounts do
     |> Repo.update()
   end
 
-  defp delete_acl_entries({:ok, %{id: id} = resource}, principal_type) do
-    AclEntry.delete_acl_entries(%{principal_id: id, principal_type: principal_type})
-    {:ok, resource}
+  defp get!(queryable, id, opts) do
+    case Keyword.get(opts, :preload) do
+      nil ->
+        Repo.get!(queryable, id)
+
+      preloads ->
+        queryable
+        |> Repo.get!(id)
+        |> Repo.preload(preloads)
+    end
   end
 
   defp refresh_cache({:ok, %{id: id} = user}) do

@@ -17,15 +17,15 @@ defmodule TdAuthWeb.AclEntryView do
   end
 
   def render("acl_entry.json", %{acl_entry: acl_entry}) do
-    %{
-      id: acl_entry.id,
-      principal_type: acl_entry.principal_type,
-      principal_id: acl_entry.principal_id,
-      resource_type: acl_entry.resource_type,
-      resource_id: acl_entry.resource_id,
-      description: acl_entry.description,
-      role_id: acl_entry.role_id
-    }
+    Map.take(acl_entry, [
+      :description,
+      :group_id,
+      :id,
+      :resource_id,
+      :resource_type,
+      :role_id,
+      :user_id
+    ])
   end
 
   def render("resource_acl_entries.json", %{hypermedia: hypermedia}) do
@@ -49,7 +49,7 @@ defmodule TdAuthWeb.AclEntryView do
   defp resource_acl_entry(%{"_actions" => actions} = acl_entry) do
     acl_entry
     |> Map.drop(["_actions"])
-    |> resource_acl_entry
+    |> resource_acl_entry()
     |> Map.put(:_actions, actions)
   end
 
@@ -57,26 +57,28 @@ defmodule TdAuthWeb.AclEntryView do
          %{
            description: description,
            id: id,
-           principal_type: principal_type,
            role: %{id: role_id, name: role_name}
          } = acl_entry
        ) do
     %{
       description: description,
       acl_entry_id: id,
-      principal_type: principal_type,
+      principal_type: principal_type(acl_entry),
       principal: render_principal(acl_entry),
       role_id: role_id,
       role_name: role_name
     }
   end
 
-  defp render_principal(%{principal_type: "group", principal_id: group_id}) do
+  defp principal_type(%{user_id: user_id}) when not is_nil(user_id), do: "user"
+  defp principal_type(%{group_id: group_id}) when not is_nil(group_id), do: "group"
+
+  defp render_principal(%{group_id: group_id}) when not is_nil(group_id) do
     group = Repo.get_by(Group, id: group_id)
     render_one(group, GroupView, "group.json")
   end
 
-  defp render_principal(%{principal_type: "user", principal_id: user_id}) do
+  defp render_principal(%{user_id: user_id}) when not is_nil(user_id) do
     user = Repo.get_by(User, id: user_id)
     render_one(user, UserView, "user_embedded.json")
   end

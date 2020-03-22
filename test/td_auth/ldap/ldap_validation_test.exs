@@ -6,7 +6,8 @@ defmodule TdAuth.LdapValidationTest do
   alias TdAuth.Ldap.LdapWorker
 
   setup_all do
-    start_supervised(EldapMock)
+    start_supervised!({TdAuth.Ldap.LdapWorker, ""})
+    start_supervised!(EldapMock)
     :ok
   end
 
@@ -15,11 +16,14 @@ defmodule TdAuth.LdapValidationTest do
     value = "attribute_value"
     other_value = "other_attribute_value"
 
-    LdapWorker.set_validations([%{
-      "type" => "attribute_doesnt_have_value",
-      "attribute" => attribute,
-      "value" => value
-    }])
+    LdapWorker.set_validations([
+      %{
+        "type" => "attribute_doesnt_have_value",
+        "attribute" => attribute,
+        "value" => value
+      }
+    ])
+
     {:ok, attribute: attribute, value: value, other_value: other_value}
   end
 
@@ -27,7 +31,8 @@ defmodule TdAuth.LdapValidationTest do
     setup [:attribute_doesnt_have_value]
 
     test "returns error if attribute has value", %{
-      attribute: attribute, value: value
+      attribute: attribute,
+      value: value
     } do
       EldapMock.set_attribute_value(attribute, value)
 
@@ -35,11 +40,13 @@ defmodule TdAuth.LdapValidationTest do
         :ldap_error,
         %{attribute: attribute, type: :unwanted_value_on_attribute, value: value}
       }
+
       assert expected == LdapValidation.validate_entry(:conn, :entry)
     end
 
     test "returns ok if attribute doesnt has value", %{
-      attribute: attribute, other_value: other_value
+      attribute: attribute,
+      other_value: other_value
     } do
       EldapMock.set_attribute_value(attribute, other_value)
 
@@ -53,11 +60,14 @@ defmodule TdAuth.LdapValidationTest do
     value = "attribute_value"
     other_value = "other_attribute_value"
 
-    LdapWorker.set_validations([%{
-      "type" => "attribute_has_value",
-      "attribute" => attribute,
-      "value" => value
-    }])
+    LdapWorker.set_validations([
+      %{
+        "type" => "attribute_has_value",
+        "attribute" => attribute,
+        "value" => value
+      }
+    ])
+
     {:ok, attribute: attribute, value: value, other_value: other_value}
   end
 
@@ -65,7 +75,9 @@ defmodule TdAuth.LdapValidationTest do
     setup [:attribute_has_value]
 
     test "returns error if attribute doesnt has value", %{
-      attribute: attribute, value: value, other_value: other_value
+      attribute: attribute,
+      value: value,
+      other_value: other_value
     } do
       EldapMock.set_attribute_value(attribute, other_value)
 
@@ -73,11 +85,13 @@ defmodule TdAuth.LdapValidationTest do
         :ldap_error,
         %{attribute: attribute, type: :missing_value_on_attribute, value: value}
       }
+
       assert expected == LdapValidation.validate_entry(:conn, :entry)
     end
 
     test "returns ok if attribute has value", %{
-      attribute: attribute, value: value
+      attribute: attribute,
+      value: value
     } do
       EldapMock.set_attribute_value(attribute, value)
 
@@ -90,11 +104,14 @@ defmodule TdAuth.LdapValidationTest do
     attribute = "ldap_attribute"
     expiration_in_days = 10
 
-    LdapWorker.set_validations([%{
-      "type" => "expiration_date_attribute",
-      "attribute" => attribute,
-      "expiration_in_days" => expiration_in_days
-    }])
+    LdapWorker.set_validations([
+      %{
+        "type" => "expiration_date_attribute",
+        "attribute" => attribute,
+        "expiration_in_days" => expiration_in_days
+      }
+    ])
+
     {:ok, attribute: attribute, expiration_in_days: expiration_in_days}
   end
 
@@ -102,10 +119,13 @@ defmodule TdAuth.LdapValidationTest do
     setup [:expiration_date_attribute]
 
     test "will add warning indicating numbers of days until expires", %{
-      attribute: attribute, expiration_in_days: expiration_in_days
+      attribute: attribute,
+      expiration_in_days: expiration_in_days
     } do
-      expiration_date = Date.utc_today()
-       |> Date.to_iso8601(:basic)
+      expiration_date =
+        Date.utc_today()
+        |> Date.to_iso8601(:basic)
+
       EldapMock.set_attribute_value(attribute, expiration_date)
 
       expected = {:ok, [["days_to_expire", expiration_in_days]]}
@@ -113,11 +133,14 @@ defmodule TdAuth.LdapValidationTest do
     end
 
     test "will add warning indicating 0 days when expiration date is today", %{
-      attribute: attribute, expiration_in_days: expiration_in_days
+      attribute: attribute,
+      expiration_in_days: expiration_in_days
     } do
-      expiration_date = Date.utc_today()
-       |> Date.add(expiration_in_days * -1)
-       |> Date.to_iso8601(:basic)
+      expiration_date =
+        Date.utc_today()
+        |> Date.add(expiration_in_days * -1)
+        |> Date.to_iso8601(:basic)
+
       EldapMock.set_attribute_value(attribute, expiration_date)
 
       expected = {:ok, [["days_to_expire", 0]]}
@@ -125,17 +148,19 @@ defmodule TdAuth.LdapValidationTest do
     end
 
     test "will add warning indicating negative number when expired", %{
-      attribute: attribute, expiration_in_days: expiration_in_days
+      attribute: attribute,
+      expiration_in_days: expiration_in_days
     } do
-      expiration_date = Date.utc_today()
-       |> Date.add(expiration_in_days * -1)
-       |> Date.add(-5)
-       |> Date.to_iso8601(:basic)
+      expiration_date =
+        Date.utc_today()
+        |> Date.add(expiration_in_days * -1)
+        |> Date.add(-5)
+        |> Date.to_iso8601(:basic)
+
       EldapMock.set_attribute_value(attribute, expiration_date)
 
       expected = {:ok, [["days_to_expire", -5]]}
       assert expected == LdapValidation.validate_entry(:conn, :entry)
     end
   end
-
 end

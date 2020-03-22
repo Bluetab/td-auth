@@ -287,8 +287,8 @@ defmodule TdAuthWeb.SwaggerDefinitions do
 
           properties do
             id(:integer, "unique identifier", required: true)
-            principal_id(:integer, "id of principal", required: true)
-            principal_type(:string, "type of principal: user", required: true)
+            group_id(:integer, "id of group", nullable: true)
+            user_id(:integer, "id of user", nullable: true)
             resource_id(:integer, "id of resource", required: true)
             resource_type(:string, "type of resource: domain", required: true)
             role_id(:integer, "id of role", required: true)
@@ -301,8 +301,8 @@ defmodule TdAuthWeb.SwaggerDefinitions do
             acl_entry(
               Schema.new do
                 properties do
-                  principal_id(:integer, "id of principal", required: true)
-                  principal_type(:string, "type of principal: user", required: true)
+                  group_id(:integer, "id of group")
+                  user_id(:integer, "id of user")
                   resource_id(:integer, "id of resource", required: true)
                   resource_type(:string, "type of resource: domain", required: true)
                   role_id(:integer, "id of role", required: true)
@@ -317,8 +317,8 @@ defmodule TdAuthWeb.SwaggerDefinitions do
             acl_entry(
               Schema.new do
                 properties do
-                  principal_id(:integer, "id of principal", required: true)
-                  principal_type(:string, "type of principal: user", required: true)
+                  group_id(:integer, "id of group")
+                  user_id(:integer, "id of user")
                   resource_id(:integer, "id of resource", required: true)
                   resource_type(:string, "type of resource: domain", required: true)
                   role_name(:string, "role name", required: true)
@@ -360,7 +360,6 @@ defmodule TdAuthWeb.SwaggerDefinitions do
                       end
                     end
                   )
-                  principal_type(:string, "principal type")
                   role_id(:integer, "role id")
                   role_name(:string, "role name")
                   acl_entry_id(:integer, "acl entry id")

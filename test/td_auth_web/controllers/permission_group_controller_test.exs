@@ -11,21 +11,34 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
-  @groups ["taxonomy_membership", "taxonomy", "business_glossary", "data_dictionary", "data_quality", "ingests", "dashboards", "lineage"]
-
   describe "index" do
     @tag :admin_authenticated
     test "lists all permission_groups", %{conn: conn} do
-      conn = get(conn, Routes.permission_group_path(conn, :index))
-      assert Enum.map(json_response(conn, 200)["data"], & &1["name"]) == @groups
+      expected =
+        1..5
+        |> Enum.map(fn _ -> insert(:permission_group) end)
+        |> Enum.map(fn %{id: id, name: name} -> %{"id" => id, "name" => name} end)
+
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.permission_group_path(conn, :index))
+               |> json_response(200)
+
+      assert_lists_equal(
+        data,
+        expected,
+        &assert_maps_equal(&1, &2, ["id", "name"])
+      )
     end
   end
 
   describe "create permission_group" do
     @tag :admin_authenticated
     test "renders permission_group when data is valid", %{conn: conn} do
-      conn = post(conn, Routes.permission_group_path(conn, :create), permission_group: @create_attrs)
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      conn =
+        post(conn, Routes.permission_group_path(conn, :create), permission_group: @create_attrs)
+
+      assert %{"id" => id} = json_response(conn, :created)["data"]
 
       conn = get(conn, Routes.permission_group_path(conn, :show, id))
 
@@ -36,7 +49,9 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
 
     @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, Routes.permission_group_path(conn, :create), permission_group: @invalid_attrs)
+      conn =
+        post(conn, Routes.permission_group_path(conn, :create), permission_group: @invalid_attrs)
+
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -45,8 +60,15 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
     setup [:create_permission_group]
 
     @tag :admin_authenticated
-    test "renders permission_group when data is valid", %{conn: conn, permission_group: %PermissionGroup{id: id} = permission_group} do
-      conn = put(conn, Routes.permission_group_path(conn, :update, permission_group), permission_group: @update_attrs)
+    test "renders permission_group when data is valid", %{
+      conn: conn,
+      permission_group: %PermissionGroup{id: id} = permission_group
+    } do
+      conn =
+        put(conn, Routes.permission_group_path(conn, :update, permission_group),
+          permission_group: @update_attrs
+        )
+
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
       conn = get(conn, Routes.permission_group_path(conn, :show, id))
@@ -58,7 +80,11 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
 
     @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn, permission_group: permission_group} do
-      conn = put(conn, Routes.permission_group_path(conn, :update, permission_group), permission_group: @invalid_attrs)
+      conn =
+        put(conn, Routes.permission_group_path(conn, :update, permission_group),
+          permission_group: @invalid_attrs
+        )
+
       assert json_response(conn, 422)["errors"] != %{}
     end
   end

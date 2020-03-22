@@ -4,6 +4,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   """
 
   alias TdCache.NonceCache
+
   require Logger
 
   def authentication_url do

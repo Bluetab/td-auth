@@ -1,16 +1,15 @@
 defmodule TdAuthWeb.UserController do
-  require Logger
   use TdAuthWeb, :controller
-  use PhoenixSwagger
 
-  import Canada
+  import Canada, only: [can?: 2]
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
-  alias TdAuth.Accounts.UserAcl
   alias TdAuth.Repo
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
+
+  require Logger
 
   action_fallback TdAuthWeb.FallbackController
 
@@ -26,16 +25,9 @@ defmodule TdAuthWeb.UserController do
   def index(conn, _params) do
     current_resource = conn.assigns[:current_resource]
 
-    case current_resource |> can?(list(User)) do
-      true ->
-        users = Accounts.list_users() |> Repo.preload(:groups)
-        render(conn, "index.json", users: users)
-
-      _ ->
-        conn
-        |> put_status(:forbidden)
-        |> put_view(ErrorView)
-        |> render("403.json")
+    with {:can, true} <- {:can, can?(current_resource, list(User))},
+         users <- Accounts.list_users(preload: :groups) do
+      render(conn, "index.json", users: users)
     end
   end
 
@@ -52,16 +44,8 @@ defmodule TdAuthWeb.UserController do
   end
 
   def create(conn, %{"user" => user_params}) do
-    case is_admin?(conn) do
-      true ->
-        conn
-        |> do_create(user_params)
-
-      _ ->
-        conn
-        |> put_status(:forbidden)
-        |> put_view(ErrorView)
-        |> render("403.json")
+    with {:can, true} <- {:can, is_admin?(conn)} do
+      do_create(conn, user_params)
     end
   end
 
@@ -88,20 +72,18 @@ defmodule TdAuthWeb.UserController do
   end
 
   def init(conn, %{"user" => user_params}) do
-    case length(Accounts.list_users()) do
-      0 ->
-        user_params =
-          user_params
-          |> Map.put("is_admin", true)
-          |> Map.put("is_protected", true)
+    if Accounts.user_exists?() do
+      conn
+      |> put_status(:forbidden)
+      |> put_view(ErrorView)
+      |> render("403.json")
+    else
+      user_params =
+        user_params
+        |> Map.put("is_admin", true)
+        |> Map.put("is_protected", true)
 
-        conn |> do_create(user_params)
-
-      _ ->
-        conn
-        |> put_status(:forbidden)
-        |> put_view(ErrorView)
-        |> render("403.json")
+      do_create(conn, user_params)
     end
   end
 
@@ -118,22 +100,14 @@ defmodule TdAuthWeb.UserController do
   end
 
   def show(conn, %{"id" => id}) do
-    case is_admin?(conn) do
-      true ->
-        user =
-          id
-          |> Accounts.get_user!()
-          |> Repo.preload(:groups)
+    with {:can, true} <- {:can, is_admin?(conn)},
+         user <- Accounts.get_user!(id, preload: :groups) do
+      acls =
+        user
+        |> Accounts.get_user_acls()
+        |> Enum.map(&TdAuth.Permissions.UserAclMapper.map/1)
 
-        acls = UserAcl.get_user_acls(user)
-
-        render(conn, "show.json", user: user, acls: acls)
-
-      _ ->
-        conn
-        |> put_status(:forbidden)
-        |> put_view(ErrorView)
-        |> render("403.json")
+      render(conn, "show.json", user: user, acls: acls)
     end
   end
 
@@ -152,18 +126,22 @@ defmodule TdAuthWeb.UserController do
 
   def update(conn, %{"id" => id, "user" => %{"password" => _password} = user_params}) do
     current_resource = conn.assigns[:current_resource]
-    update?(conn, id, user_params, current_resource.is_admin)
+
+    with {:can, true} <- {:can, current_resource.is_admin},
+         user <- Accounts.get_user!(id),
+         {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
+      render(conn, "show.json", user: Repo.preload(user, :groups))
+    end
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
-    current_resource = conn.assigns[:current_resource]
+    %{is_admin: is_admin, id: current_id} = conn.assigns[:current_resource]
 
-    update?(
-      conn,
-      id,
-      user_params,
-      current_resource.is_admin || current_resource.id == String.to_integer(id)
-    )
+    with {:can, true} <- {:can, is_admin || id == "#{current_id}"},
+         user <- Accounts.get_user!(id),
+         {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
+      render(conn, "show.json", user: Repo.preload(user, :groups))
+    end
   end
 
   swagger_path :delete do
@@ -179,16 +157,10 @@ defmodule TdAuthWeb.UserController do
   end
 
   def delete(conn, %{"id" => id}) do
-    case is_admin?(conn) do
-      true ->
-        conn
-        |> do_delete(id)
-
-      _ ->
-        conn
-        |> put_status(:forbidden)
-        |> put_view(ErrorView)
-        |> render("403.json")
+    with {:can, true} <- {:can, is_admin?(conn)},
+         user <- Accounts.get_user!(id),
+         {:ok, %User{}} <- Accounts.delete_user(user) do
+      send_resp(conn, :no_content, "")
     end
   end
 
@@ -211,7 +183,7 @@ defmodule TdAuthWeb.UserController do
         "old_password" => old_password
       }) do
     with {:ok, user} <- check_user_conn(conn, id),
-         true <- User.check_password(user, old_password),
+         {:ok, user} <- User.check_password(user, old_password),
          {:ok, %User{} = _user} <- Accounts.update_user(user, %{password: new_password}) do
       send_resp(conn, :ok, "")
     else
@@ -222,86 +194,38 @@ defmodule TdAuthWeb.UserController do
   end
 
   swagger_path :update_password do
-    description "Updates User password without the old password"
-    produces "application/json"
+    description("Updates User password without the old password")
+    produces("application/json")
+
     parameters do
-      new_password :body, Schema.ref(:UserUpdatePassword), "User change password attrs"
+      new_password(:body, Schema.ref(:UserUpdatePassword), "User change password attrs")
     end
-    response 200, "OK"
-    response 400, "Client Error"
+
+    response(200, "OK")
+    response(400, "Client Error")
   end
 
   def update_password(conn, %{"new_password" => new_password}) do
     user = conn.assigns[:current_resource]
 
-    user = user.id
-            |> Accounts.get_user!()
-            |> Repo.preload(:groups)
-    with true <- new_password != "", {:ok, %User{} = _user1} <- Accounts.update_user(user, %{password: new_password})
-    do
-      send_resp(conn, :ok, "")
+    user = Accounts.get_user!(user.id, preload: :groups)
+
+    with true <- new_password != "",
+         {:ok, %User{} = _user1} <- Accounts.update_user(user, %{password: new_password}) do
+      send_resp(conn, :no_content, "")
     else
       _error ->
         conn
-          |> send_resp(:unprocessable_entity, "")
+        |> send_resp(:unprocessable_entity, "")
     end
-  end
-
-  def search(conn, %{"data" => %{"ids" => ids}}) do
-    case is_admin?(conn) do
-      true ->
-        users =
-          ids
-          |> Accounts.list_users()
-          |> Repo.preload(:groups)
-
-        render(conn, "index.json", users: users)
-
-      _ ->
-        conn
-        |> put_status(:forbidden)
-        |> put_view(ErrorView)
-        |> render("403.json")
-    end
-  end
-
-  def search(conn, %{"data" => _}) do
-    conn
-    |> send_resp(:unprocessable_entity, "")
-  end
-
-  defp create_user(user_params) do
-    Accounts.create_user(user_params)
   end
 
   defp do_create(conn, user_params) do
-    with {:ok, %User{} = user} <- create_user(user_params) do
+    with {:ok, %User{} = user} <- Accounts.create_user(user_params) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.user_path(conn, :show, user))
-      |> render("show.json", user: user |> Repo.preload(:groups))
-    else
-      {:error, %Ecto.Changeset{} = changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> put_view(TdAuthWeb.ChangesetView)
-        |> render("error.json", changeset: changeset)
-
-      error ->
-        Logger.error("Logger While creating user... #{inspect(error)}")
-
-        conn
-        |> put_status(:unprocessable_entity)
-        |> put_view(ErrorView)
-        |> render("422.json")
-    end
-  end
-
-  defp do_delete(conn, id) do
-    user = Accounts.get_user!(id)
-
-    with {:ok, %User{}} <- Accounts.delete_user(user) do
-      send_resp(conn, :no_content, "")
+      |> render("show.json", user: Repo.preload(user, :groups))
     end
   end
 
@@ -311,23 +235,6 @@ defmodule TdAuthWeb.UserController do
     case id == String.to_integer(user_id) do
       true -> {:ok, Accounts.get_user!(id)}
       false -> {:error, "You are not the user conn"}
-    end
-  end
-
-  defp update?(conn, id, user_params, true), do: do_update(conn, id, user_params)
-
-  defp update?(conn, _id, _user_params, _) do
-    conn
-    |> put_status(:forbidden)
-    |> put_view(ErrorView)
-    |> render("403.json")
-  end
-
-  defp do_update(conn, id, user_params) do
-    user = Accounts.get_user!(id)
-
-    with {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
-      render(conn, "show.json", user: user |> Repo.preload(:groups))
     end
   end
 

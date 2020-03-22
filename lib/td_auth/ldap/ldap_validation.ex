@@ -1,9 +1,10 @@
 defmodule TdAuth.Ldap.LdapValidation do
   @moduledoc false
-  require Logger
 
   alias TdAuth.Ldap.Ldap
   alias TdAuth.Ldap.LdapWorker
+
+  require Logger
 
   @eldap_module Application.get_env(:td_auth, :eldap_module)
   @exldap_module Application.get_env(:td_auth, :exldap_module)

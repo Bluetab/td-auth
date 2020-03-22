@@ -3,6 +3,11 @@ defmodule TdAuth.UserGroupsTest do
 
   alias TdAuth.Accounts
 
+  setup do
+    start_supervised!(TdAuth.Accounts.UserLoader)
+    :ok
+  end
+
   describe "user groups" do
     @valid_group %{name: "some name", description: "some description"}
     @valid_user %{password: "some password", user_name: "some user_name", email: "some@email.com"}

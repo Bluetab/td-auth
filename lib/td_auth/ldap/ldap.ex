@@ -1,11 +1,11 @@
 defmodule TdAuth.Ldap.Ldap do
   @moduledoc false
-  require Logger
 
   alias Gettext.Interpolation
   alias Jason, as: JSON
-
   alias TdAuth.Ldap.LdapValidation
+
+  require Logger
 
   def authenticate(user_name, password) do
     case ldap_authenticate() do

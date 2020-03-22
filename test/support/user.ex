@@ -9,33 +9,33 @@ defmodule TdAuthWeb.User do
   @endpoint TdAuthWeb.Endpoint
 
   def user_init(user_params) do
-    body = %{user: user_params} |> JSON.encode!()
+    body = JSON.encode!(%{user: user_params})
     headers = get_default_headers()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.post!(Routes.user_url(@endpoint, :init), body, headers, [])
 
-    {:ok, status_code, resp |> JSON.decode!()}
+    {:ok, status_code, JSON.decode!(resp)}
   end
 
   def user_create(token, user_params) do
     headers = get_jwt_headers(token)
-    body = %{user: user_params} |> JSON.encode!()
+    body = JSON.encode!(%{user: user_params})
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.post!(Routes.user_url(@endpoint, :create), body, headers, [])
 
-    {:ok, status_code, resp |> JSON.decode!()}
+    {:ok, status_code, JSON.decode!(resp)}
   end
 
   def user_update(token, target_user_id, user_params) do
     headers = get_jwt_headers(token)
-    body = %{user: user_params} |> JSON.encode!()
+    body = JSON.encode!(%{user: user_params})
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.put!(Routes.user_url(@endpoint, :update, target_user_id), body, headers, [])
 
-    {:ok, status_code, resp |> JSON.decode!()}
+    {:ok, status_code, JSON.decode!(resp)}
   end
 
   def user_delete(token, target_user_id) do
@@ -53,7 +53,14 @@ defmodule TdAuthWeb.User do
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.get!(Routes.user_url(@endpoint, :index), headers, [])
 
-    {:ok, status_code, resp |> JSON.decode!()}
+    {:ok, status_code, JSON.decode!(resp)}
+  end
+
+  def get_subject(token) do
+    with %{claims: claims} <- TdAuth.Auth.Guardian.peek(token),
+         %{"sub" => sub} <- claims do
+      JSON.decode!(sub)
+    end
   end
 
   def get_user_by_name(token, user_name) do

@@ -9,6 +9,10 @@ defmodule TdAuthWeb.ErrorView do
     %{error: error}
   end
 
+  def render("403.json", _assigns) do
+    %{errors: %{detail: "Forbidden"}}
+  end
+
   def render("404.json", _assigns) do
     %{errors: %{detail: "Page not found"}}
   end

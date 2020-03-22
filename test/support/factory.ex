@@ -7,10 +7,9 @@ defmodule TdAuth.Factory do
 
   def user_factory do
     %TdAuth.Accounts.User{
-      #id: 0,
-      user_name: "bufoncillo",
-      email: "bufoncillo@truedat.io",
-      full_name: "Bufon Cillo",
+      user_name: sequence("username"),
+      email: sequence(:email, &"username#{&1}@example.com"),
+      full_name: sequence("fullname"),
       is_admin: false,
       groups: []
     }
@@ -18,49 +17,55 @@ defmodule TdAuth.Factory do
 
   def group_factory do
     %TdAuth.Accounts.Group{
-      id: 0,
-      name: "group name"
+      name: sequence(:group, ["Europe", "Asia", "USA", "UK"])
     }
   end
 
-  def acl_entry_factory do
-    %TdAuth.Permissions.AclEntry {
-      principal_id: nil,
-      principal_type: nil,
-      resource_id: nil,
-      resource_type: nil,
-      role: nil
-    }
+  defp with_users(group) do
+    %{group | users: [build(:user), build(:user)]}
   end
 
-  def acl_entry_resource_factory do
-    %TdAuth.Permissions.AclEntry {
-      principal_id: nil,
-      principal_type: "user",
-      resource_id: nil,
+  def acl_entry_factory(attrs) do
+    {principal_type, attrs} = Map.pop(attrs, :principal_type, Enum.random([:user, :group]))
+
+    %TdAuth.Permissions.AclEntry{
       resource_type: "domain",
-      role: nil
+      resource_id: :random.uniform(1_000),
+      role: build(:role)
     }
+    |> merge_attributes(attrs)
+    |> with_principal(principal_type)
   end
 
-  def permission_factory do
-    %TdAuth.Permissions.Permission {
-      name: "custom_permission",
+  defp with_principal(%{group_id: nil, user_id: nil} = acl_entry, :group) do
+    group = build(:group) |> with_users()
+    %{acl_entry | group: group}
+  end
+
+  defp with_principal(%{group_id: nil, user_id: nil} = acl_entry, :user) do
+    %{acl_entry | user: build(:user)}
+  end
+
+  defp with_principal(acl_entry, _), do: acl_entry
+
+  def permission_factory(attrs) do
+    %TdAuth.Permissions.Permission{
+      name: sequence("permission"),
       permission_group: build(:permission_group)
     }
+    |> merge_attributes(attrs)
   end
 
   def permission_group_factory do
-    %TdAuth.Permissions.PermissionGroup {
-      name: "custom_group"
+    %TdAuth.Permissions.PermissionGroup{
+      name: sequence("permission_group")
     }
   end
 
   def role_factory do
-    %TdAuth.Permissions.Role {
-      name: "custom_role",
+    %TdAuth.Permissions.Role{
+      name: sequence(:role, ["admin", "owner", "writer", "reader"]),
       is_default: false
     }
   end
-
 end
