@@ -6,7 +6,7 @@ defmodule TdAuth.LdapValidationTest do
   alias TdAuth.Ldap.LdapWorker
 
   setup_all do
-    start_supervised!({TdAuth.Ldap.LdapWorker, ""})
+    start_supervised!({TdAuth.Ldap.LdapWorker, nil})
     start_supervised!(EldapMock)
     :ok
   end
