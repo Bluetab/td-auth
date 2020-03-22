@@ -24,7 +24,6 @@ defmodule TdAuth.Auth.Auth0 do
       id: sub["id"],
       is_admin: sub["is_admin"],
       user_name: sub["user_name"],
-      gids: claims["gids"],
       jti: claims["jti"],
       exp: claims["exp"],
       groups: claims["groups"]

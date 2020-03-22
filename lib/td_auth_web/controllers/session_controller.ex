@@ -118,9 +118,8 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp create_tokens(conn, user, access_method) do
-    gids = Enum.map(user.groups, & &1.id)
     acl_entries = retrieve_acl_with_permissions(user)
-    claims = claims(user, gids, acl_entries, access_method)
+    claims = claims(user, acl_entries, access_method)
     conn = handle_sign_in(conn, user, claims)
     token = GuardianPlug.current_token(conn)
     %{"jti" => jti, "exp" => exp} = GuardianPlug.current_claims(conn)
@@ -269,10 +268,9 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp claims(user, gids, acl_entries, access_method) do
+  defp claims(user, acl_entries, access_method) do
     user
     |> Map.take([:user_name, :is_admin])
-    |> Map.merge(%{gids: gids})
     |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
     |> Map.put(:groups, permission_groups(user, acl_entries))
     |> with_access_method(access_method)
