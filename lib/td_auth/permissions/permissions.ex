@@ -21,11 +21,11 @@ defmodule TdAuth.Permissions do
 
   """
   def list_permissions(opts \\ [preload: @default_preloads]) do
-    with preloads <- Keyword.get(opts, :preload, []) do
-      Permission
-      |> Repo.all()
-      |> Repo.preload(preloads)
-    end
+    filter_clauses = Keyword.put_new(opts, :preload, @default_preloads)
+
+    Permission
+    |> do_where(filter_clauses)
+    |> Repo.all()
   end
 
   @doc """
@@ -210,5 +210,13 @@ defmodule TdAuth.Permissions do
     permission_group
     |> PermissionGroup.delete_changeset()
     |> Repo.delete()
+  end
+
+  defp do_where(queryable, filter_clauses) do
+    Enum.reduce(filter_clauses, queryable, fn
+      {:id, {:in, ids}}, q -> where(q, [p], p.id in ^ids)
+      {:preload, preloads}, q -> preload(q, ^preloads)
+      _, q -> q
+    end)
   end
 end

@@ -153,11 +153,11 @@ defmodule TdAuth.Permissions.Roles do
 
   ## Examples
 
-      iex> add_permissions_to_role!()
+      iex> put_permissions!()
       %Role{}
 
   """
-  def add_permissions_to_role(%Role{} = role, permissions) do
+  def put_permissions(%Role{} = role, permissions) do
     role
     |> Repo.preload(:permissions)
     |> Changeset.change()

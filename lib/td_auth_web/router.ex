@@ -58,8 +58,7 @@ defmodule TdAuthWeb.Router do
     resources "/permission_groups", PermissionGroupController, except: [:new, :edit]
 
     resources "/roles", RoleController, except: [:new, :edit] do
-      get("/permissions", PermissionController, :get_role_permissions)
-      post("/permissions", PermissionController, :add_permissions_to_role)
+      resources("/permissions", RolePermissionController, singleton: true, only: [:show, :update])
     end
 
     resources("/:resource_type", ResourceController, only: [:show]) do
