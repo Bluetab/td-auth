@@ -1,4 +1,8 @@
 defmodule TdAuth.Permissions.Seeds do
+  @moduledoc """
+  Task to load current permissions and permission groups on application startup.
+  """
+
   use Task
 
   alias TdAuth.Permissions.Permission

@@ -55,14 +55,14 @@ defmodule TdAuth.PermissionsTest do
     end
 
     test "get_permission_group!/2 returns the permission_group with given id and enriched options" do
-      permission_group = insert(:permission_group)
+      %{id: id} = permission_group = insert(:permission_group)
       permission = insert(:permission, permission_group: permission_group)
 
-      assert %PermissionGroup{id: id, permissions: permissions} =
-               Permissions.get_permission_group!(permission_group.id)
+      assert %PermissionGroup{id: ^id, permissions: permissions} =
+               id
+               |> Permissions.get_permission_group!()
                |> Repo.preload(permissions: :permission_group)
 
-      assert id == permission_group.id
       assert permissions == [permission]
     end
 

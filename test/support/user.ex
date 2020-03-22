@@ -4,6 +4,7 @@ defmodule TdAuthWeb.User do
   import TdAuthWeb.Authentication, only: :functions
 
   alias Jason, as: JSON
+  alias TdAuth.Auth.Guardian
   alias TdAuthWeb.Router.Helpers, as: Routes
 
   @endpoint TdAuthWeb.Endpoint
@@ -57,7 +58,7 @@ defmodule TdAuthWeb.User do
   end
 
   def get_subject(token) do
-    with %{claims: claims} <- TdAuth.Auth.Guardian.peek(token),
+    with %{claims: claims} <- Guardian.peek(token),
          %{"sub" => sub} <- claims do
       JSON.decode!(sub)
     end

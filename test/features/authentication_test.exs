@@ -194,8 +194,9 @@ defmodule TdAuth.AuthenticationTest do
            },
            state do
     if actual_result == expected_result do
-      user = get_user_by_name(state[:token], user_name)
-      assert !user
+      state[:token]
+      |> get_user_by_name(user_name)
+      |> refute()
     end
   end
 

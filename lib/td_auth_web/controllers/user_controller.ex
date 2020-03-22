@@ -100,12 +100,14 @@ defmodule TdAuthWeb.UserController do
   end
 
   def show(conn, %{"id" => id}) do
+    alias TdAuth.Permissions.UserAclMapper
+
     with {:can, true} <- {:can, is_admin?(conn)},
          user <- Accounts.get_user!(id, preload: :groups) do
       acls =
         user
         |> Accounts.get_user_acls()
-        |> Enum.map(&TdAuth.Permissions.UserAclMapper.map/1)
+        |> Enum.map(&UserAclMapper.map/1)
 
       render(conn, "show.json", user: user, acls: acls)
     end

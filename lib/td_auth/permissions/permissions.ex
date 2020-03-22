@@ -136,7 +136,7 @@ defmodule TdAuth.Permissions do
       [%PermissionGroup{}, ...]
 
   """
-  def list_permission_groups() do
+  def list_permission_groups do
     Repo.all(PermissionGroup)
   end
 
