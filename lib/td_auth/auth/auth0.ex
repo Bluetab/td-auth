@@ -1,4 +1,4 @@
-defmodule TdAuth.Auth.Auth do
+defmodule TdAuth.Auth.Auth0 do
   @moduledoc false
   use Guardian, otp_app: :td_auth
 

@@ -20,6 +20,9 @@ config :td_auth, TdAuthWeb.Endpoint,
   secret_key_base: "qf8wPCPHk4ZqqM7ebnfKw2okARcnrqsnfsQjKSGC0AEK87/rkIlXWnYXa5cTZ2TX",
   render_errors: [view: TdAuthWeb.ErrorView, accepts: ~w(json)]
 
+config :td_auth, TdAuth.Repo,
+  pool_size: 10
+
 # Configures Elixir's Logger
 # set EX_LOGGER_FORMAT environment variable to override Elixir's Logger format
 # (without the 'end of line' character)
@@ -40,6 +43,10 @@ config :td_auth, TdAuth.Auth.Guardian,
   issuer: "tdauth",
   token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
+
+config :td_auth, TdAuth.Auth.Auth0,
+  allowed_algos: ["RS256"],
+  verify_issuer: true
 
 # ------------ ldap ----------
 

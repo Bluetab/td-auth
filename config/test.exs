@@ -24,14 +24,6 @@ config :td_auth, :auth,
   userinfo: "/userinfo",
   profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}
 
-config :td_auth, TdAuth.Auth.Auth,
-  # optional
-  allowed_algos: ["HS512"],
-  issuer: "tdauth",
-  verify_issuer: false,
-  token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
-  secret_key: "SuperSecretTruedat"
-
 # Redis configuration
 config :td_cache, redis_host: "redis"
 

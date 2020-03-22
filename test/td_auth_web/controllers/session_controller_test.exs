@@ -5,7 +5,7 @@ defmodule TdAuthWeb.SessionControllerTest do
   alias Jason, as: JSON
   alias Phoenix.ConnTest
   alias TdAuth.Accounts
-  alias TdAuth.Auth.Auth
+  alias TdAuth.Auth.Guardian
   alias TdAuthWeb.ApiServices.MockAuthService
   alias TdCache.TaxonomyCache
 
@@ -55,7 +55,7 @@ defmodule TdAuthWeb.SessionControllerTest do
                |> validate_resp_schema(schema, "Token")
                |> json_response(:created)
 
-      assert {:ok, claims} = Auth.decode_and_verify(token, %{"typ" => "access"})
+      assert {:ok, claims} = Guardian.decode_and_verify(token, %{"typ" => "access"})
 
       assert claims["groups"] == [
                "create_permission_group",
@@ -78,7 +78,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup [:create_user]
 
     test "create valid non existing user session", %{conn: conn, swagger_schema: schema} do
-      {:ok, jwt, _full_claims} = Auth.encode_and_sign(nil)
+      {:ok, jwt, _full_claims} = Guardian.encode_and_sign(nil)
       conn = put_auth_headers(conn, jwt)
 
       profile = %{
@@ -102,7 +102,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create valid existing user session", %{conn: conn, swagger_schema: schema} do
-      {:ok, jwt, _full_claims} = Auth.encode_and_sign(nil)
+      {:ok, jwt, _full_claims} = Guardian.encode_and_sign(nil)
       conn = put_auth_headers(conn, jwt)
 
       profile = %{
@@ -126,7 +126,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create invalid user session with access token", %{conn: conn} do
-      {:ok, jwt, _full_claims} = Auth.encode_and_sign(nil)
+      {:ok, jwt, _full_claims} = Guardian.encode_and_sign(nil)
       conn = put_auth_headers(conn, jwt)
       profile = %{nickname: "user_name", name: "name", email: "email@xyz.com"}
       MockAuthService.set_user_info(401, profile |> JSON.encode!())
