@@ -5,7 +5,6 @@ defmodule TdAuthWeb.UserController do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
-  alias TdAuth.Repo
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
 
@@ -132,7 +131,7 @@ defmodule TdAuthWeb.UserController do
     with {:can, true} <- {:can, current_resource.is_admin},
          user <- Accounts.get_user!(id),
          {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
-      render(conn, "show.json", user: Repo.preload(user, :groups))
+      render(conn, "show.json", user: user)
     end
   end
 
@@ -142,7 +141,7 @@ defmodule TdAuthWeb.UserController do
     with {:can, true} <- {:can, is_admin || id == "#{current_id}"},
          user <- Accounts.get_user!(id),
          {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
-      render(conn, "show.json", user: Repo.preload(user, :groups))
+      render(conn, "show.json", user: user)
     end
   end
 
@@ -212,13 +211,8 @@ defmodule TdAuthWeb.UserController do
 
     user = Accounts.get_user!(user.id, preload: :groups)
 
-    with true <- new_password != "",
-         {:ok, %User{} = _user1} <- Accounts.update_user(user, %{password: new_password}) do
+    with {:ok, %User{} = _user} <- Accounts.update_user(user, %{password: new_password}) do
       send_resp(conn, :no_content, "")
-    else
-      _error ->
-        conn
-        |> send_resp(:unprocessable_entity, "")
     end
   end
 
@@ -227,7 +221,7 @@ defmodule TdAuthWeb.UserController do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.user_path(conn, :show, user))
-      |> render("show.json", user: Repo.preload(user, :groups))
+      |> render("show.json", user: user)
     end
   end
 

@@ -26,8 +26,7 @@ defmodule TdAuthWeb.AclEntryController do
 
     with {:can, true} <- {:can, can?(current_resource, view(AclEntry))},
          acl_entries <- AclEntries.list_acl_entries() do
-      conn
-      |> render("index.json", acl_entries: acl_entries)
+      render(conn, "index.json", acl_entries: acl_entries)
     end
   end
 
@@ -152,10 +151,8 @@ defmodule TdAuthWeb.AclEntryController do
 
     with acl_entry <- AclEntries.get_acl_entry!(id),
          {:can, true} <- {:can, can?(current_resource, delete(acl_entry))},
-         {:ok, %AclEntry{resource_type: resource_type, resource_id: resource_id}} <-
-           AclEntries.delete_acl_entry(acl_entry) do
-      conn
-      |> send_resp(:no_content, "")
+         {:ok, %AclEntry{}} <- AclEntries.delete_acl_entry(acl_entry) do
+      send_resp(conn, :no_content, "")
     end
   end
 end

@@ -118,31 +118,6 @@ defmodule TdAuthWeb.GroupControllerTest do
     end
   end
 
-  describe "create user groups" do
-    @tag :admin_authenticated
-    test "returns :created when data is valid", %{conn: conn} do
-      %{id: user_id} = insert(:user)
-      %{name: group_name} = insert(:group)
-
-      assert conn
-             |> post(Routes.user_group_path(conn, :add_groups_to_user, user_id),
-               groups: [%{name: group_name}, %{name: "new group"}]
-             )
-             |> json_response(:created)
-    end
-  end
-
-  describe "delete user group" do
-    @tag :admin_authenticated
-    test "deletes chosen group", %{conn: conn} do
-      %{id: user_id, groups: [%{id: group_id}]} = insert(:user, groups: [build(:group)])
-
-      assert conn
-             |> delete(Routes.user_group_path(conn, :delete_user_groups, user_id, group_id))
-             |> response(:no_content)
-    end
-  end
-
   defp create_group(_) do
     group = fixture(:group)
     {:ok, group: group}

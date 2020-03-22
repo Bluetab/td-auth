@@ -20,6 +20,8 @@ defmodule TdAuth.Accounts.Group do
     timestamps()
   end
 
+  def changeset(params), do: changeset(%__MODULE__{}, params)
+
   def changeset(%__MODULE__{} = group, params) do
     group
     |> cast(params, [:name, :description])

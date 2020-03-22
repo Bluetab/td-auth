@@ -23,31 +23,31 @@ defmodule TdAuth.AccountsTest do
     }
     @invalid_attrs %{password: nil, user_name: nil, email: nil}
 
-    def user_fixture(attrs \\ %{}) do
-      {:ok, user} =
-        attrs
-        |> Enum.into(@valid_attrs)
-        |> Accounts.create_user()
-
-      user
-    end
-
     test "list_users/0 returns all users" do
-      user_fixture()
+      insert(:user)
       assert length(Accounts.list_users()) == 1
     end
 
     test "get_user!/1 returns the user with given id" do
-      user = user_fixture()
-      # assert Accounts.get_user!(user.id) == user
-      assert Accounts.get_user!(user.id).id == user.id
+      %{id: user_id} = insert(:user)
+      assert %{id: ^user_id} = Accounts.get_user!(user_id)
     end
 
     test "create_user/1 with valid data creates a user" do
-      assert {:ok, %User{} = user} = Accounts.create_user(@valid_attrs)
+      %{name: group_name} = group = insert(:group)
 
-      assert user.password == "some password"
-      assert user.user_name == "some user_name"
+      params = %{
+        "user_name" => "new_user",
+        "email" => "email@example.com",
+        "password" => "topsecret",
+        "groups" => [group.name, "new group"]
+      }
+
+      assert {:ok, %User{} = user} = Accounts.create_user(params)
+
+      assert user.password == "topsecret"
+      assert user.user_name == "new_user"
+      assert [%{name: ^group_name}, %{name: "new group"}] = user.groups
     end
 
     test "create_user/1 with invalid data returns error changeset" do
@@ -55,29 +55,28 @@ defmodule TdAuth.AccountsTest do
     end
 
     test "update_user/2 with valid data updates the user" do
-      user = user_fixture()
-      assert {:ok, user} = Accounts.update_user(user, @update_attrs)
-      assert %User{} = user
+      user = insert(:user)
+      assert {:ok, %User{} = user} = Accounts.update_user(user, @update_attrs)
       assert user.password == "some updated password"
       assert user.user_name == "some updated user_name"
       assert user.email == "someupdated@email.com"
     end
 
     test "update_user/2 with invalid data returns error changeset" do
-      user = user_fixture()
+      user = insert(:user)
       assert {:error, %Ecto.Changeset{}} = Accounts.update_user(user, @invalid_attrs)
       assert user.id == Accounts.get_user!(user.id).id
       #      assert user == Accounts.get_user!(user.id)
     end
 
     test "delete_user/1 deletes the user" do
-      user = user_fixture()
+      user = insert(:user)
       assert {:ok, _} = Accounts.delete_user(user)
       assert_raise Ecto.NoResultsError, fn -> Accounts.get_user!(user.id) end
     end
 
     test "get_user_by_name/1 return the user with given user_name" do
-      user = user_fixture()
+      user = insert(:user)
       assert Accounts.get_user_by_name(user.user_name).id == user.id
     end
 

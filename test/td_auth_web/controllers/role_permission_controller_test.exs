@@ -25,7 +25,7 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
     test "list role permissions", %{conn: conn, swagger_schema: schema, role: role} do
       assert %{"data" => data} =
                conn
-               |> get(Routes.role_role_permission_path(conn, :show, role.id))
+               |> get(Routes.role_permission_path(conn, :show, role.id))
                |> validate_resp_schema(schema, "PermissionsResponse")
                |> json_response(:ok)
 
@@ -41,7 +41,7 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
 
       assert %{"data" => data} =
                conn
-               |> put(Routes.role_role_permission_path(conn, :update, role.id),
+               |> put(Routes.role_permission_path(conn, :update, role.id),
                  permissions: id_params
                )
                |> validate_resp_schema(schema, "PermissionsResponse")

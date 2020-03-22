@@ -10,6 +10,7 @@ defmodule TdAuth.Factory do
       user_name: sequence("username"),
       email: sequence(:email, &"username#{&1}@example.com"),
       full_name: sequence("fullname"),
+      password_hash: "secret hash",
       is_admin: false,
       groups: []
     }

@@ -5,7 +5,6 @@ defmodule TdAuth.Accounts do
 
   import Ecto.Query, warn: false
 
-  alias Ecto.Changeset
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
   alias TdAuth.Accounts.UserLoader
@@ -81,11 +80,13 @@ defmodule TdAuth.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_user(attrs) do
+  def create_user(params) do
+    params = put_groups(params)
+
     %User{}
-    |> User.registration_changeset(attrs)
+    |> User.changeset(params)
     |> Repo.insert()
-    |> refresh_cache()
+    |> post_upsert()
   end
 
   @doc """
@@ -100,11 +101,14 @@ defmodule TdAuth.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_user(%User{} = user, attrs) do
+  def update_user(%User{} = user, params) do
+    params = put_groups(params)
+
     user
-    |> User.update_changeset(attrs)
+    |> Repo.preload(:groups)
+    |> User.changeset(params)
     |> Repo.update()
-    |> refresh_cache()
+    |> post_upsert()
   end
 
   @doc """
@@ -112,11 +116,10 @@ defmodule TdAuth.Accounts do
   """
   def create_or_update_user(profile) do
     user_name = Map.get(profile, "user_name") || Map.get(profile, :user_name)
-    user = get_user_by_name(user_name)
 
-    case user do
+    case get_user_by_name(user_name) do
       nil -> create_user(profile)
-      u -> update_user(u, profile)
+      user -> update_user(user, profile)
     end
   end
 
@@ -135,7 +138,7 @@ defmodule TdAuth.Accounts do
   def delete_user(%User{} = user) do
     user
     |> Repo.delete()
-    |> delete_cache()
+    |> post_delete()
   end
 
   @doc """
@@ -249,16 +252,6 @@ defmodule TdAuth.Accounts do
     |> Repo.update()
   end
 
-  defp put_users(%{"user_ids" => user_ids} = params) do
-    users = list_users(id: {:in, user_ids})
-
-    params
-    |> Map.delete("user_ids")
-    |> Map.put("users", users)
-  end
-
-  defp put_users(params), do: params
-
   @doc """
   Deletes a Group.
 
@@ -275,23 +268,6 @@ defmodule TdAuth.Accounts do
     Repo.delete(group)
   end
 
-  def delete_group_from_user(%User{} = user, %Group{} = group) do
-    user = Repo.preload(user, :groups)
-    groups = Enum.filter(user.groups, &(&1.name != group.name))
-
-    user
-    |> Changeset.change()
-    |> Changeset.put_assoc(:groups, groups)
-    |> Repo.update()
-  end
-
-  def add_groups_to_user(%User{} = user, groups) do
-    user
-    |> Repo.preload(:groups)
-    |> User.link_to_groups_changeset(groups)
-    |> Repo.update()
-  end
-
   defp get!(queryable, id, opts) do
     case Keyword.get(opts, :preload) do
       nil ->
@@ -304,17 +280,41 @@ defmodule TdAuth.Accounts do
     end
   end
 
-  defp refresh_cache({:ok, %{id: id} = user}) do
+  defp post_upsert({:ok, %User{id: id} = user}) do
     UserLoader.refresh(id)
-    {:ok, user}
+    {:ok, Repo.preload(user, :groups)}
   end
 
-  defp refresh_cache(result), do: result
+  defp post_upsert(result), do: result
 
-  defp delete_cache({:ok, %{id: id} = user}) do
+  defp post_delete({:ok, %User{id: id} = user}) do
     UserLoader.delete(id)
     {:ok, user}
   end
 
-  defp delete_cache(result), do: result
+  defp post_delete(result), do: result
+
+  defp put_users(%{"user_ids" => user_ids} = params) do
+    users = list_users(id: {:in, user_ids})
+
+    params
+    |> Map.delete("user_ids")
+    |> Map.put("users", users)
+  end
+
+  defp put_users(params), do: params
+
+  defp put_groups(%{"groups" => group_names} = params) do
+    groups_or_changesets =
+      Enum.map(group_names, fn group_name ->
+        case Repo.get_by(Group, name: group_name) do
+          %Group{} = group -> group
+          nil -> Group.changeset(%{name: group_name})
+        end
+      end)
+
+    Map.put(params, "groups", groups_or_changesets)
+  end
+
+  defp put_groups(params), do: params
 end

@@ -10,7 +10,6 @@ defmodule TdAuth.Permissions.AclEntry do
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
   alias TdAuth.Permissions.Role
-  alias TdAuth.Repo
 
   @permitted [
     :description,
@@ -75,13 +74,5 @@ defmodule TdAuth.Permissions.AclEntry do
       %{group_id: _} -> put_change(changeset, :user_id, nil)
       _ -> changeset
     end
-  end
-
-  def get_principal(%__MODULE__{user_id: user_id}) when not is_nil(user_id) do
-    Repo.get_by(User, id: user_id)
-  end
-
-  def get_principal(%__MODULE__{group_id: group_id}) when not is_nil(group_id) do
-    Repo.get_by(Group, id: group_id)
   end
 end

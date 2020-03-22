@@ -19,7 +19,6 @@ defmodule TdAuthWeb.Router do
     pipe_through(:api_unsecured)
     get("/auth", AuthController, :index)
     get("/ping", PingController, :ping)
-    get("/passphrase", PingController, :passphrase)
     post("/sessions", SessionController, :create)
     post("/init", UserController, :init)
   end
@@ -41,9 +40,6 @@ defmodule TdAuthWeb.Router do
 
     resources "/users", UserController, except: [:new, :edit] do
       patch("/change_password", UserController, :change_password)
-      get("/groups", GroupController, :user_groups)
-      post("/groups", GroupController, :add_groups_to_user)
-      delete("/groups/:id", GroupController, :delete_user_groups)
     end
 
     resources("/groups", GroupController, except: [:new, :edit])
@@ -58,7 +54,7 @@ defmodule TdAuthWeb.Router do
     resources "/permission_groups", PermissionGroupController, except: [:new, :edit]
 
     resources "/roles", RoleController, except: [:new, :edit] do
-      resources("/permissions", RolePermissionController, singleton: true, only: [:show, :update])
+      resources("/permissions", RolePermissionController, singleton: true, only: [:show, :update], name: "permission")
     end
 
     resources("/:resource_type", ResourceController, only: [:show]) do

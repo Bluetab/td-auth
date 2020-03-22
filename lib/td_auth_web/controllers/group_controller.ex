@@ -5,7 +5,6 @@ defmodule TdAuthWeb.GroupController do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
-  alias TdAuth.Accounts.User
   alias TdAuthWeb.SwaggerDefinitions
 
   action_fallback TdAuthWeb.FallbackController
@@ -106,68 +105,6 @@ defmodule TdAuthWeb.GroupController do
     with {:can, true} <- {:can, is_admin?(conn)},
          group <- Accounts.get_group!(id),
          {:ok, %Group{}} <- Accounts.delete_group(group) do
-      send_resp(conn, :no_content, "")
-    end
-  end
-
-  swagger_path :user_groups do
-    description("User Groups")
-
-    parameters do
-      id(:path, :integer, "User ID", required: true)
-    end
-
-    response(200, "OK", Schema.ref(:GroupsResponseData))
-  end
-
-  def user_groups(conn, %{"user_id" => user_id}) do
-    with {:can, true} <- {:can, is_admin?(conn)},
-         user <- Accounts.get_user!(user_id, preload: :groups) do
-      render(conn, "index.json", groups: user.groups)
-    end
-  end
-
-  swagger_path :add_groups_to_user do
-    description("Add groups to users")
-    produces("application/json")
-
-    parameters do
-      groups(:body, Schema.ref(:GroupsCreate), "Groups create attrs")
-      user_id(:path, :integer, "User ID", required: true)
-    end
-
-    response(201, "Created", Schema.ref(:GroupsResponseData))
-    response(400, "Client Error")
-  end
-
-  def add_groups_to_user(conn, %{"user_id" => user_id, "groups" => groups}) do
-    with {:can, true} <- {:can, is_admin?(conn)},
-         user <- Accounts.get_user!(user_id),
-         {:ok, %User{} = user} <- Accounts.add_groups_to_user(user, groups) do
-      conn
-      |> put_status(:created)
-      |> render("index.json", groups: user.groups)
-    end
-  end
-
-  swagger_path :delete_user_groups do
-    description("Create a group")
-    produces("application/json")
-
-    parameters do
-      user_id(:path, :integer, "User ID", required: true)
-      id(:path, :integer, "Group ID", required: true)
-    end
-
-    response(204, "")
-    response(400, "Client Error")
-  end
-
-  def delete_user_groups(conn, %{"user_id" => user_id, "id" => group_id}) do
-    with {:can, true} <- {:can, is_admin?(conn)},
-         user <- Accounts.get_user!(user_id, preload: :groups),
-         group <- Accounts.get_group!(group_id, preload: :users),
-         {:ok, %User{}} <- Accounts.delete_group_from_user(user, group) do
       send_resp(conn, :no_content, "")
     end
   end
