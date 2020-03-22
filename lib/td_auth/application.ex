@@ -19,13 +19,8 @@ defmodule TdAuth.Application do
     # Define workers and child supervisors to be supervised
     children =
       [
-        # Start the Ecto repository
         TdAuth.Repo,
-        # Start the endpoint when the application starts
-        TdAuthWeb.Endpoint,
-        # Start your own worker by calling: TdAuth.Worker.start_link(arg1, arg2, arg3)
-        # worker(TdAuth.Worker, [arg1, arg2, arg3]),
-        #{Hypermedia, router: TdAuthWeb.Router, subject: :current_resource}
+        TdAuthWeb.Endpoint
       ] ++ workers(env)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -48,38 +43,33 @@ defmodule TdAuth.Application do
       TdAuth.Permissions.Seeds,
       TdAuth.Accounts.UserLoader,
       TdAuth.Permissions.AclLoader,
-      TdAuth.Permissions.AclRemover,
+      TdAuth.Permissions.AclRemover
     ] ++ oidc_workers() ++ saml_workers() ++ ldap_workers()
   end
 
   defp ldap_workers do
-    import Supervisor.Spec
-
     validations_file =
       :td_auth
       |> Application.get_env(:ldap)
       |> Keyword.get(:validations_file, "")
 
-    [worker(TdAuth.Ldap.LdapWorker, [validations_file])]
+    [{TdAuth.Ldap.LdapWorker, validations_file}]
   end
 
   defp saml_workers do
-    import Supervisor.Spec
     config = Application.get_env(:td_auth, :saml)
 
     if empty_config?(config, :sp_id),
       do: [],
-      else: [worker(TdAuth.Saml.SamlWorker, [config])]
+      else: [{TdAuth.Saml.SamlWorker, config}]
   end
 
   defp oidc_workers do
-    import Supervisor.Spec
-
     config = Application.get_env(:td_auth, :openid_connect_providers)
 
     if empty_config?(config, :client_id),
       do: [],
-      else: [worker(OpenIDConnect.Worker, [config])]
+      else: [{OpenIDConnect.Worker, config}]
   end
 
   defp empty_config?(nil, _), do: true
