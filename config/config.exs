@@ -12,9 +12,6 @@ config :td_auth, :env, Mix.env()
 config :td_auth,
   ecto_repos: [TdAuth.Repo]
 
-# Hashing algorithm
-config :td_auth, hashing_module: Comeonin.Bcrypt
-
 config :td_auth, allow_proxy_login: "false"
 
 # Configures the endpoint
@@ -35,6 +32,7 @@ config :logger, :console,
 
 # Configuration for Phoenix
 config :phoenix, :json_library, Jason
+config :phoenix_swagger, :json_library, Jason
 
 config :td_auth, TdAuth.Auth.Guardian,
   # optional
