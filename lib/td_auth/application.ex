@@ -51,7 +51,7 @@ defmodule TdAuth.Application do
     validations_file =
       :td_auth
       |> Application.get_env(:ldap)
-      |> Keyword.get(:validations_file, "")
+      |> Keyword.get(:validations_file)
 
     [{TdAuth.Ldap.LdapWorker, validations_file}]
   end

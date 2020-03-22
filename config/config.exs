@@ -64,8 +64,7 @@ config :td_auth, :ldap,
   profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"givenName\",\"email\":\"mail\"}",
   bind_pattern: "cn=%{user_name},ou=people,dc=bluetab,dc=net",
   search_path: "ou=people,dc=bluetab,dc=net",
-  search_field: "cn",
-  validations_file: ""
+  search_field: "cn"
 
 # ------------ oidc default ----------
 config :td_auth, :openid_connect_providers, oidc: []
