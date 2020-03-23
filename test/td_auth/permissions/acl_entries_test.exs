@@ -45,21 +45,21 @@ defmodule TdAuth.Permissions.AclEntriesTest do
     test "create_acl_entry/1 with valid params creates an ACL entry and refreshes cache" do
       alias TdCache.AclCache
 
-      with resource_id <- :rand.uniform(10_000),
-           %{id: user_id} <- insert(:user),
-           %{id: role_id, name: role_name} <- insert(:role) do
+      %{id: user_id} = insert(:user)
+      %{id: role_id, name: role_name} = insert(:role)
+
+      %{resource_id: resource_id} =
         params = %{
-          resource_id: resource_id,
+          resource_id: :rand.uniform(10_000),
           resource_type: "domain",
           role_id: role_id,
           user_id: user_id
         }
 
-        assert {:ok, acl_entry = %AclEntry{}} = AclEntries.create_acl_entry(params)
-        assert_changed(acl_entry, params)
-        assert "#{user_id}" in AclCache.get_acl_role_users("domain", resource_id, role_name)
-        assert role_name in AclCache.get_acl_roles("domain", resource_id)
-      end
+      assert {:ok, acl_entry = %AclEntry{}} = AclEntries.create_acl_entry(params)
+      assert_changed(acl_entry, params)
+      assert "#{user_id}" in AclCache.get_acl_role_users("domain", resource_id, role_name)
+      assert role_name in AclCache.get_acl_roles("domain", resource_id)
     end
 
     test "create_acl_entry/1 enforces unique constraint on user_id and resource" do

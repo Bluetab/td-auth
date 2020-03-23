@@ -3,10 +3,9 @@ defmodule TdAuthWeb.SessionControllerTest do
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   alias Jason, as: JSON
-  alias Phoenix.ConnTest
   alias TdAuth.Accounts
   alias TdAuth.Auth.Guardian
-  alias TdAuthWeb.ApiServices.MockAuthService
+  alias TdAuthWeb.ApiServices.MockAuth0Service
   alias TdCache.TaxonomyCache
 
   import TdAuthWeb.Authentication, only: :functions
@@ -17,13 +16,8 @@ defmodule TdAuthWeb.SessionControllerTest do
 
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
-    start_supervised!(MockAuthService)
+    start_supervised!(MockAuth0Service)
     :ok
-  end
-
-  def fixture(:user) do
-    {:ok, user} = Accounts.create_user(@create_attrs)
-    user
   end
 
   setup %{conn: conn} do
@@ -57,11 +51,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       assert {:ok, claims} = Guardian.decode_and_verify(token, %{"typ" => "access"})
 
-      assert claims["groups"] == [
-               "create_permission_group",
-               "view_permission_group",
-               "update_permission_group"
-             ]
+      assert_lists_equal(claims["groups"], ["create_pg", "view_pg", "update_pg"])
     end
 
     test "create invalid user session", %{conn: conn} do
@@ -88,7 +78,7 @@ defmodule TdAuthWeb.SessionControllerTest do
         email: "email@xyz.com"
       }
 
-      MockAuthService.set_user_info(200, JSON.encode!(profile))
+      MockAuth0Service.set_user_info(200, JSON.encode!(profile))
 
       assert conn
              |> post(Routes.session_path(conn, :create))
@@ -112,7 +102,7 @@ defmodule TdAuthWeb.SessionControllerTest do
         email: "email@especial.com"
       }
 
-      MockAuthService.set_user_info(200, JSON.encode!(profile))
+      MockAuth0Service.set_user_info(200, JSON.encode!(profile))
 
       assert conn
              |> post(Routes.session_path(conn, :create))
@@ -127,37 +117,39 @@ defmodule TdAuthWeb.SessionControllerTest do
 
     test "create invalid user session with access token", %{conn: conn} do
       {:ok, jwt, _full_claims} = Guardian.encode_and_sign(nil)
-      conn = put_auth_headers(conn, jwt)
       profile = %{nickname: "user_name", name: "name", email: "email@xyz.com"}
-      MockAuthService.set_user_info(401, profile |> JSON.encode!())
-      conn = post(conn, Routes.session_path(conn, :create))
-      assert conn.status == 401
-      user = Accounts.get_user_by_name(profile[:nickname])
-      assert !user
+      MockAuth0Service.set_user_info(401, JSON.encode!(profile))
+
+      assert conn
+             |> put_auth_headers(jwt)
+             |> post(Routes.session_path(conn, :create))
+             |> response(:unauthorized)
+
+      refute Accounts.get_user_by_name(profile[:nickname])
     end
 
     test "create session proxy login when not allowed", %{conn: conn} do
       Application.put_env(:td_auth, :allow_proxy_login, "false")
-      conn = put_req_header(conn, "proxy-remote-user", "user_name")
 
-      conn = post(conn, Routes.session_path(conn, :create))
-      resp = json_response(conn, 401)
+      assert %{"errors" => errors} =
+               conn
+               |> put_req_header("proxy-remote-user", "user_name")
+               |> post(Routes.session_path(conn, :create))
+               |> json_response(:unauthorized)
 
-      assert resp == %{
-               "errors" => %{
-                 "code" => "proxy_login_disabled",
-                 "detail" => "Proxy login is not enabled."
-               }
-             }
+      assert %{"code" => "proxy_login_disabled"} = errors
     end
 
     test "create session proxy login when is allowed and user is invalid", %{conn: conn} do
       Application.put_env(:td_auth, :allow_proxy_login, "true")
-      conn = put_req_header(conn, "proxy-remote-user", "user_name")
 
-      conn = post(conn, Routes.session_path(conn, :create))
-      resp = json_response(conn, 401)
-      assert resp == %{"errors" => %{"detail" => "Invalid credentials"}}
+      assert %{"errors" => errors} =
+               conn
+               |> put_req_header("proxy-remote-user", "user_name")
+               |> post(Routes.session_path(conn, :create))
+               |> json_response(:unauthorized)
+
+      assert %{"detail" => "Invalid credentials"} = errors
     end
 
     test "create session proxy login when is allowed and user is valid", %{conn: conn} do
@@ -174,75 +166,58 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup [:create_user]
 
     test "refresh session with valid refresh token", %{conn: conn, swagger_schema: schema} do
-      conn =
-        post conn, Routes.session_path(conn, :create),
-          access_method: "access_method",
-          user: @valid_attrs
+      assert %{"token" => token, "refresh_token" => refresh_token} =
+               conn
+               |> post(Routes.session_path(conn, :create),
+                 access_method: "access_method",
+                 user: @valid_attrs
+               )
+               |> validate_resp_schema(schema, "Token")
+               |> json_response(:created)
 
-      validate_resp_schema(conn, schema, "Token")
-      token_resp = json_response(conn, :created)
-      token = token_resp["token"]
-      refresh_token = token_resp["refresh_token"]
+      assert %{"token" => token} =
+               conn
+               |> put_auth_headers(token)
+               |> post(Routes.session_path(conn, :refresh), %{refresh_token: refresh_token})
+               |> validate_resp_schema(schema, "Token")
+               |> json_response(:created)
 
-      assert token_resp["token"] != nil
-      assert refresh_token != nil
-
-      conn = ConnTest.recycle(conn)
-      conn = put_auth_headers(conn, token)
-      conn = post conn, Routes.session_path(conn, :refresh), %{refresh_token: refresh_token}
-      validate_resp_schema(conn, schema, "Token")
-      token_resp = json_response(conn, :created)
-      token = token_resp["token"]
-      assert token
-
-      conn =
-        conn
-        |> ConnTest.recycle()
-        |> put_auth_headers(token)
-
-      conn = get(conn, Routes.session_path(conn, :ping))
-      assert conn.status == 200
+      assert conn
+             |> put_auth_headers(token)
+             |> get(Routes.session_path(conn, :ping))
+             |> response(:ok)
     end
   end
 
   defp create_user(_) do
-    user = fixture(:user)
+    {:ok, user} = Accounts.create_user(@create_attrs)
     {:ok, user: user}
   end
 
   defp permission_fixture(user) do
-    create_permission_group = insert(:permission_group, name: "create_permission_group")
-    view_permission_group = insert(:permission_group, name: "view_permission_group")
-    update_permission_group = insert(:permission_group, name: "update_permission_group")
-
-    create = insert(:permission, name: "create", permission_group: create_permission_group)
-    view = insert(:permission, name: "view", permission_group: view_permission_group)
-    update = insert(:permission, name: "update", permission_group: update_permission_group)
+    [create, view, update] =
+      Enum.map(["create", "view", "update"], fn name ->
+        insert(:permission,
+          name: name,
+          permission_group: build(:permission_group, name: "#{name}_pg")
+        )
+      end)
 
     owner = insert(:role, name: "owner", permissions: [create])
     viewer = insert(:role, name: "viewer", permissions: [view])
     insert(:role, is_default: true, name: "default", permissions: [create, update])
 
-    domain = %{id: :rand.uniform(1000), parent_ids: [], name: "MyDomain"}
-    domain1 = %{id: domain.id + 1, parent_ids: [], name: "MyDomain1"}
+    Enum.each([owner, viewer], fn role ->
+      domain = build(:domain)
+      {:ok, _} = TaxonomyCache.put_domain(domain)
 
-    {:ok, _} = TaxonomyCache.put_domain(domain)
-    {:ok, _} = TaxonomyCache.put_domain(domain1)
-
-    insert(:acl_entry,
-      resource_id: domain.id,
-      user_id: user.id,
-      principal_type: "user",
-      resource_type: "domain",
-      role: owner
-    )
-
-    insert(:acl_entry,
-      resource_id: domain1.id,
-      user_id: user.id,
-      principal_type: "user",
-      resource_type: "domain",
-      role: viewer
-    )
+      insert(:acl_entry,
+        resource_id: domain.id,
+        user_id: user.id,
+        principal_type: "user",
+        resource_type: "domain",
+        role: role
+      )
+    end)
   end
 end

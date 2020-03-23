@@ -188,9 +188,7 @@ defmodule TdAuthWeb.UserController do
          {:ok, %User{} = _user} <- Accounts.update_user(user, %{password: new_password}) do
       send_resp(conn, :ok, "")
     else
-      _error ->
-        conn
-        |> send_resp(:unprocessable_entity, "")
+      _error -> send_resp(conn, :unprocessable_entity, "")
     end
   end
 

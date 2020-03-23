@@ -49,8 +49,6 @@ defmodule TdAuth.Ldap.Ldap do
                {:ok, profile} <- verify_user_credentials(conn, user_name, password, entry),
                {:ok, warnings} <- LdapValidation.validate_entry(conn, entry) do
             {:ok, profile, warnings}
-          else
-            error -> error
           end
         after
           ldap_close(conn)

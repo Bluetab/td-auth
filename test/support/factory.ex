@@ -69,4 +69,12 @@ defmodule TdAuth.Factory do
       is_default: false
     }
   end
+
+  def domain_factory do
+    %{
+      id: sequence(:domain_id, & &1),
+      parent_ids: [],
+      name: sequence(:domain_name, &"Domain #{&1}")
+    }
+  end
 end

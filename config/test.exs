@@ -16,7 +16,7 @@ config :td_auth, TdAuth.Repo,
   pool_size: 1
 
 config :td_auth, :auth,
-  auth_service: TdAuthWeb.ApiServices.MockAuthService,
+  auth0_service: TdAuthWeb.ApiServices.MockAuth0Service,
   protocol: "https",
   domain: "icbluetab.eu.auth0.com",
   client_id: "CLIENT_ID",

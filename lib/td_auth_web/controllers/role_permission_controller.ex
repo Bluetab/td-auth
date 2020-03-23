@@ -4,6 +4,7 @@ defmodule TdAuthWeb.RolePermissionController do
   import Canada, only: [can?: 2]
 
   alias TdAuth.Permissions
+  alias TdAuth.Permissions.Role
   alias TdAuth.Permissions.Roles
   alias TdAuthWeb.PermissionView
   alias TdAuthWeb.SwaggerDefinitions
@@ -49,7 +50,7 @@ defmodule TdAuthWeb.RolePermissionController do
   def update(conn, %{"role_id" => role_id, "permissions" => perms}) do
     current_resource = conn.assigns[:current_resource]
 
-    with role <- Roles.get_role!(role_id),
+    with %Role{} = role <- Roles.get_role!(role_id),
          {:can, true} <- {:can, can?(current_resource, update(role))},
          ids <- Enum.map(perms, &Map.get(&1, "id")),
          permissions <- Permissions.list_permissions(id: {:in, ids}) do

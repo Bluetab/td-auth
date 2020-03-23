@@ -50,12 +50,6 @@ defmodule TdAuthWeb.RoleController do
       |> put_status(:created)
       |> put_resp_header("location", Routes.role_path(conn, :show, role))
       |> render("show.json", role: role)
-    else
-      {:error, :role, changeset, _changes_so_far} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> put_view(TdAuthWeb.ChangesetView)
-        |> render("error.json", changeset: changeset)
     end
   end
 
@@ -114,7 +108,7 @@ defmodule TdAuthWeb.RoleController do
   def delete(conn, %{"id" => id}) do
     current_resource = conn.assigns[:current_resource]
 
-    with role <- Roles.get_role!(id),
+    with %Role{} = role <- Roles.get_role!(id),
          {:can, true} <- {:can, can?(current_resource, delete(role))},
          {:ok, %Role{}} <- Roles.delete_role(role) do
       send_resp(conn, :no_content, "")
