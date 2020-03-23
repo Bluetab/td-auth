@@ -1,13 +1,13 @@
 # Changelog
 
-## [Unreleased]
+## [3.18.0] 2020-03-23
 
 ### Added
 
 - [TD-2281]:
-    - Groups of permissions on token
-    - New permission groups `dashboards`and `lineage` 
-    - New permissions `view_dashboard` and `view_lineage`
+  - Groups of permissions on token
+  - New permission groups `dashboards`and `lineage`
+  - New permissions `view_dashboard` and `view_lineage`
 
 ## [3.15.0] 2020-02-10
 
