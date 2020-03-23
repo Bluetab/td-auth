@@ -68,7 +68,7 @@ defmodule TdAuthWeb.AclEntryController do
   end
 
   def create_or_update(conn, %{"acl_entry" => acl_entry_params}) do
-    role = Roles.get_role_by_name(acl_entry_params["role_name"])
+    role = Roles.get_by(name: acl_entry_params["role_name"])
 
     acl_entry_params =
       acl_entry_params
@@ -123,13 +123,12 @@ defmodule TdAuthWeb.AclEntryController do
     response(400, "Client Error")
   end
 
-  def update(conn, %{"id" => id, "acl_entry" => acl_entry_params}) do
+  def update(conn, %{"id" => id, "acl_entry" => params}) do
     current_resource = conn.assigns[:current_resource]
     acl_entry = AclEntries.get_acl_entry!(id)
 
     with {:can, true} <- {:can, can?(current_resource, update(acl_entry))},
-         {:ok, %AclEntry{} = acl_entry} <-
-           AclEntries.update_acl_entry(acl_entry, acl_entry_params) do
+         {:ok, %AclEntry{} = acl_entry} <- AclEntries.update_acl_entry(acl_entry, params) do
       render(conn, "show.json", acl_entry: acl_entry)
     end
   end
@@ -149,7 +148,7 @@ defmodule TdAuthWeb.AclEntryController do
   def delete(conn, %{"id" => id}) do
     current_resource = conn.assigns[:current_resource]
 
-    with acl_entry <- AclEntries.get_acl_entry!(id),
+    with %AclEntry{} = acl_entry <- AclEntries.get_acl_entry!(id),
          {:can, true} <- {:can, can?(current_resource, delete(acl_entry))},
          {:ok, %AclEntry{}} <- AclEntries.delete_acl_entry(acl_entry) do
       send_resp(conn, :no_content, "")

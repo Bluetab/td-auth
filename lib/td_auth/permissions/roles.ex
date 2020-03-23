@@ -3,6 +3,8 @@ defmodule TdAuth.Permissions.Roles do
   The Roles context.
   """
 
+  import Ecto.Query
+
   alias Ecto.Changeset
   alias Ecto.Multi
   alias TdAuth.Permissions.Role
@@ -124,23 +126,26 @@ defmodule TdAuth.Permissions.Roles do
   end
 
   @doc """
-  Returns Role with name role_name
-  """
-  def get_role_by_name(role_name) do
-    Repo.get_by(Role, name: role_name)
-  end
+  Returns a Role matching the specified options. The following options are
+  currently handled:
 
-  def get_default_role do
-    Repo.get_by(Role, is_default: true)
+    * `is_default` - Matches the default role if value is `true`
+    * `name` - Matches the role name
+    * `preload` - Specifies the associations to be preloaded
+  """
+  def get_by(opts) do
+    Role
+    |> reduce_opts(opts)
+    |> Repo.one()
   end
 
   @doc """
-  Returns a Role with name role_name, creating it first if it doesn't already exist
+  Returns a Role with the specified name, creating it if it doesn't already exist
   """
-  def role_get_or_create_by_name(role_name) do
-    case get_role_by_name(role_name) do
+  def get_or_create(name) do
+    case get_by(name: name) do
       nil ->
-        {:ok, role} = create_role(%{name: role_name})
+        {:ok, role} = create_role(%{name: name})
         role
 
       role ->
@@ -195,5 +200,14 @@ defmodule TdAuth.Permissions.Roles do
       _ ->
         multi
     end
+  end
+
+  defp reduce_opts(queryable, opts) do
+    Enum.reduce(opts, queryable, fn
+      {:is_default, is_default}, q -> where(q, is_default: ^is_default)
+      {:name, name}, q -> where(q, name: ^name)
+      {:preload, preloads}, q -> preload(q, ^preloads)
+      _, q -> q
+    end)
   end
 end

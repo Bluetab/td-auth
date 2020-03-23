@@ -65,10 +65,16 @@ defmodule TdAuth.Permissions.RoleTest do
       assert {:error, :role, %Ecto.Changeset{}, %{}} = Roles.update_role(role, %{name: nil})
     end
 
-    test "get_default_role/0 returns the default role" do
-      assert nil == Roles.get_default_role()
+    test "get_by/1 returns the default role" do
+      refute Roles.get_by(is_default: true)
       role = insert(:role, is_default: true)
-      assert Roles.get_default_role() == role
+      assert Roles.get_by(is_default: true) == role
+    end
+
+    test "get_by/1 returns a role by name" do
+      refute Roles.get_by(name: "foo")
+      role = insert(:role, name: "foo")
+      assert Roles.get_by(name: "foo") == role
     end
 
     test "delete_role/1 deletes the role" do
@@ -87,10 +93,10 @@ defmodule TdAuth.Permissions.RoleTest do
       permissions = Permissions.list_permissions()
       permissions = Enum.sort(permissions, &(&1.name < &2.name))
 
-      role = Roles.role_get_or_create_by_name(@role_attrs.name)
+      role = Roles.get_or_create(@role_attrs.name)
       Roles.put_permissions(role, permissions)
 
-      role = Roles.role_get_or_create_by_name(@role_attrs.name)
+      role = Roles.get_or_create(@role_attrs.name)
       stored_permissions = Roles.get_role_permissions(role)
       stored_permissions = Enum.sort(stored_permissions, &(&1.name < &2.name))
 
@@ -103,19 +109,19 @@ defmodule TdAuth.Permissions.RoleTest do
       permissions = Permissions.list_permissions()
       permissions = Enum.sort(permissions, &(&1.name < &2.name))
 
-      role = Roles.role_get_or_create_by_name(@role_attrs.name)
+      role = Roles.get_or_create(@role_attrs.name)
       Roles.put_permissions(role, permissions)
 
-      role = Roles.role_get_or_create_by_name(@role_attrs.name)
+      role = Roles.get_or_create(@role_attrs.name)
       stored_permissions = Roles.get_role_permissions(role)
       stored_permissions = Enum.sort(stored_permissions, &(&1.name < &2.name))
 
       assert permissions == stored_permissions
 
-      role = Roles.role_get_or_create_by_name(@role_attrs.name)
+      role = Roles.get_or_create(@role_attrs.name)
       Roles.put_permissions(role, [])
 
-      role = Roles.role_get_or_create_by_name(@role_attrs.name)
+      role = Roles.get_or_create(@role_attrs.name)
       stored_permissions = Roles.get_role_permissions(role)
 
       assert [] == stored_permissions

@@ -9,7 +9,6 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Ldap.Ldap
   alias TdAuth.Permissions
   alias TdAuth.Permissions.Roles
-  alias TdAuth.Repo
   alias TdAuth.Saml.SamlWorker
   alias TdAuthWeb.AuthProvider.ActiveDirectory
   alias TdAuthWeb.AuthProvider.Auth0
@@ -161,16 +160,11 @@ defmodule TdAuthWeb.SessionController do
     acl_entries = Permissions.retrieve_acl_with_permissions(user.id)
 
     default_acl_entries =
-      case Roles.get_default_role() do
+      case Roles.get_by(is_default: true, preload: [permissions: :permission_group]) do
         nil ->
           []
 
-        role ->
-          permissions =
-            role
-            |> Repo.preload(permissions: :permission_group)
-            |> Map.get(:permissions)
-
+        %{permissions: permissions} = role ->
           names = Enum.map(permissions, & &1.name)
           groups = Enum.map(permissions, & &1.permission_group)
 
