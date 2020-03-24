@@ -5,6 +5,7 @@ defmodule TdAuthWeb.ResourceAclController do
 
   alias TdAuth.Permissions.AclEntries
   alias TdAuth.Permissions.AclEntry
+  alias TdAuth.Permissions.Roles
   alias TdAuthWeb.Endpoint
 
   action_fallback(TdAuthWeb.FallbackController)
@@ -39,18 +40,72 @@ defmodule TdAuthWeb.ResourceAclController do
     end
   end
 
-  def update(conn, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
-    conn
-    |> put_resp_header("location", resource_acl_path(resource_type, resource_id))
-    |> send_resp(:see_other, "")
+  swagger_path :update do
+    description("Creates or Updates an Acl Entry associated with a resources")
+    produces("application/json")
+
+    parameters do
+      resource_type(:path, :string, "Resource type")
+      resource_id(:path, :integer, "Resource id")
+      acl_entry(:body, Schema.ref(:AclEntryCreateOrUpdate), "Acl entry create or update attrs")
+    end
+
+    response(303, "See Other")
   end
+
+  def update(conn, %{"resource_type" => resource_type, "resource_id" => resource_id, "acl_entry" => acl_entry_params} = params) do
+    current_resource = conn.assigns[:current_resource]
+
+    acl_resource = %{resource_type: resource_type, resource_id: resource_id}
+    acl_entry_params = normalize_params(acl_entry_params, params)
+
+    with {:can, true} <- {:can, can?(current_resource, create(acl_resource))},
+         {:ok, %AclEntry{}} <- AclEntries.create_or_update(acl_entry_params) do
+      conn
+      |> put_resp_header("location", resource_acl_path(resource_type, resource_id))
+      |> send_resp(:see_other, "")
+    end
+  end
+
+  defp normalize_params(params, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
+    params
+    |> Map.put("resource_type", resource_type)
+    |> Map.put("resource_id", resource_id)
+    |> put_principal_id()
+    |> put_role_id()
+    |> AclEntry.changes()
+    |> Map.put_new(:description, nil)
+  end
+
+  defp put_role_id(%{"role_name" => role_name} = params) do
+    case Roles.get_by(name: role_name) do
+      %{id: role_id} -> Map.put(params, "role_id", role_id)
+      _nil -> params
+    end
+  end
+
+  defp put_role_id(params), do: params
+
+  defp put_principal_id(%{"principal_type" => "user", "principal_id" => user_id} = params) do
+    Map.put_new(params, "user_id", user_id)
+  end
+
+  defp put_principal_id(%{"principal_type" => "group", "principal_id" => group_id} = params) do
+    Map.put_new(params, "group_id", group_id)
+  end
+
+  defp put_principal_id(params), do: params
 
   defp with_links(
          current_resource,
          %{resource_type: resource_type, resource_id: resource_id} = acl_resource,
          acl_entries
        ) do
-    self = %{href: resource_acl_path(resource_type, resource_id), methods: methods(current_resource, acl_resource)}
+    self = %{
+      href: resource_acl_path(resource_type, resource_id),
+      methods: methods(current_resource, acl_resource)
+    }
+
     links = %{self: self}
     embedded = %{acl_entries: Enum.map(acl_entries, &with_links(current_resource, &1))}
     %{embedded: embedded, links: links}

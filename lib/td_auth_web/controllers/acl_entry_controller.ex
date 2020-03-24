@@ -6,7 +6,6 @@ defmodule TdAuthWeb.AclEntryController do
   alias Inflex
   alias TdAuth.Permissions.AclEntries
   alias TdAuth.Permissions.AclEntry
-  alias TdAuth.Permissions.Roles
   alias TdAuthWeb.SwaggerDefinitions
 
   action_fallback(TdAuthWeb.FallbackController)
@@ -53,44 +52,6 @@ defmodule TdAuthWeb.AclEntryController do
       |> render("show.json", acl_entry: acl_entry)
     end
   end
-
-  swagger_path :create_or_update do
-    description("Creates or Updates an Acl Entry")
-    produces("application/json")
-
-    parameters do
-      acl_entry(:body, Schema.ref(:AclEntryCreateOrUpdate), "Acl entry create or update attrs")
-    end
-
-    response(201, "OK", Schema.ref(:AclEntryResponse))
-    response(400, "Client Error")
-  end
-
-  def create_or_update(conn, %{"acl_entry" => acl_entry_params}) do
-    role = Roles.get_by(name: acl_entry_params["role_name"])
-
-    acl_entry_params =
-      acl_entry_params
-      |> put_principal_id()
-      |> Map.put("role_id", role.id)
-      |> AclEntry.changes()
-      |> Map.put_new(:description, nil)
-
-    case AclEntries.find_by_resource_and_principal(acl_entry_params) do
-      nil -> create(conn, %{"acl_entry" => acl_entry_params})
-      %{id: id} -> update(conn, %{"id" => id, "acl_entry" => acl_entry_params})
-    end
-  end
-
-  defp put_principal_id(%{"principal_type" => "user", "principal_id" => user_id} = params) do
-    Map.put_new(params, "user_id", user_id)
-  end
-
-  defp put_principal_id(%{"principal_type" => "group", "principal_id" => group_id} = params) do
-    Map.put_new(params, "group_id", group_id)
-  end
-
-  defp put_principal_id(params), do: params
 
   swagger_path :show do
     description("Show Acl Entry")

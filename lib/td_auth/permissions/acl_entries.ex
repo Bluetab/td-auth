@@ -53,8 +53,8 @@ defmodule TdAuth.Permissions.AclEntries do
   Returns `{:ok, struct}` if the ACL entry was created successfully or `{:error,
   changeset}` if there was a validation or constraint error.
   """
-  def create_acl_entry(%{} = attrs) do
-    attrs
+  def create_acl_entry(%{} = params) do
+    params
     |> AclEntry.changeset()
     |> Repo.insert()
     |> refresh_cache()
@@ -72,11 +72,18 @@ defmodule TdAuth.Permissions.AclEntries do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_acl_entry(%AclEntry{} = acl_entry, attrs) do
+  def update_acl_entry(%AclEntry{} = acl_entry, params) do
     acl_entry
-    |> AclEntry.changeset(attrs)
+    |> AclEntry.changeset(params)
     |> Repo.update()
     |> refresh_cache()
+  end
+
+  def create_or_update(params) do
+    case find_by_resource_and_principal(params) do
+      %AclEntry{} = acl_entry -> update_acl_entry(acl_entry, params)
+      nil -> create_acl_entry(params)
+    end
   end
 
   @doc """

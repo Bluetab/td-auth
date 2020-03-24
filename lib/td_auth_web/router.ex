@@ -45,7 +45,6 @@ defmodule TdAuthWeb.Router do
     resources("/groups", GroupController, except: [:new, :edit])
 
     resources("/acl_entries", AclEntryController, except: [:new, :edit])
-    post("/acl_entries/create_or_update", AclEntryController, :create_or_update)
 
     resources("/permissions", PermissionController,
       except: [:new, :edit, :update, :delete, :create]
