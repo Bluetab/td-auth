@@ -68,7 +68,6 @@ defmodule TdAuth.Mixfile do
       {:assertions, "~> 0.15", only: :test},
       {:phoenix_swagger, "~> 0.8"},
       {:ex_json_schema, "~> 0.6"},
-      {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git", tag: "3.6.1"},
       {:inflex, "~> 2.0.0"},
       {:prometheus_ex, "~> 3.0.2"},
       {:prometheus_plugs, "~> 1.1.5"},

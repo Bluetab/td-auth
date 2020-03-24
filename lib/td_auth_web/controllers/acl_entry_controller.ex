@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.AclEntryController do
   use TdAuthWeb, :controller
-  use TdHypermedia, :controller
 
   import Canada, only: [can?: 2]
 

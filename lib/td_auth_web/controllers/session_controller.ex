@@ -161,10 +161,7 @@ defmodule TdAuthWeb.SessionController do
 
     default_acl_entries =
       case Roles.get_by(is_default: true, preload: [permissions: :permission_group]) do
-        nil ->
-          []
-
-        %{permissions: permissions} = role ->
+        %{permissions: permissions} ->
           names = Enum.map(permissions, & &1.name)
           groups = Enum.map(permissions, & &1.permission_group)
 
@@ -177,6 +174,9 @@ defmodule TdAuthWeb.SessionController do
               resource_id: &1
             }
           )
+
+        _nil ->
+          []
       end
 
     acl_entries ++ default_acl_entries

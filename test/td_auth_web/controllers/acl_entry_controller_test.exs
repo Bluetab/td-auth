@@ -21,8 +21,10 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   describe "index" do
     @tag :admin_authenticated
     test "lists all acl_entries", %{conn: conn} do
-      conn = get(conn, Routes.acl_entry_path(conn, :index))
-      assert [_acl_entry] = json_response(conn, 200)["data"]
+      assert %{"data" => [_acl_entry]} =
+               conn
+               |> get(Routes.acl_entry_path(conn, :index))
+               |> json_response(:ok)
     end
   end
 

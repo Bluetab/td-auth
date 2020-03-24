@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.AclEntryView do
   use TdAuthWeb, :view
-  use TdHypermedia, :view
 
   alias TdAuthWeb.GroupView
   alias TdAuthWeb.UserView
@@ -25,8 +24,10 @@ defmodule TdAuthWeb.AclEntryView do
     ])
   end
 
-  def render("resource_acl_entries.json", %{hypermedia: hypermedia}) do
-    render_many_hypermedia(hypermedia, __MODULE__, "resource_acl_entry.json")
+  def render("resource_acl_entry.json", %{embedded: %{acl_entry: acl_entry, links: links}}) do
+    acl_entry
+    |> render_one(__MODULE__, "resource_acl_entry.json")
+    |> Map.put(:_links, links)
   end
 
   def render("resource_acl_entry.json", %{acl_entry: acl_entry}) do
