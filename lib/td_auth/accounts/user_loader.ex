@@ -1,6 +1,6 @@
-defmodule TdAuth.UserLoader do
+defmodule TdAuth.Accounts.UserLoader do
   @moduledoc """
-  GenServer to load users into Redis
+  GenServer to load users into distributed cache.
   """
 
   use GenServer
@@ -10,19 +10,19 @@ defmodule TdAuth.UserLoader do
 
   require Logger
 
-  def start_link(name \\ nil) do
-    GenServer.start_link(__MODULE__, nil, name: name)
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
   def refresh(user_id) do
-    GenServer.call(TdAuth.UserLoader, {:refresh, user_id})
+    GenServer.call(__MODULE__, {:refresh, user_id})
   end
 
   def delete(user_id) do
-    GenServer.call(TdAuth.UserLoader, {:delete, user_id})
+    GenServer.call(__MODULE__, {:delete, user_id})
   end
 
-  @impl true
+  @impl GenServer
   def init(state) do
     unless Application.get_env(:td_auth, :env) == :test do
       schedule_work(:load_cache, 0)
@@ -33,19 +33,19 @@ defmodule TdAuth.UserLoader do
     {:ok, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:refresh, user_id}, _from, state) do
     load_user(user_id)
     {:reply, :ok, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:delete, user_id}, _from, state) do
     reply = UserCache.delete(user_id)
     {:reply, reply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:load_cache, state) do
     load_all_users()
 

@@ -6,12 +6,6 @@ config :td_auth, TdAuthWeb.Endpoint,
   http: [port: 4001],
   server: true
 
-# Hashing algorithm just for testing porpouses
-config :td_auth, hashing_module: TdAuth.DummyHashing
-
-# Print only warnings and errors during test
-config :logger, level: :warn
-
 # Configure your database
 config :td_auth, TdAuth.Repo,
   username: "postgres",
@@ -22,21 +16,13 @@ config :td_auth, TdAuth.Repo,
   pool_size: 1
 
 config :td_auth, :auth,
-  auth_service: TdAuthWeb.ApiServices.MockAuthService,
+  auth0_service: TdAuthWeb.ApiServices.MockAuth0Service,
   protocol: "https",
   domain: "icbluetab.eu.auth0.com",
   client_id: "CLIENT_ID",
   audience: nil,
   userinfo: "/userinfo",
   profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}
-
-config :td_auth, TdAuth.Auth.Auth,
-  # optional
-  allowed_algos: ["HS512"],
-  issuer: "tdauth",
-  verify_issuer: false,
-  token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
-  secret_key: "SuperSecretTruedat"
 
 # Redis configuration
 config :td_cache, redis_host: "redis"
@@ -53,3 +39,8 @@ config :td_auth, :openid_connect_providers,
 
 config :td_auth, eldap_module: TdAuth.Ldap.EldapMock
 config :td_auth, exldap_module: TdAuth.Ldap.EldapMock
+
+config :bcrypt_elixir, log_rounds: 4
+
+# Print only warnings and errors during test
+config :logger, level: :warn

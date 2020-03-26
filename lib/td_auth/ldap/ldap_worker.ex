@@ -16,7 +16,7 @@ defmodule TdAuth.Ldap.LdapWorker do
   end
 
   @impl true
-  def init("") do
+  def init(nil) do
     {:ok, []}
   end
 

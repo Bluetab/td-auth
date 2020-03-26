@@ -1,11 +1,11 @@
 defmodule TdAuth.Ldap.Ldap do
   @moduledoc false
-  require Logger
 
   alias Gettext.Interpolation
   alias Jason, as: JSON
-
   alias TdAuth.Ldap.LdapValidation
+
+  require Logger
 
   def authenticate(user_name, password) do
     case ldap_authenticate() do
@@ -49,8 +49,6 @@ defmodule TdAuth.Ldap.Ldap do
                {:ok, profile} <- verify_user_credentials(conn, user_name, password, entry),
                {:ok, warnings} <- LdapValidation.validate_entry(conn, entry) do
             {:ok, profile, warnings}
-          else
-            error -> error
           end
         after
           ldap_close(conn)

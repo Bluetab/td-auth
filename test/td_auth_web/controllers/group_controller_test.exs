@@ -3,11 +3,8 @@ defmodule TdAuthWeb.GroupControllerTest do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
-  alias TdAuth.Accounts.User
-  import TdAuthWeb.Authentication, only: :functions
 
   @create_attrs %{name: "some name", description: "some description"}
-  @create_attrs2 %{name: "some name2", description: "some description2"}
   @update_attrs %{name: "some updated name", description: "some updated description"}
   @invalid_attrs %{name: nil}
   @create_user_attrs %{
@@ -16,6 +13,11 @@ defmodule TdAuthWeb.GroupControllerTest do
     is_admin: false,
     email: "some@email.com"
   }
+
+  setup_all do
+    start_supervised!(TdAuth.Accounts.UserLoader)
+    :ok
+  end
 
   def fixture(:group) do
     {:ok, group} = Accounts.create_group(@create_attrs)
@@ -34,33 +36,46 @@ defmodule TdAuthWeb.GroupControllerTest do
   describe "index" do
     @tag :admin_authenticated
     test "lists all groups", %{conn: conn} do
-      conn = get(conn, Routes.group_path(conn, :index))
-      assert json_response(conn, 200)["data"] == []
+      assert %{"data" => []} =
+               conn
+               |> get(Routes.group_path(conn, :index))
+               |> json_response(:ok)
     end
   end
 
   describe "create group" do
     @tag :admin_authenticated
     test "renders group when data is valid", %{conn: conn} do
-      conn = post conn, Routes.group_path(conn, :create), group: @create_attrs
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-      conn = recycle_and_put_headers(conn)
-      conn = get(conn, Routes.group_path(conn, :show, id))
-      assert json_response(conn, 200)
+      assert %{"data" => %{"id" => id}} =
+               conn
+               |> post(Routes.group_path(conn, :create), group: @create_attrs)
+               |> json_response(:created)
+
+      assert conn
+             |> get(Routes.group_path(conn, :show, id))
+             |> json_response(:ok)
     end
 
     @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post conn, Routes.group_path(conn, :create), group: @invalid_attrs
-      assert json_response(conn, 422)["errors"] != %{}
+      assert %{"errors" => errors} =
+               conn
+               |> post(Routes.group_path(conn, :create), group: @invalid_attrs)
+               |> json_response(:unprocessable_entity)
+
+      assert errors != %{}
     end
 
     @tag :admin_authenticated
     test "renders errors when group is duplicated", %{conn: conn} do
-      conn = post conn, Routes.group_path(conn, :create), group: @create_attrs
-      conn = recycle_and_put_headers(conn)
-      conn = post conn, Routes.group_path(conn, :create), group: @create_attrs
-      assert json_response(conn, 422)["errors"] != %{}
+      post(conn, Routes.group_path(conn, :create), group: @create_attrs)
+
+      assert %{"errors" => %{} = errors} =
+               conn
+               |> post(Routes.group_path(conn, :create), group: @create_attrs)
+               |> json_response(:unprocessable_entity)
+
+      assert errors != %{}
     end
   end
 
@@ -69,104 +84,42 @@ defmodule TdAuthWeb.GroupControllerTest do
 
     @tag :admin_authenticated
     test "renders group when data is valid", %{conn: conn, group: %Group{id: id} = group} do
-      conn = put conn, Routes.group_path(conn, :update, group), group: @update_attrs
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
-      conn = recycle_and_put_headers(conn)
-      conn = get(conn, Routes.group_path(conn, :show, id))
-      assert json_response(conn, 200)
+      assert %{"data" => %{"id" => ^id}} =
+               conn
+               |> put(Routes.group_path(conn, :update, group), group: @update_attrs)
+               |> json_response(:ok)
+
+      assert conn
+             |> get(Routes.group_path(conn, :show, id))
+             |> json_response(:ok)
     end
 
     @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn, group: group} do
-      conn = put conn, Routes.group_path(conn, :update, group), group: @invalid_attrs
-      assert json_response(conn, 422)["errors"] != %{}
+      assert %{"errors" => %{} = errors} =
+               conn
+               |> put(Routes.group_path(conn, :update, group), group: @invalid_attrs)
+               |> json_response(:unprocessable_entity)
+
+      assert errors != %{}
     end
   end
 
   describe "delete group" do
-    setup [:create_group]
-
     @tag :admin_authenticated
-    test "deletes chosen group", %{conn: conn, group: group} do
-      conn = delete(conn, Routes.group_path(conn, :delete, group))
-      assert response(conn, 204)
-      conn = recycle_and_put_headers(conn)
+    test "deletes chosen group", %{conn: conn} do
+      group = insert(:group)
 
-      assert_error_sent 404, fn ->
-        get(conn, Routes.group_path(conn, :show, group))
-      end
-    end
-  end
+      assert conn
+             |> delete(Routes.group_path(conn, :delete, group))
+             |> response(:no_content)
 
-  describe "create user groups" do
-    setup [:create_group]
-    setup [:create_user]
-
-    @tag :admin_authenticated
-    test "renders user groups when data is valid", %{conn: conn, user: %User{id: user_id}} do
-      conn =
-        post conn, Routes.user_group_path(conn, :add_groups_to_user, user_id),
-          groups: [@create_attrs, @create_attrs2]
-
-      assert json_response(conn, 201)
-    end
-  end
-
-  describe "delete user group" do
-    setup [:create_group]
-    setup [:create_user]
-
-    @tag :admin_authenticated
-    test "deletes chosen group", %{
-      conn: conn,
-      user: %User{id: user_id} = group,
-      group: %Group{id: group_id}
-    } do
-      conn =
-        post conn, Routes.user_group_path(conn, :add_groups_to_user, user_id),
-          groups: [@create_attrs, @create_attrs2]
-
-      assert json_response(conn, 201)
-      conn = recycle_and_put_headers(conn)
-      conn = delete(conn, Routes.user_group_path(conn, :delete_user_groups, user_id, group_id))
-      assert response(conn, 204)
-      conn = recycle_and_put_headers(conn)
-
-      assert_error_sent 404, fn ->
-        get(conn, Routes.group_path(conn, :show, group))
-      end
-    end
-  end
-
-  describe "group_users" do
-    setup [:create_group]
-    setup [:create_user]
-
-    @tag :admin_authenticated
-    test "lists users of a groups", %{
-      conn: conn,
-      user: %User{id: user_id},
-      group: %Group{id: group_id}
-    } do
-      conn =
-        post conn, Routes.user_group_path(conn, :add_groups_to_user, user_id),
-          groups: [@create_attrs, @create_attrs2]
-
-      assert json_response(conn, 201)
-      conn = recycle_and_put_headers(conn)
-      conn = get(conn, Routes.group_group_path(conn, :group_users, group_id))
-      [group_user | _tail] = json_response(conn, 200)["data"]
-      assert group_user["user_name"] == @create_user_attrs.user_name
+      assert_error_sent :not_found, fn -> get(conn, Routes.group_path(conn, :show, group)) end
     end
   end
 
   defp create_group(_) do
     group = fixture(:group)
     {:ok, group: group}
-  end
-
-  defp create_user(_) do
-    user = fixture(:user)
-    {:ok, user: user}
   end
 end

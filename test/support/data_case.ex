@@ -18,13 +18,14 @@ defmodule TdAuth.DataCase do
 
   using do
     quote do
-      alias TdAuth.Repo
-
+      import Assertions
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
       import TdAuth.DataCase
       import TdAuth.Factory
+
+      alias TdAuth.Repo
     end
   end
 
@@ -34,11 +35,11 @@ defmodule TdAuth.DataCase do
     unless tags[:async] do
       Sandbox.mode(TdAuth.Repo, {:shared, self()})
       parent = self()
-      case Process.whereis(TdAuth.UserLoader) do
+      case Process.whereis(TdAuth.Accounts.UserLoader) do
         nil -> nil
         pid -> Sandbox.allow(TdAuth.Repo, parent, pid)
       end
-      case Process.whereis(TdAuth.AclLoader) do
+      case Process.whereis(TdAuth.Permissions.AclLoader) do
         nil -> nil
         pid -> Sandbox.allow(TdAuth.Repo, parent, pid)
       end

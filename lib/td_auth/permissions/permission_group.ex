@@ -1,12 +1,13 @@
 defmodule TdAuth.Permissions.PermissionGroup do
   @moduledoc """
-  Group of permissions
+  Ecto schema for permission groups.
   """
+
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias TdAuth.Permissions.Permission
-  alias TdAuth.Permissions.PermissionGroup
 
   schema "permission_groups" do
     field(:name, :string)
@@ -15,15 +16,18 @@ defmodule TdAuth.Permissions.PermissionGroup do
     timestamps()
   end
 
-  @doc false
-  def changeset(permission_group, attrs) do
+  def changeset(params) do
+    changeset(%__MODULE__{}, params)
+  end
+
+  def changeset(%__MODULE__{} = permission_group, params) do
     permission_group
-    |> cast(attrs, [:name])
+    |> cast(params, [:name])
     |> validate_required([:name])
     |> unique_constraint(:name)
   end
 
-  def delete_changeset(%PermissionGroup{} = permission_group) do
+  def delete_changeset(%__MODULE__{} = permission_group) do
     permission_group
     |> change()
     |> foreign_key_constraint(:permissions,

@@ -8,12 +8,11 @@ defmodule TdAuthWeb.Authentication do
 
   alias Jason, as: JSON
   alias Phoenix.ConnTest
-  alias TdAuth.Accounts
   alias TdAuth.Auth.Guardian
   alias TdAuthWeb.Router.Helpers, as: Routes
 
   @endpoint TdAuthWeb.Endpoint
-  @headers {"Content-type", "application/json"}
+  @headers {"content-type", "application/json"}
 
   def put_auth_headers(conn, jwt) do
     conn
@@ -33,14 +32,7 @@ defmodule TdAuthWeb.Authentication do
     {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
     conn = ConnTest.build_conn()
     conn = put_auth_headers(conn, jwt)
-    {:ok, %{conn: conn, jwt: jwt, claims: full_claims}}
-  end
-
-  def create_user_auth_conn(conn, user_name) do
-    user = Accounts.get_user_by_name(user_name)
-    {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
-    conn = put_auth_headers(conn, jwt)
-    {:ok, %{conn: conn, jwt: jwt, claims: full_claims}}
+    {:ok, %{conn: conn, jwt: jwt, claims: full_claims, user: user}}
   end
 
   def get_default_headers do
@@ -53,13 +45,13 @@ defmodule TdAuthWeb.Authentication do
 
   def session_create(user_name, user_password) do
     body =
-      %{user: %{user_name: user_name, password: user_password}, access_method: nil}
+      %{user: %{user_name: user_name, password: user_password}}
       |> JSON.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.post!(Routes.session_url(@endpoint, :create), body, [@headers], [])
 
-    {:ok, status_code, resp |> JSON.decode!()}
+    {:ok, status_code, JSON.decode!(resp)}
   end
 
   def session_destroy(token) do

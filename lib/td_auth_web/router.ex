@@ -15,18 +15,17 @@ defmodule TdAuthWeb.Router do
     forward("/", PhoenixSwagger.Plug.SwaggerUI, otp_app: :td_auth, swagger_file: "swagger.json")
   end
 
-  scope "/", TdAuthWeb do
-    pipe_through(:api_unsecured)
-    post("/callback", SessionController, :create)
-  end
-
   scope "/api", TdAuthWeb do
     pipe_through(:api_unsecured)
     get("/auth", AuthController, :index)
     get("/ping", PingController, :ping)
-    get("/passphrase", PingController, :passphrase)
     post("/sessions", SessionController, :create)
     post("/init", UserController, :init)
+  end
+
+  scope "/", TdAuthWeb do
+    pipe_through(:api_unsecured)
+    post("/callback", SessionController, :create)
   end
 
   scope "/api", TdAuthWeb do
@@ -41,36 +40,24 @@ defmodule TdAuthWeb.Router do
 
     resources "/users", UserController, except: [:new, :edit] do
       patch("/change_password", UserController, :change_password)
-      get("/groups", GroupController, :user_groups)
-      post("/groups", GroupController, :add_groups_to_user)
-      delete("/groups/:id", GroupController, :delete_user_groups)
     end
 
-    post("/users/search", UserController, :search)
-
-    resources("/groups", GroupController, except: [:new, :edit]) do
-      get("/users", GroupController, :group_users)
-    end
-
-    post("/groups/search", GroupController, :search)
+    resources("/groups", GroupController, except: [:new, :edit])
 
     resources("/acl_entries", AclEntryController, except: [:new, :edit])
-    post("/acl_entries/create_or_update", AclEntryController, :create_or_update)
-    get("/:resource_type/:resource_id/acl_entries", AclEntryController, :acl_entries)
-    post("/:resource_type/:resource_id/acl_entries", AclEntryController, :create_acl_entry)
-    get("/:resource_type/:resource_id/user_roles", AclEntryController, :user_roles)
 
     resources("/permissions", PermissionController,
       except: [:new, :edit, :update, :delete, :create]
     )
 
-    resources "/permission_groups", PermissionGroupController, except: [:new, :edit] do
-      patch("/permissions", PermissionController, :permissions_to_group)
-    end
+    resources "/permission_groups", PermissionGroupController, except: [:new, :edit]
 
     resources "/roles", RoleController, except: [:new, :edit] do
-      get("/permissions", PermissionController, :get_role_permissions)
-      post("/permissions", PermissionController, :add_permissions_to_role)
+      resources("/permissions", RolePermissionController, singleton: true, only: [:show, :update], name: "permission")
+    end
+
+    resources("/:resource_type", ResourceController, only: [:show]) do
+      resources("/acl_entries", ResourceAclController, singleton: true, only: [:show, :update], name: "acl")
     end
   end
 

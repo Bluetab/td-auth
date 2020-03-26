@@ -1,20 +1,15 @@
 defmodule TdAuthWeb.RoleView do
   use TdAuthWeb, :view
-  alias TdAuthWeb.RoleView
 
   def render("index.json", %{roles: roles}) do
-    %{data: render_many(roles, RoleView, "role.json")}
+    %{data: render_many(roles, __MODULE__, "role.json")}
   end
 
   def render("show.json", %{role: role}) do
-    %{data: render_one(role, RoleView, "role.json")}
+    %{data: render_one(role, __MODULE__, "role.json")}
   end
 
   def render("role.json", %{role: role}) do
-    %{
-      id: role.id,
-      name: role.name,
-      is_default: role.is_default
-    }
+    Map.take(role, [:id, :name, :is_default])
   end
 end

@@ -1,8 +1,5 @@
 defmodule TdAuthWeb.SessionController do
-  require Logger
-
   use TdAuthWeb, :controller
-  use PhoenixSwagger
 
   alias Jason, as: JSON
   alias TdAuth.Accounts
@@ -11,8 +8,7 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuth.Ldap.Ldap
   alias TdAuth.Permissions
-  alias TdAuth.Permissions.Role
-  alias TdAuth.Repo
+  alias TdAuth.Permissions.Roles
   alias TdAuth.Saml.SamlWorker
   alias TdAuthWeb.AuthProvider.ActiveDirectory
   alias TdAuthWeb.AuthProvider.Auth0
@@ -21,6 +17,8 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuthWeb.SwaggerDefinitions
   alias TdCache.NonceCache
   alias TdCache.TaxonomyCache
+
+  require Logger
 
   def swagger_definitions do
     SwaggerDefinitions.session_swagger_definitions()
@@ -74,14 +72,8 @@ defmodule TdAuthWeb.SessionController do
 
   def create(conn, %{"auth_realm" => auth_realm, "nonce" => nonce}) do
     case NonceCache.pop(nonce) do
-      nil ->
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401.json")
-
-      json ->
-        create_nonce_session(conn, auth_realm, json)
+      nil -> unauthorized(conn)
+      json -> create_nonce_session(conn, auth_realm, json)
     end
   end
 
@@ -125,9 +117,8 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp create_tokens(conn, user, access_method) do
-    gids = Enum.map(user.groups, & &1.id)
-    acl_entries = retrieve_acl_with_permissions(user, gids)
-    claims = claims(user, gids, acl_entries, access_method)
+    acl_entries = retrieve_acl_with_permissions(user)
+    claims = claims(user, acl_entries, access_method)
     conn = handle_sign_in(conn, user, claims)
     token = GuardianPlug.current_token(conn)
     %{"jti" => jti, "exp" => exp} = GuardianPlug.current_claims(conn)
@@ -163,22 +154,14 @@ defmodule TdAuthWeb.SessionController do
     |> Enum.any?(&(Map.has_key?(&1, :permissions) && !Enum.empty?(&1.permissions)))
   end
 
-  defp retrieve_acl_with_permissions(%User{is_admin: true}, _), do: []
+  defp retrieve_acl_with_permissions(%User{is_admin: true}), do: []
 
-  defp retrieve_acl_with_permissions(%User{} = user, gids) do
-    acl_entries = Permissions.retrieve_acl_with_permissions(user.id, gids)
+  defp retrieve_acl_with_permissions(%User{} = user) do
+    acl_entries = Permissions.retrieve_acl_with_permissions(user.id)
 
     default_acl_entries =
-      case Role.get_default_role() do
-        nil ->
-          []
-
-        role ->
-          permissions =
-            role
-            |> Repo.preload(permissions: :permission_group)
-            |> Map.get(:permissions)
-
+      case Roles.get_by(is_default: true, preload: [permissions: :permission_group]) do
+        %{permissions: permissions} ->
           names = Enum.map(permissions, & &1.name)
           groups = Enum.map(permissions, & &1.permission_group)
 
@@ -191,7 +174,11 @@ defmodule TdAuthWeb.SessionController do
               resource_id: &1
             }
           )
+
+        _nil ->
+          []
       end
+
     acl_entries ++ default_acl_entries
   end
 
@@ -202,11 +189,7 @@ defmodule TdAuthWeb.SessionController do
     else
       error ->
         Logger.info("While authenticating using SAML ... #{inspect(error)}")
-
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401.json")
+        unauthorized(conn)
     end
   end
 
@@ -217,11 +200,7 @@ defmodule TdAuthWeb.SessionController do
     else
       error ->
         Logger.info("While authenticating using active directory ... #{inspect(error)}")
-
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401.json")
+        unauthorized(conn)
     end
   end
 
@@ -234,52 +213,28 @@ defmodule TdAuthWeb.SessionController do
       |> put_status(:created)
       |> render("show_ldap.json", token: tokens, validation_warnings: validation_warnings)
     else
-      {:ldap_error, error} ->
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401_ldap.json", error: error)
-
-      _ ->
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401.json")
+      {:ldap_error, error} -> unauthorized(conn, "401_ldap.json", error: error)
+      _ -> unauthorized(conn)
     end
   end
 
   defp authenticate_proxy_login(conn, user_name, "true") do
     case Accounts.get_user_by_name(user_name) do
-      nil ->
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401.json")
-
-      user ->
-        create_session(conn, user, "proxy_login")
+      nil -> unauthorized(conn)
+      user -> create_session(conn, user, "proxy_login")
     end
   end
 
   defp authenticate_proxy_login(conn, _, _) do
-    conn
-    |> put_status(:unauthorized)
-    |> put_view(ErrorView)
-    |> render("proxy_login_disabled.json")
+    unauthorized(conn, "proxy_login_disabled.json")
   end
 
   defp authenticate_and_create_session(conn, user_name, password, access_method) do
     user = Accounts.get_user_by_name(user_name)
 
     case User.check_password(user, password) do
-      true ->
-        create_session(conn, user, access_method)
-
-      _ ->
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401.json")
+      {:ok, user} -> create_session(conn, user, access_method)
+      _ -> unauthorized(conn)
     end
   end
 
@@ -292,11 +247,7 @@ defmodule TdAuthWeb.SessionController do
     else
       error ->
         Logger.info("While authenticating using OpenID Connect... #{inspect(error)}")
-
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401.json")
+        unauthorized(conn)
     end
   end
 
@@ -307,18 +258,13 @@ defmodule TdAuthWeb.SessionController do
     else
       error ->
         Logger.info("While authenticating using auth0... #{inspect(error)}")
-
-        conn
-        |> put_status(:unauthorized)
-        |> put_view(ErrorView)
-        |> render("401.json")
+        unauthorized(conn)
     end
   end
 
-  defp claims(user, gids, acl_entries, access_method) do
+  defp claims(user, acl_entries, access_method) do
     user
     |> Map.take([:user_name, :is_admin])
-    |> Map.merge(%{gids: gids})
     |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
     |> Map.put(:groups, permission_groups(user, acl_entries))
     |> with_access_method(access_method)
@@ -340,8 +286,7 @@ defmodule TdAuthWeb.SessionController do
   end
 
   def ping(conn, _params) do
-    conn
-    |> send_resp(:ok, "")
+    send_resp(conn, :ok, "")
   end
 
   swagger_path :refresh do
@@ -370,6 +315,13 @@ defmodule TdAuthWeb.SessionController do
   def destroy(conn, _params) do
     token = GuardianPlug.current_token(conn)
     Guardian.revoke(token)
-    send_resp(conn, :ok, "")
+    send_resp(conn, :no_content, "")
+  end
+
+  defp unauthorized(conn, template \\ "401.json", assigns \\ %{}) do
+    conn
+    |> put_status(:unauthorized)
+    |> put_view(ErrorView)
+    |> render(template, assigns)
   end
 end

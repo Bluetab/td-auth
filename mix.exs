@@ -9,12 +9,19 @@ defmodule TdAuth.Mixfile do
           nil -> "3.18.0-local"
           v -> v
         end,
-      elixir: "~> 1.6",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers() ++ [:phoenix_swagger],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      releases: [
+        td_auth: [
+          include_executables_for: [:unix],
+          applications: [runtime_tools: :permanent],
+          steps: [:assemble, &copy_bin_files/1, :tar]
+        ]
+      ]
     ]
   end
 
@@ -32,38 +39,41 @@ defmodule TdAuth.Mixfile do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
+  defp copy_bin_files(release) do
+    File.cp_r("rel/bin", Path.join(release.path, "bin"))
+    release
+  end
+
   # Specifies your project dependencies.
   #
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.4.0"},
-      {:plug_cowboy, "~> 2.0"},
-      {:plug, "~> 1.7"},
+      {:phoenix, "~> 1.4.16"},
       {:phoenix_ecto, "~> 4.0"},
-      {:ecto_sql, "~> 3.0"},
-      {:jason, "~> 1.0"},
+      {:ecto_sql, "~> 3.1"},
       {:postgrex, ">= 0.0.0"},
       {:gettext, "~> 0.11"},
-      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
-      {:distillery, "~> 2.0", runtime: false},
-      {:guardian, "~> 1.0"},
-      {:canada, "~> 1.0.1"},
-      {:comeonin, "~> 4.0"},
-      {:bcrypt_elixir, "~> 1.0"},
-      {:ex_machina, "~> 2.2.2", only: :test},
+      {:jason, "~> 1.0"},
+      {:plug_cowboy, "~> 2.0"},
+      {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
+      {:guardian, "~> 2.0"},
+      {:canada, "~> 2.0", override: true},
+      {:bcrypt_elixir, "~> 2.0"},
       {:cors_plug, "~> 1.2"},
-      {:httpoison, "~> 1.6.1"},
-      {:cabbage, only: [:test], git: "https://github.com/Bluetab/cabbage", tag: "v0.3.7-alpha"},
-      {:phoenix_swagger, "~> 0.8.0"},
-      {:ex_json_schema, "~> 0.5"},
-      {:td_hypermedia, git: "https://github.com/Bluetab/td-hypermedia.git", tag: "3.6.1"},
-      {:inflex, "~> 1.10.0"},
+      {:httpoison, "~> 1.6"},
+      {:cabbage,
+       git: "https://github.com/Bluetab/cabbage", branch: "feature/background", only: :test},
+      {:ex_machina, "~> 2.3", only: :test},
+      {:assertions, "~> 0.15", only: :test},
+      {:phoenix_swagger, "~> 0.8"},
+      {:ex_json_schema, "~> 0.6"},
+      {:inflex, "~> 2.0.0"},
       {:prometheus_ex, "~> 3.0.2"},
       {:prometheus_plugs, "~> 1.1.5"},
       {:exldap, "~> 0.6"},
       {:openid_connect, "~> 0.2.0"},
-      {:esaml, "~> 4.1.0"},
+      {:esaml, "~> 4.1"},
       {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "3.18.0"}
     ]
   end

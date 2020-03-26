@@ -5,11 +5,11 @@ defmodule TdAuth.Permissions do
 
   import Ecto.Query, warn: false
 
-  alias Ecto.Changeset
-  alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.Permission
+  alias TdAuth.Permissions.PermissionGroup
   alias TdAuth.Repo
-  alias TdCache.Permissions
+
+  @default_preloads :permission_group
 
   @doc """
   Returns the list of permissions.
@@ -20,10 +20,12 @@ defmodule TdAuth.Permissions do
       [%Permission{}, ...]
 
   """
-  def list_permissions(options \\ []) do
+  def list_permissions(opts \\ [preload: @default_preloads]) do
+    filter_clauses = Keyword.put_new(opts, :preload, @default_preloads)
+
     Permission
+    |> do_where(filter_clauses)
     |> Repo.all()
-    |> preload_options(options)
   end
 
   @doc """
@@ -40,10 +42,12 @@ defmodule TdAuth.Permissions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_permission!(id, options \\ []) do
-    Permission
-    |> Repo.get!(id)
-    |> preload_options(options)
+  def get_permission!(id, opts \\ [preload: @default_preloads]) do
+    with preloads <- Keyword.get(opts, :preload, []) do
+      Permission
+      |> Repo.get!(id)
+      |> Repo.preload(preloads)
+    end
   end
 
   @doc """
@@ -80,27 +84,31 @@ defmodule TdAuth.Permissions do
     |> Repo.insert()
   end
 
-  def retrieve_acl_with_permissions(user_id, gids) do
-    %{user_id: user_id, gids: gids}
-    |> AclEntry.list_acl_entries_by_user_with_groups()
+  def update_permission(%Permission{} = permission, params) do
+    permission
+    |> Permission.changeset(params)
+    |> Repo.update()
+  end
+
+  def retrieve_acl_with_permissions(user_id) do
+    alias TdAuth.Accounts
+
+    user_id
+    |> Accounts.get_user_acls()
+    |> Repo.preload(role: [permissions: :permission_group])
     |> Enum.map(&acl_entry_to_permissions/1)
   end
 
   def cache_session_permissions([], _jti, _exp), do: []
 
   def cache_session_permissions(acl_entries, jti, exp) do
-    cache_session_permissions!(jti, exp, acl_entries)
+    do_cache_session_permissions(jti, exp, acl_entries)
   end
 
-  def cache_session_permissions(user_id, gids, jti, exp) do
-    acl_entries = retrieve_acl_with_permissions(user_id, gids)
-    cache_session_permissions!(jti, exp, acl_entries)
-  end
+  def do_cache_session_permissions(_jti, _exp, []), do: []
 
-  def cache_session_permissions!(_jti, _exp, []), do: []
-
-  def cache_session_permissions!(jti, exp, acl_entries) when is_list(acl_entries) do
-    Permissions.cache_session_permissions!(jti, exp, acl_entries)
+  def do_cache_session_permissions(jti, exp, acl_entries) when is_list(acl_entries) do
+    TdCache.Permissions.cache_session_permissions!(jti, exp, acl_entries)
   end
 
   defp acl_entry_to_permissions(%{
@@ -119,8 +127,6 @@ defmodule TdAuth.Permissions do
     }
   end
 
-  alias TdAuth.Permissions.PermissionGroup
-
   @doc """
   Returns the list of permission_groups.
 
@@ -130,10 +136,8 @@ defmodule TdAuth.Permissions do
       [%PermissionGroup{}, ...]
 
   """
-  def list_permission_groups(options \\ []) do
-    PermissionGroup
-    |> Repo.all()
-    |> preload_options(options)
+  def list_permission_groups do
+    Repo.all(PermissionGroup)
   end
 
   @doc """
@@ -150,10 +154,8 @@ defmodule TdAuth.Permissions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_permission_group!(id, options \\ []) do
-    PermissionGroup
-    |> Repo.get!(id)
-    |> preload_options(options)
+  def get_permission_group!(id) do
+    Repo.get!(PermissionGroup, id)
   end
 
   @doc """
@@ -169,8 +171,8 @@ defmodule TdAuth.Permissions do
 
   """
   def create_permission_group(attrs \\ %{}) do
-    %PermissionGroup{}
-    |> PermissionGroup.changeset(attrs)
+    attrs
+    |> PermissionGroup.changeset()
     |> Repo.insert()
   end
 
@@ -186,21 +188,11 @@ defmodule TdAuth.Permissions do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_permission_group(%PermissionGroup{} = permission_group, attrs) do
+  def update_permission_group(%PermissionGroup{} = permission_group, params) do
     permission_group
-    |> Repo.preload(:permissions)
-    |> PermissionGroup.changeset(attrs)
-    |> assoc_with_permissions(attrs)
+    |> PermissionGroup.changeset(params)
     |> Repo.update()
   end
-
-  defp assoc_with_permissions(changeset, %{"permissions" => permissions}),
-    do: Changeset.put_assoc(changeset, :permissions, permissions)
-
-  defp assoc_with_permissions(changeset, %{permissions: permissions}),
-    do: Changeset.put_assoc(changeset, :permissions, permissions)
-
-  defp assoc_with_permissions(changeset, _), do: changeset
 
   @doc """
   Deletes a PermissionGroup.
@@ -220,30 +212,11 @@ defmodule TdAuth.Permissions do
     |> Repo.delete()
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking permission_group changes.
-
-  ## Examples
-
-      iex> change_permission_group(permission_group)
-      %Ecto.Changeset{source: %PermissionGroup{}}
-
-  """
-  def change_permission_group(%PermissionGroup{} = permission_group) do
-    PermissionGroup.changeset(permission_group, %{})
-  end
-
-  def preload_options([], _), do: []
-
-  def preload_options(%{} = entity, []), do: entity
-
-  def preload_options(entities, []) when is_list(entities), do: entities
-
-  def preload_options(%{} = entity, options) do
-    Repo.preload(entity, options)
-  end
-
-  def preload_options(entities, options) when is_list(entities) do
-    Repo.preload(entities, options)
+  defp do_where(queryable, filter_clauses) do
+    Enum.reduce(filter_clauses, queryable, fn
+      {:id, {:in, ids}}, q -> where(q, [p], p.id in ^ids)
+      {:preload, preloads}, q -> preload(q, ^preloads)
+      _, q -> q
+    end)
   end
 end

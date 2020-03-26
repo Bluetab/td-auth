@@ -1,13 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-940] Migrated to Elixir 1.10, simplified routes, improved hypermedia on
+  `/api/:resource_type/:resource_id/acl_entries`
+
 ## [3.18.0] 2020-03-23
 
 ### Added
 
-- [TD-2281]:
-  - Groups of permissions on token
-  - New permission groups `dashboards`and `lineage`
-  - New permissions `view_dashboard` and `view_lineage`
+- [TD-2281] Include permission groups in JWT token, added permissions for dashboards and lineage
 
 ## [3.15.0] 2020-02-10
 

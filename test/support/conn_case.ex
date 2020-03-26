@@ -14,51 +14,48 @@ defmodule TdAuthWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
+
+  import TdAuth.Factory
+  import TdAuthWeb.Authentication, only: :functions
+
   alias Ecto.Adapters.SQL.Sandbox
   alias Phoenix.ConnTest
-  alias TdAuth.Accounts
-  import TdAuthWeb.Authentication, only: :functions
 
   using do
     quote do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
-      alias TdAuthWeb.Router.Helpers, as: Routes
+
+      import Assertions
       import TdAuth.Factory
+
+      alias TdAuthWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
       @endpoint TdAuthWeb.Endpoint
     end
   end
 
-  @admin_user_name "app-admin"
-
   setup tags do
     :ok = Sandbox.checkout(TdAuth.Repo)
+
     unless tags[:async] do
       Sandbox.mode(TdAuth.Repo, {:shared, self()})
     end
 
     cond do
       tags[:admin_authenticated] ->
-        user = case Accounts.get_user_by_name(@admin_user_name) do
-          nil ->
-            {:ok, user} = Accounts.create_user_nocache(%{
-                user_name: @admin_user_name,
-                password: "mypass",
-                email: "no@email.com",
-                is_admin: true
-              })
-            user
-          user -> user
-        end
-        user = Map.put(user, :is_admin, true)
-        create_user_auth_conn(user)
+        :user
+        |> insert(is_admin: true)
+        |> create_user_auth_conn()
+
       tags[:authenticated_user] ->
-        user = Accounts.get_user_by_name(tags[:authenticated_user])
-        create_user_auth_conn(user)
-       true ->
-         {:ok, conn: ConnTest.build_conn()}
+        :user
+        |> insert()
+        |> create_user_auth_conn()
+
+      true ->
+        {:ok, conn: ConnTest.build_conn()}
     end
   end
 end

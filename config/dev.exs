@@ -38,8 +38,7 @@ config :td_auth, TdAuth.Repo,
   username: "postgres",
   password: "postgres",
   database: "td_auth_dev",
-  hostname: "localhost",
-  pool_size: 10
+  hostname: "localhost"
 
 # Redis configuration
 config :td_cache, redis_host: "localhost"

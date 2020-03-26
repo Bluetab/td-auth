@@ -15,6 +15,11 @@ defmodule TdAuthWeb.GroupView do
     %{data: render_one(group, GroupView, "group.json")}
   end
 
+  def render("group.json", %{group: %{users: users} = group}) when is_list(users) do
+    users = render_many(users, UserView, "user_embedded.json")
+    %{id: group.id, name: group.name, description: group.description, users: users}
+  end
+
   def render("group.json", %{group: group}) do
     %{id: group.id, name: group.name, description: group.description}
   end

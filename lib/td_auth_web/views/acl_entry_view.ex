@@ -1,35 +1,33 @@
 defmodule TdAuthWeb.AclEntryView do
   use TdAuthWeb, :view
-  use TdHypermedia, :view
-  alias TdAuth.Accounts.Group
-  alias TdAuth.Accounts.User
-  alias TdAuth.Repo
-  alias TdAuthWeb.AclEntryView
+
   alias TdAuthWeb.GroupView
   alias TdAuthWeb.UserView
 
   def render("index.json", %{acl_entries: acl_entries}) do
-    %{data: render_many(acl_entries, AclEntryView, "acl_entry.json")}
+    %{data: render_many(acl_entries, __MODULE__, "acl_entry.json")}
   end
 
   def render("show.json", %{acl_entry: acl_entry}) do
-    %{data: render_one(acl_entry, AclEntryView, "acl_entry.json")}
+    %{data: render_one(acl_entry, __MODULE__, "acl_entry.json")}
   end
 
   def render("acl_entry.json", %{acl_entry: acl_entry}) do
-    %{
-      id: acl_entry.id,
-      principal_type: acl_entry.principal_type,
-      principal_id: acl_entry.principal_id,
-      resource_type: acl_entry.resource_type,
-      resource_id: acl_entry.resource_id,
-      description: acl_entry.description,
-      role_id: acl_entry.role_id
-    }
+    Map.take(acl_entry, [
+      :description,
+      :group_id,
+      :id,
+      :resource_id,
+      :resource_type,
+      :role_id,
+      :user_id
+    ])
   end
 
-  def render("resource_acl_entries.json", %{hypermedia: hypermedia}) do
-    render_many_hypermedia(hypermedia, AclEntryView, "resource_acl_entry.json")
+  def render("resource_acl_entry.json", %{embedded: %{acl_entry: acl_entry, links: links}}) do
+    acl_entry
+    |> render_one(__MODULE__, "resource_acl_entry.json")
+    |> Map.put(:_links, links)
   end
 
   def render("resource_acl_entry.json", %{acl_entry: acl_entry}) do
@@ -49,7 +47,7 @@ defmodule TdAuthWeb.AclEntryView do
   defp resource_acl_entry(%{"_actions" => actions} = acl_entry) do
     acl_entry
     |> Map.drop(["_actions"])
-    |> resource_acl_entry
+    |> resource_acl_entry()
     |> Map.put(:_actions, actions)
   end
 
@@ -57,27 +55,27 @@ defmodule TdAuthWeb.AclEntryView do
          %{
            description: description,
            id: id,
-           principal_type: principal_type,
            role: %{id: role_id, name: role_name}
          } = acl_entry
        ) do
     %{
       description: description,
       acl_entry_id: id,
-      principal_type: principal_type,
+      principal_type: principal_type(acl_entry),
       principal: render_principal(acl_entry),
       role_id: role_id,
       role_name: role_name
     }
   end
 
-  defp render_principal(%{principal_type: "group", principal_id: group_id}) do
-    group = Repo.get_by(Group, id: group_id)
+  defp principal_type(%{user_id: user_id}) when not is_nil(user_id), do: "user"
+  defp principal_type(%{group_id: group_id}) when not is_nil(group_id), do: "group"
+
+  defp render_principal(%{group: group}) when not is_nil(group) do
     render_one(group, GroupView, "group.json")
   end
 
-  defp render_principal(%{principal_type: "user", principal_id: user_id}) do
-    user = Repo.get_by(User, id: user_id)
+  defp render_principal(%{user: user}) when not is_nil(user) do
     render_one(user, UserView, "user_embedded.json")
   end
 end
