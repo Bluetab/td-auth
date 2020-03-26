@@ -1,18 +1,17 @@
 defmodule TdAuth.Application do
-  @moduledoc false
+  @moduledoc """
+  The Truedat Auth application module.
+  """
+
   use Application
+
   alias TdAuth.Metrics.PrometheusExporter
   alias TdAuthWeb.Endpoint
 
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
-    import Supervisor.Spec
-
-    acl_remover_worker = %{
-      id: TdAuth.AclRemover,
-      start: {TdAuth.AclRemover, :start_link, []}
-    }
+    env = Application.get_env(:td_auth, :env)
 
     # Setup metrics exporter
     PrometheusExporter.setup()
@@ -20,22 +19,9 @@ defmodule TdAuth.Application do
     # Define workers and child supervisors to be supervised
     children =
       [
-        # Start the Ecto repository
-        supervisor(TdAuth.Repo, []),
-        # Start the endpoint when the application starts
-        supervisor(TdAuthWeb.Endpoint, []),
-        # Start your own worker by calling: TdAuth.Worker.start_link(arg1, arg2, arg3)
-        # worker(TdAuth.Worker, [arg1, arg2, arg3]),
-        worker(TdAuth.UserLoader, [TdAuth.UserLoader]),
-        worker(TdAuth.AclLoader, [TdAuth.AclLoader]),
-        %{
-          id: TdAuth.CustomSupervisor,
-          start:
-            {TdAuth.CustomSupervisor, :start_link,
-             [%{children: [acl_remover_worker], strategy: :one_for_one}]},
-          type: :supervisor
-        }
-      ] ++ oidc_workers() ++ saml_workers() ++ ldap_workers()
+        TdAuth.Repo,
+        TdAuthWeb.Endpoint
+      ] ++ workers(env)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -50,34 +36,40 @@ defmodule TdAuth.Application do
     :ok
   end
 
-  defp ldap_workers do
-    import Supervisor.Spec
+  defp workers(:test), do: []
 
+  defp workers(_env) do
+    [
+      TdAuth.Permissions.Seeds,
+      TdAuth.Accounts.UserLoader,
+      TdAuth.Permissions.AclLoader,
+      TdAuth.Permissions.AclRemover
+    ] ++ oidc_workers() ++ saml_workers() ++ ldap_workers()
+  end
+
+  defp ldap_workers do
     validations_file =
       :td_auth
       |> Application.get_env(:ldap)
-      |> Keyword.get(:validations_file, "")
+      |> Keyword.get(:validations_file)
 
-    [worker(TdAuth.Ldap.LdapWorker, [validations_file])]
+    [{TdAuth.Ldap.LdapWorker, validations_file}]
   end
 
   defp saml_workers do
-    import Supervisor.Spec
     config = Application.get_env(:td_auth, :saml)
 
     if empty_config?(config, :sp_id),
       do: [],
-      else: [worker(TdAuth.Saml.SamlWorker, [config])]
+      else: [{TdAuth.Saml.SamlWorker, config}]
   end
 
   defp oidc_workers do
-    import Supervisor.Spec
-
     config = Application.get_env(:td_auth, :openid_connect_providers)
 
     if empty_config?(config, :client_id),
       do: [],
-      else: [worker(OpenIDConnect.Worker, [config])]
+      else: [{OpenIDConnect.Worker, config}]
   end
 
   defp empty_config?(nil, _), do: true

@@ -4,6 +4,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   """
 
   alias TdCache.NonceCache
+
   require Logger
 
   def authentication_url do
@@ -24,8 +25,6 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
     with {:ok, claims} <- verify_token(authorization_headers),
          profile <- map_profile(claims) do
       {:ok, profile}
-    else
-      error -> error
     end
   end
 

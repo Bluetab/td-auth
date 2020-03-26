@@ -3,7 +3,7 @@ Feature: User Authentication
   without any permission
 
   Background:
-  Given an initial admin user "app-admin" is created with password "mypass"
+    Given an initial admin user "app-admin" is created with password "mypass"
 
   Scenario: logging
     When user "app-admin" tries to log into the application with password "mypass"
@@ -23,12 +23,12 @@ Feature: User Authentication
     Then the system returns a result with code "Created"
     And user "newuser" can be authenticated with password "new-password"
 
-   Scenario: Check whether user is superadmin when creating new user
-     Given an existing user "johndoe" with password "secret" without "super-admin" permission
-     And user "johndoe" is logged in the application with password "secret"
-     When "johndoe" tries to create a user "newuser" with password "new-password"
-     Then the system returns a result with code "Forbidden"
-     And user "newuser" can not be authenticated with password "new-password"
+  Scenario: Check whether user is superadmin when creating new user
+    Given an existing user "johndoe" with password "secret" without "super-admin" permission
+    And user "johndoe" is logged in the application with password "secret"
+    When "johndoe" tries to create a user "newuser" with password "new-password"
+    Then the system returns a result with code "Forbidden"
+    And user "newuser" can not be authenticated with password "new-password"
 
   Scenario: Error when creating a new user in the application by a non admin user
     Given an existing user "nobody" with password "inventedpass" without "super-admin" permission
@@ -70,19 +70,19 @@ Feature: User Authentication
     And user "johndoe" can not be authenticated with password "secret"
     And user "johndoe" can be authenticated with password "newsecret"
 
-   Scenario Outline: Check whether user is superadmin when modifying another user
-     Given an existing user "<user>" with password "secret" with super-admin property <isadmin>
-     And an existing user "user" with password "userpass" without "super-admin" permission
-     And user "<user>" is logged in the application with password "secret"
-     When user "<user>" tries to modify user "user" with following data:
-       | is_admin |
-       | false    |
-     Then the system returns a result with code "<result>"
+  Scenario Outline: Check whether user is superadmin when modifying another user
+    Given an existing user "<user>" with password "secret" with super-admin property "<isadmin>"
+    And an existing user "user" with password "userpass" without "super-admin" permission
+    And user "<user>" is logged in the application with password "secret"
+    When user "<user>" tries to modify user "user" with following data:
+      | is_admin |
+      | false    |
+    Then the system returns a result with code "<result>"
 
-     Examples:
-       | user      | isadmin   | result    |
-       | superad   | yes       | Ok        |
-       | johndoe   | no        | Forbidden |
+    Examples:
+      | user    | isadmin | result    |
+      | superad | yes     | Ok        |
+      | johndoe | no      | Forbidden |
 
   Scenario: Password modification error
     Given an existing user "johndoe" with password "secret" without "super-admin" permission
@@ -94,55 +94,55 @@ Feature: User Authentication
     And user "johndoe" can not be authenticated with password "newsecret"
     And user "johndoe" can be authenticated with password "secret"
 
-  Scenario: Password modification error
+  Scenario: Password modification error 2
     Given an existing user "johndoe" with password "secret" without "super-admin" permission
     Given an existing user "dashelle" with password "secret" without "super-admin" permission
     And user "johndoe" is logged in the application with password "secret"
     When "johndoe" tries to modify "dashelle" password with following data:
       | old_password | new_password |
-      | secret     | newsecret    |
+      | secret       | newsecret    |
     Then the system returns a result with code "Unprocessable Entity"
     And user "dashelle" can not be authenticated with password "newsecret"
     And user "dashelle" can be authenticated with password "secret"
 
-   Scenario Outline: Delete user only when user is superadmin
-     Given an existing user "<user>" with password "secret" with super-admin property <isadmin>
-     And an existing user "user" with password "userpass" without "super-admin" permission
-     And user "<user>" is logged in the application with password "secret"
-     When user "<user>" tries to delete user "user"
-     Then the system returns a result with code "<result>"
-     And if result "<result>" is "Deleted" user "user" does not exist
-     And if result "<result>" is not "Deleted" user "user" can be authenticated with password "userpass"
+  Scenario Outline: Delete user only when user is superadmin
+    Given an existing user "<user>" with password "secret" with super-admin property "<isadmin>"
+    And an existing user "user" with password "userpass" without "super-admin" permission
+    And user "<user>" is logged in the application with password "secret"
+    When user "<user>" tries to delete user "user"
+    Then the system returns a result with code "<result>"
+    And if result "<result>" is "No Content" user "user" does not exist
+    And if result "<result>" is not "No Content" user "user" can be authenticated with password "userpass"
 
-     Examples:
-       | user      | isadmin   | result    |
-       | superad   | yes       | Deleted   |
-       | johndoe   | no        | Forbidden |
+    Examples:
+      | user    | isadmin | result     |
+      | superad | yes     | No Content |
+      | johndoe | no      | Forbidden  |
 
-   Scenario Outline: Reset password when user is superadmin
-     Given an existing user "johndoe" with password "secret" without "super-admin" permission
-     And an existing user "<user>" with password "secret" with super-admin property <isadmin>
-     And user "<user>" is logged in the application with password "secret"
-     When "<user>" tries to reset "johndoe" password with new_password "newsecret"
-     Then the system returns a result with code "<result>"
-     And if result "<result>" is not "Ok" user "johndoe" can be authenticated with password "secret"
-     And if result "<result>" is not "Forbidden" user "johndoe" can be authenticated with password "newsecret"
+  Scenario Outline: Reset password when user is superadmin
+    Given an existing user "johndoe" with password "secret" without "super-admin" permission
+    And an existing user "<user>" with password "secret" with super-admin property "<isadmin>"
+    And user "<user>" is logged in the application with password "secret"
+    When "<user>" tries to reset "johndoe" password with new_password "newsecret"
+    Then the system returns a result with code "<result>"
+    And if result "<result>" is not "Ok" user "johndoe" can be authenticated with password "secret"
+    And if result "<result>" is not "Forbidden" user "johndoe" can be authenticated with password "newsecret"
 
-     Examples:
-       | user      | isadmin   | result    |
-       | superad   | yes       | Ok        |
-       | dashelle  | no        | Forbidden |
+    Examples:
+      | user     | isadmin | result    |
+      | superad  | yes     | Ok        |
+      | dashelle | no      | Forbidden |
 
-   Scenario Outline: User updates own properties
-     Given an existing user "<user>" with password "secret" with super-admin property <isadmin>
-     And user "<user>" is logged in the application with password "secret"
-     When "<user>" tries to reset his "<property>" with new property value "<new_value"
-     Then the system returns a result with code "<result>"
+  Scenario Outline: User updates own properties
+    Given an existing user "<user>" with password "secret" with super-admin property "<isadmin>"
+    And user "<user>" is logged in the application with password "secret"
+    When "<user>" tries to reset his "<property>" with new property value "<new_value"
+    Then the system returns a result with code "<result>"
 
-     Examples:
-       | user      | isadmin   | property   | new_value      | result    |
-       | superad   | yes       | full_name  | New Super Ad   | Ok        |
-       | superad   | yes       | password   | newsecret      | Ok        |
-       | dashelle  | no        | full_name  | New John Doe   | Ok        |
-       | dashelle  | no        | email      | john@email.com | Ok        |
-       | dashelle  | no        | password   | newsecret      | Forbidden |
+    Examples:
+      | user     | isadmin | property  | new_value      | result    |
+      | superad  | yes     | full_name | New Super Ad   | Ok        |
+      | superad  | yes     | password  | newsecret      | Ok        |
+      | dashelle | no      | full_name | New John Doe   | Ok        |
+      | dashelle | no      | email     | john@email.com | Ok        |
+      | dashelle | no      | password  | newsecret      | Forbidden |

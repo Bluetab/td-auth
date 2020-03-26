@@ -1,32 +1,32 @@
-defmodule TdAuth.AclLoader do
+defmodule TdAuth.Permissions.AclLoader do
   @moduledoc """
-  GenServer to load acl into Redis
+  GenServer to load ACL entries into distributed cache.
   """
 
   use GenServer
 
-  alias TdAuth.Permissions.AclEntry
+  alias TdAuth.Permissions.AclEntries
   alias TdCache.AclCache
 
   require Logger
 
-  def start_link(name \\ nil) do
-    GenServer.start_link(__MODULE__, nil, name: name)
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
   def refresh(resource_type, resource_id) do
-    GenServer.call(TdAuth.AclLoader, {:refresh, resource_type, resource_id})
+    GenServer.call(__MODULE__, {:refresh, resource_type, resource_id})
   end
 
   def delete(resource_type, resource_id) do
-    GenServer.call(TdAuth.AclLoader, {:delete, resource_type, resource_id})
+    GenServer.call(__MODULE__, {:delete, resource_type, resource_id})
   end
 
-  def delete_acl(resource_type, resource_id, role, user) do
-    GenServer.call(TdAuth.AclLoader, {:delete_acl, resource_type, resource_id, role, user})
+  def delete_acl(resource_type, resource_id, role, user_id) do
+    GenServer.call(__MODULE__, {:delete_acl, resource_type, resource_id, role, user_id})
   end
 
-  @impl true
+  @impl GenServer
   def init(state) do
     unless Application.get_env(:td_auth, :env) == :test do
       schedule_work(:load_cache, 0)
@@ -37,13 +37,18 @@ defmodule TdAuth.AclLoader do
     {:ok, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:refresh, resource_type, resource_id}, _from, state) do
-    set_role_and_users(resource_type, resource_id)
+    AclEntries.get_user_ids_by_resource_and_role(
+      resource_type: resource_type,
+      resource_id: resource_id
+    )
+    |> put_cache()
+
     {:reply, :ok, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:delete, resource_type, resource_id}, _from, state) do
     roles = AclCache.get_acl_roles(resource_type, resource_id)
 
@@ -55,15 +60,17 @@ defmodule TdAuth.AclLoader do
     {:reply, :ok, state}
   end
 
-  @impl true
-  def handle_call({:delete_acl, resource_type, resource_id, role, user}, _from, state) do
-    AclCache.delete_acl_role_user(resource_type, resource_id, role, user)
+  @impl GenServer
+  def handle_call({:delete_acl, resource_type, resource_id, role, user_id}, _from, state) do
+    AclCache.delete_acl_role_user(resource_type, resource_id, role, user_id)
     {:reply, :ok, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:load_cache, state) do
-    AclEntry.list_acl_resources() |> set_roles_and_users
+    AclEntries.get_user_ids_by_resource_and_role()
+    |> put_cache()
+
     {:noreply, state}
   end
 
@@ -71,22 +78,18 @@ defmodule TdAuth.AclLoader do
     Process.send_after(self(), action, seconds)
   end
 
-  defp set_roles_and_users(key_values) do
-    Enum.each(key_values, fn {resource_type, resource_id} ->
-      set_role_and_users(resource_type, resource_id)
+  defp put_cache(%{} = user_ids_by_resource_and_role) do
+    user_ids_by_resource_and_role
+    |> Enum.map(fn {{resource_type, resource_id, role} = key, user_ids} ->
+      {:ok, _} = AclCache.set_acl_role_users(resource_type, resource_id, role, user_ids)
+      key
     end)
-  end
-
-  defp set_role_and_users(resource_type, resource_id) do
-    roles_and_users = AclEntry.list_user_roles(resource_type, resource_id)
-
-    roles =
-      Enum.map(roles_and_users, fn {role, users} ->
-        users = Enum.map(users, & &1.id)
-        {:ok, _} = AclCache.set_acl_role_users(resource_type, resource_id, role, users)
-        role
-      end)
-
-    {:ok, _} = AclCache.set_acl_roles(resource_type, resource_id, roles)
+    |> Enum.group_by(
+      fn {resource_type, resource_id, _} -> {resource_type, resource_id} end,
+      fn {_, _, role} -> role end
+    )
+    |> Enum.each(fn {{resource_type, resource_id}, roles} ->
+      {:ok, _} = AclCache.set_acl_roles(resource_type, resource_id, roles)
+    end)
   end
 end

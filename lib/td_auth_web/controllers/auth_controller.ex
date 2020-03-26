@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.AuthController do
   use TdAuthWeb, :controller
-  use PhoenixSwagger
 
   alias TdAuth.Saml.SamlWorker
   alias TdAuthWeb.AuthProvider.OIDC

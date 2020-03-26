@@ -13,6 +13,6 @@ defmodule TdAuth.Auth.Pipeline.CurrentResource do
 
     def current_resource(conn, _opts) do
       current_resource = GuardianPlug.current_resource(conn)
-      conn |> assign(:current_resource, current_resource)
+      assign(conn, :current_resource, current_resource)
     end
   end

@@ -29,8 +29,7 @@ defmodule TdAuthWeb.UserView do
   end
 
   def render("user_embedded.json", %{user: user}) do
-    user
-      |> Map.take([:id, :user_name, :email, :full_name, :is_admin])
+    Map.take(user, [:id, :user_name, :email, :full_name, :is_admin])
   end
 
   defp render_acls(user_map, %{acls: acls}) do

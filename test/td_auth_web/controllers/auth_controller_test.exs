@@ -3,6 +3,12 @@ defmodule TdAuthWeb.AuthControllerTest do
 
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  setup_all do
+    config = Application.get_env(:td_auth, :openid_connect_providers)
+    start_supervised!({OpenIDConnect.Worker, config})
+    :ok
+  end
+
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end

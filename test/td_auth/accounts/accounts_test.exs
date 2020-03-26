@@ -3,36 +3,51 @@ defmodule TdAuth.AccountsTest do
 
   alias TdAuth.Accounts
 
+  setup_all do
+    start_supervised!(TdAuth.Accounts.UserLoader)
+    :ok
+  end
+
   describe "users" do
     alias TdAuth.Accounts.User
 
-    @valid_attrs %{password: "some password", user_name: "some user_name", email: "some@email.com"}
-    @update_attrs %{password: "some updated password", user_name: "some updated user_name", email: "someupdated@email.com"}
+    @valid_attrs %{
+      password: "some password",
+      user_name: "some user_name",
+      email: "some@email.com"
+    }
+    @update_attrs %{
+      password: "some updated password",
+      user_name: "some updated user_name",
+      email: "someupdated@email.com"
+    }
     @invalid_attrs %{password: nil, user_name: nil, email: nil}
 
-    def user_fixture(attrs \\ %{}) do
-      {:ok, user} =
-        attrs
-        |> Enum.into(@valid_attrs)
-        |> Accounts.create_user()
-      user
-    end
-
     test "list_users/0 returns all users" do
-      user_fixture()
+      insert(:user)
       assert length(Accounts.list_users()) == 1
     end
 
     test "get_user!/1 returns the user with given id" do
-      user = user_fixture()
-      #assert Accounts.get_user!(user.id) == user
-      assert Accounts.get_user!(user.id).id == user.id
+      %{id: user_id} = insert(:user)
+      assert %{id: ^user_id} = Accounts.get_user!(user_id)
     end
-    test "create_user/1 with valid data creates a user" do
-      assert {:ok, %User{} = user} = Accounts.create_user(@valid_attrs)
 
-      assert user.password == "some password"
-      assert user.user_name == "some user_name"
+    test "create_user/1 with valid data creates a user" do
+      %{name: group_name} = group = insert(:group)
+
+      params = %{
+        "user_name" => "new_user",
+        "email" => "email@example.com",
+        "password" => "topsecret",
+        "groups" => [group.name, "new group"]
+      }
+
+      assert {:ok, %User{} = user} = Accounts.create_user(params)
+
+      assert user.password == "topsecret"
+      assert user.user_name == "new_user"
+      assert [%{name: ^group_name}, %{name: "new group"}] = user.groups
     end
 
     test "create_user/1 with invalid data returns error changeset" do
@@ -40,34 +55,28 @@ defmodule TdAuth.AccountsTest do
     end
 
     test "update_user/2 with valid data updates the user" do
-      user = user_fixture()
-      assert {:ok, user} = Accounts.update_user(user, @update_attrs)
-      assert %User{} = user
+      user = insert(:user)
+      assert {:ok, %User{} = user} = Accounts.update_user(user, @update_attrs)
       assert user.password == "some updated password"
       assert user.user_name == "some updated user_name"
       assert user.email == "someupdated@email.com"
     end
 
     test "update_user/2 with invalid data returns error changeset" do
-      user = user_fixture()
+      user = insert(:user)
       assert {:error, %Ecto.Changeset{}} = Accounts.update_user(user, @invalid_attrs)
       assert user.id == Accounts.get_user!(user.id).id
-#      assert user == Accounts.get_user!(user.id)
+      #      assert user == Accounts.get_user!(user.id)
     end
 
     test "delete_user/1 deletes the user" do
-      user = user_fixture()
+      user = insert(:user)
       assert {:ok, _} = Accounts.delete_user(user)
       assert_raise Ecto.NoResultsError, fn -> Accounts.get_user!(user.id) end
     end
 
-    test "change_user/1 returns a user changeset" do
-      user = user_fixture()
-      assert %Ecto.Changeset{} = Accounts.change_user(user)
-    end
-
     test "get_user_by_name/1 return the user with given user_name" do
-      user = user_fixture()
+      user = insert(:user)
       assert Accounts.get_user_by_name(user.user_name).id == user.id
     end
 
@@ -78,6 +87,7 @@ defmodule TdAuth.AccountsTest do
       {:ok, user} =
         %{password: "some password", user_name: uppercase_name, email: "some@email.com"}
         |> Accounts.create_user()
+
       assert user.user_name == downcase_name
     end
   end
@@ -136,9 +146,28 @@ defmodule TdAuth.AccountsTest do
       assert_raise Ecto.NoResultsError, fn -> Accounts.get_group!(group.id) end
     end
 
-    test "change_group/1 returns a group changeset" do
-      group = group_fixture()
-      assert %Ecto.Changeset{} = Accounts.change_group(group)
+    test "get_user_acls/1 returns the ACLs of a user and its groups" do
+      %{id: user_id} = user = insert(:user, groups: [build(:group)])
+      %{id: group_id} = hd(user.groups)
+
+      acl_entry_1 = insert(:acl_entry, group_id: group_id)
+      acl_entry_2 = insert(:acl_entry, user_id: user_id)
+
+      result = TdAuth.Accounts.get_user_acls(user_id)
+
+      assert_lists_equal(
+        result,
+        [acl_entry_1, acl_entry_2],
+        &assert_structs_equal(&1, &2, [
+          :id,
+          :description,
+          :group_id,
+          :resource_id,
+          :resource_type,
+          :role_id,
+          :user_id
+        ])
+      )
     end
   end
 end

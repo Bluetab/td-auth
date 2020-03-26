@@ -3,14 +3,12 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
 
   alias Jason, as: JSON
 
-  @auth_service Application.get_env(:td_auth, :auth)[:auth_service]
+  @auth0_service Application.get_env(:td_auth, :auth)[:auth0_service]
 
   def authenticate(authorization_header) do
     with {:ok, access_token} <- fetch_access_token(authorization_header),
          {:ok, profile} <- get_auth0_profile(access_token) do
       {:ok, profile}
-    else
-      error -> error
     end
   end
 
@@ -40,11 +38,11 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
       Authorization: "Bearer #{access_token}"
     ]
 
-    {status_code, user_info} = @auth_service.get_user_info(get_auth0_profile_path(), headers)
+    {status_code, user_info} = @auth0_service.get_user_info(get_auth0_profile_path(), headers)
 
     case status_code do
       200 ->
-        profile = user_info |> JSON.decode!()
+        profile = JSON.decode!(user_info)
         mapping = get_auth0_profile_mapping()
 
         profile =
@@ -60,13 +58,11 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
     end
   end
 
-  defp profile_mapping_value(key, profile) when is_binary(key), do: Map.get(profile, key, nil)
+  defp profile_mapping_value(key, profile) when is_binary(key), do: Map.get(profile, key)
 
   defp profile_mapping_value(keys, profile) when is_list(keys) do
     keys
-    |> Enum.map(fn key ->
-      Map.get(profile, key, "")
-    end)
+    |> Enum.map(&Map.get(profile, &1, ""))
     |> Enum.join(" ")
   end
 end

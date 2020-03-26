@@ -12,9 +12,6 @@ config :td_auth, :env, Mix.env()
 config :td_auth,
   ecto_repos: [TdAuth.Repo]
 
-# Hashing algorithm
-config :td_auth, hashing_module: Comeonin.Bcrypt
-
 config :td_auth, allow_proxy_login: "false"
 
 # Configures the endpoint
@@ -22,6 +19,9 @@ config :td_auth, TdAuthWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "qf8wPCPHk4ZqqM7ebnfKw2okARcnrqsnfsQjKSGC0AEK87/rkIlXWnYXa5cTZ2TX",
   render_errors: [view: TdAuthWeb.ErrorView, accepts: ~w(json)]
+
+config :td_auth, TdAuth.Repo,
+  pool_size: 10
 
 # Configures Elixir's Logger
 # set EX_LOGGER_FORMAT environment variable to override Elixir's Logger format
@@ -35,6 +35,7 @@ config :logger, :console,
 
 # Configuration for Phoenix
 config :phoenix, :json_library, Jason
+config :phoenix_swagger, :json_library, Jason
 
 config :td_auth, TdAuth.Auth.Guardian,
   # optional
@@ -42,6 +43,10 @@ config :td_auth, TdAuth.Auth.Guardian,
   issuer: "tdauth",
   token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
   secret_key: "SuperSecretTruedat"
+
+config :td_auth, TdAuth.Auth.Auth0,
+  allowed_algos: ["RS256"],
+  verify_issuer: true
 
 # ------------ ldap ----------
 
@@ -59,14 +64,13 @@ config :td_auth, :ldap,
   profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"givenName\",\"email\":\"mail\"}",
   bind_pattern: "cn=%{user_name},ou=people,dc=bluetab,dc=net",
   search_path: "ou=people,dc=bluetab,dc=net",
-  search_field: "cn",
-  validations_file: ""
+  search_field: "cn"
 
 # ------------ oidc default ----------
 config :td_auth, :openid_connect_providers, oidc: []
 
 # --------- Auht0 default --------------
-config :td_auth, :auth, auth_service: TdAuthWeb.ApiServices.HttpAuthService
+config :td_auth, :auth, auth0_service: TdAuthWeb.ApiServices.HttpAuth0Service
 
 # ------------ ad ----------
 
