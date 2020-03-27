@@ -53,11 +53,18 @@ defmodule TdAuthWeb.ResourceAclController do
     response(303, "See Other")
   end
 
-  def update(conn, %{"resource_type" => resource_type, "resource_id" => resource_id, "acl_entry" => acl_entry_params} = params) do
+  def update(
+        conn,
+        %{
+          "resource_type" => resource_type,
+          "resource_id" => resource_id,
+          "acl_entry" => acl_entry_params
+        } = params
+      ) do
     current_resource = conn.assigns[:current_resource]
 
-    acl_resource = %{resource_type: resource_type, resource_id: resource_id}
     acl_entry_params = normalize_params(acl_entry_params, params)
+    acl_resource = Map.take(acl_entry_params, [:resource_type, :resource_id])
 
     with {:can, true} <- {:can, can?(current_resource, create(acl_resource))},
          {:ok, %AclEntry{}} <- AclEntries.create_or_update(acl_entry_params) do
@@ -127,7 +134,7 @@ defmodule TdAuthWeb.ResourceAclController do
   end
 
   defp resource_acl_path(resource_type, resource_id) do
-    Routes.resource_acl_path(Endpoint, :show, resource_type, resource_id)
+    Routes.resource_acl_path(Endpoint, :show, Inflex.pluralize(resource_type), resource_id)
   end
 
   defp acl_entry_path(acl_entry) do
