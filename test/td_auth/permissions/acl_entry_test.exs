@@ -32,7 +32,7 @@ defmodule TdAuth.Permissions.AclEntryTest do
 
       assert AclEntry.changes(attrs) == %{
                user_id: 1234,
-               resource_type: "books",
+               resource_type: "book",
                role_id: 32
              }
     end

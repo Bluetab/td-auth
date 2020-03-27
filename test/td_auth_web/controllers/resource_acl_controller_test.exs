@@ -25,7 +25,14 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
 
       assert %{"_embedded" => embedded, "_links" => links} =
                conn
-               |> get(Routes.resource_acl_path(conn, :show, resource_type, resource_id))
+               |> get(
+                 Routes.resource_acl_path(
+                   conn,
+                   :show,
+                   Inflex.pluralize(resource_type),
+                   resource_id
+                 )
+               )
                |> validate_resp_schema(schema, "ResourceAclEntriesResponse")
                |> json_response(:ok)
 
@@ -55,11 +62,21 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
         }
       }
 
-      conn1 = patch(conn, Routes.resource_acl_path(conn, :update, resource_type, resource_id, params))
+      conn1 =
+        patch(
+          conn,
+          Routes.resource_acl_path(
+            conn,
+            :update,
+            Inflex.pluralize(resource_type),
+            resource_id,
+            params
+          )
+        )
 
       assert response(conn1, :see_other)
       assert [location] = get_resp_header(conn1, "location")
-      assert location == "/api/domain/#{resource_id}/acl_entries"
+      assert location == "/api/domains/#{resource_id}/acl_entries"
 
       assert %{"_embedded" => embedded, "_links" => links} =
                conn
@@ -88,11 +105,20 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       }
 
       conn1 =
-        patch(conn, Routes.resource_acl_path(conn, :update, resource_type, resource_id, params))
+        patch(
+          conn,
+          Routes.resource_acl_path(
+            conn,
+            :update,
+            Inflex.pluralize(resource_type),
+            resource_id,
+            params
+          )
+        )
 
       assert response(conn1, :see_other)
       assert [location] = get_resp_header(conn1, "location")
-      assert location == "/api/domain/#{resource_id}/acl_entries"
+      assert location == "/api/domains/#{resource_id}/acl_entries"
 
       assert %{"_embedded" => embedded, "_links" => links} =
                conn
@@ -117,7 +143,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       }
 
       assert conn
-             |> patch(Routes.resource_acl_path(conn, :update, "domain", "1"), params)
+             |> patch(Routes.resource_acl_path(conn, :update, "domains", "1"), params)
              |> json_response(:forbidden)
     end
   end

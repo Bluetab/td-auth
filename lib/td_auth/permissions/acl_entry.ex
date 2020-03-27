@@ -38,6 +38,7 @@ defmodule TdAuth.Permissions.AclEntry do
   def changes(%{} = attrs) do
     %__MODULE__{}
     |> cast(attrs, @permitted)
+    |> update_change(:resource_type, &Inflex.singularize/1)
     |> Map.get(:changes)
   end
 
@@ -54,6 +55,7 @@ defmodule TdAuth.Permissions.AclEntry do
   def changeset(%__MODULE__{} = acl_entry, params) do
     acl_entry
     |> cast(params, @permitted)
+    |> update_change(:resource_type, &Inflex.singularize/1)
     |> put_nil_principal(params)
     |> validate_required([:resource_type, :resource_id, :role_id])
     |> validate_length(:description, max: 120)
