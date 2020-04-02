@@ -129,5 +129,99 @@ defmodule TdAuth.PermissionsTest do
 
       assert key == "group.delete.existing.permissions"
     end
+
+    test "get_domains_with_perms/2 returns permission and domains with that permission for user " do
+      %{id: user_id} = user = insert(:user, groups: [build(:group)])
+      %{id: group_id} = hd(user.groups)
+
+      permission = insert(:permission, name: "view_dashboard")
+      q_permission = insert(:permission, name: "view_quality")
+      role = insert(:role, permissions: [permission])
+      role2 = insert(:role, permissions: [q_permission])
+      domain = build(:domain)
+      domain2 = build(:domain)
+      domain3 = build(:domain)
+
+      insert(:acl_entry, group_id: group_id, role: role, resource_id: domain.id)
+      insert(:acl_entry, user_id: user_id, role: role2, resource_id: domain2.id)
+      insert(:acl_entry, user_id: user_id, role: role2, resource_id: domain3.id)
+
+      permission_domains =
+        Permissions.get_permissions_domains(user, ["view_dashboard", "view_quality"])
+
+      assert length(permission_domains) == 2
+
+      d_domains =
+        permission_domains
+        |> Enum.find(fn p -> p.name == "view_dashboard" end)
+        |> Map.get(:domains)
+
+      assert length(d_domains) == 1
+      [d_perm_domain | _o] = d_domains
+      assert d_perm_domain.id == domain.id
+
+      q_domains =
+        permission_domains
+        |> Enum.find(fn p -> p.name == "view_quality" end)
+        |> Map.get(:domains)
+
+      assert length(q_domains) == 2
+      [q_perm_domain | _o] = q_domains
+      assert q_perm_domain.id == domain2.id
+    end
+
+    test "get_domains_with_perms/2 returns permission and all domains if default role contains permission " do
+      %{id: user_id} = user = insert(:user, groups: [build(:group)])
+
+      permission = insert(:permission, name: "view_dashboard")
+      q_permission = insert(:permission, name: "view_quality")
+      _role = insert(:role, permissions: [permission], is_default: true)
+      role2 = insert(:role, permissions: [q_permission])
+      _domain = build(:domain)
+      domain2 = build(:domain)
+      _domain3 = build(:domain)
+      insert(:acl_entry, user_id: user_id, role: role2, resource_id: domain2.id)
+
+      permission_domains =
+        Permissions.get_permissions_domains(user, ["view_dashboard", "view_quality"])
+
+      assert length(permission_domains) == 2
+
+      d_domains =
+        permission_domains
+        |> Enum.find(fn p -> p.name == "view_dashboard" end)
+        |> Map.get(:domains)
+
+      assert length(d_domains) == 3
+
+      q_domains =
+        permission_domains
+        |> Enum.find(fn p -> p.name == "view_quality" end)
+        |> Map.get(:domains)
+
+      assert length(q_domains) == 1
+      [q_perm_domain | _o] = q_domains
+      assert q_perm_domain.id == domain2.id
+    end
+
+    test "get_domains_with_perms/2 returns permissions all domains for admin user " do
+      user = insert(:user, is_admin: true)
+
+      build(:domain)
+      build(:domain)
+      build(:domain)
+
+      permission_domains =
+        Permissions.get_permissions_domains(user, ["view_dashboard", "view_quality"])
+
+      assert length(permission_domains) == 2
+
+      d_domains =
+        permission_domains
+        |> Enum.find(fn p -> p.name == "view_dashboard" end)
+        |> Map.get(:domains)
+
+      assert length(d_domains) == 3
+    end
   end
 end

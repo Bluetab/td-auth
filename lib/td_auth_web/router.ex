@@ -40,6 +40,7 @@ defmodule TdAuthWeb.Router do
 
     resources "/users", UserController, except: [:new, :edit] do
       patch("/change_password", UserController, :change_password)
+      resources("/permissions", UserPermissionController, singleton: true, only: [:show], name: "permissions")
     end
 
     resources("/groups", GroupController, except: [:new, :edit])

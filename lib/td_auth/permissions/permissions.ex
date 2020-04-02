@@ -5,9 +5,12 @@ defmodule TdAuth.Permissions do
 
   import Ecto.Query, warn: false
 
+  alias TdAuth.Accounts
   alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.PermissionGroup
+  alias TdAuth.Permissions.Roles
   alias TdAuth.Repo
+  alias TdCache.TaxonomyCache
 
   @default_preloads :permission_group
 
@@ -217,6 +220,52 @@ defmodule TdAuth.Permissions do
       {:id, {:in, ids}}, q -> where(q, [p], p.id in ^ids)
       {:preload, preloads}, q -> preload(q, ^preloads)
       _, q -> q
+    end)
+  end
+
+  def get_permissions_domains(%{is_admin: true}, perms) do
+    all_domains =
+      Enum.map(TaxonomyCache.get_domain_name_to_id_map(), fn {k, v} -> %{id: v, name: k} end)
+
+    Enum.map(perms, &%{name: &1, domains: all_domains})
+  end
+
+  def get_permissions_domains(%{id: user}, perms) do
+    acls = Accounts.get_user_acls(user, [:group, [role: :permissions], :user])
+
+    default_acls =
+      case Roles.get_by(is_default: true, preload: [permissions: :permission_group]) do
+        %{permissions: permissions} ->
+          names = Enum.map(permissions, &%{name: &1.name})
+          domain_ids = Enum.map(TaxonomyCache.get_domain_name_to_id_map(), fn {_k, v} -> v end)
+          domain_ids
+          |> Enum.map(
+            &%{
+              role: %{permissions: names},
+              group: nil,
+              resource_type: "domain",
+              resource_id: &1
+            }
+          )
+
+        _nil ->
+          []
+      end
+
+    all_acls = acls ++ default_acls
+
+    Enum.map(perms, fn perm_name ->
+      domains =
+        all_acls
+        |> Enum.filter(&(&1.resource_type == "domain"))
+        |> Enum.filter(fn acl_entry ->
+          Enum.any?(acl_entry.role.permissions, &(&1.name == perm_name))
+        end)
+        |> Enum.map(&Map.get(&1, :resource_id))
+        |> Enum.uniq()
+        |> Enum.map(fn domain_id -> %{id: domain_id, name: TaxonomyCache.get_name(domain_id)} end)
+
+      %{name: perm_name, domains: domains}
     end)
   end
 end

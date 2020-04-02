@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- [TD-2394] Endpoint for returning user permissions domains
+
 ### Changed
 
 - [TD-940] Migrated to Elixir 1.10, simplified routes, improved hypermedia on

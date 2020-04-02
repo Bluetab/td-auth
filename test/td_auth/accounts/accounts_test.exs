@@ -169,5 +169,38 @@ defmodule TdAuth.AccountsTest do
         ])
       )
     end
+
+    test "get_user_acls/2 returns the ACLs of a user and its groups with specified preloads" do
+      %{id: user_id} = user = insert(:user, groups: [build(:group)])
+      %{id: group_id} = hd(user.groups)
+
+      permission = insert(:permission, name: "view_dashboard")
+      role = insert(:role, permissions: [permission])
+
+      acl_entry_1 = insert(:acl_entry, group_id: group_id, role: role)
+      acl_entry_2 = insert(:acl_entry, user_id: user_id, role: role)
+
+      acl_entries = TdAuth.Accounts.get_user_acls(user_id, [:group, [role: :permissions], :user])
+
+      assert_lists_equal(
+        acl_entries,
+        [acl_entry_1, acl_entry_2],
+        &assert_structs_equal(&1, &2, [
+          :id,
+          :description,
+          :group_id,
+          :resource_id,
+          :resource_type,
+          :role_id,
+          :user_id
+        ])
+      )
+
+      assert Enum.all?(acl_entries, fn acl ->
+               [perm | _others] = acl.role.permissions
+               %TdAuth.Permissions.Permission{} = perm
+               %TdAuth.Permissions.Role{} = acl.role
+             end)
+    end
   end
 end
