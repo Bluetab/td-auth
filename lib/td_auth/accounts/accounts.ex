@@ -157,6 +157,15 @@ defmodule TdAuth.Accounts do
   end
 
   @doc """
+    Returns the acl entries with specified preloads associated with user_id or its groups
+  """
+  def get_user_acls(user_id, preloads) do
+    user = get_user!(user_id, preload: :groups)
+    group_ids = Enum.map(user.groups, &(&1.id))
+    AclEntries.list_acl_entries([resource_type: "domain", user_groups: {user_id, group_ids}], [preload: preloads])
+  end
+
+  @doc """
   Returns the list of groups.
 
   ## Examples

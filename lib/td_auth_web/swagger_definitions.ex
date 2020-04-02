@@ -229,6 +229,38 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             data(Schema.ref(:UsersResponse))
           end
+        end,
+      PermissionDomainsResponseData:
+        swagger_schema do
+          properties do
+            permission_domains(Schema.ref(:PermissionDomainsResponse))
+          end
+        end,
+      PermissionDomainsResponse:
+        swagger_schema do
+          type(:array)
+          items(Schema.ref(:PermissionDomainsAttrs))
+        end,
+      PermissionDomainsAttrs:
+        swagger_schema do
+          properties do
+            permission(:string, "permission name", required: true)
+            domains(Schema.ref(:Domains))
+          end
+        end,
+      Domains:
+        swagger_schema do
+          title("Domains")
+          description("A collection of domains")
+          type(:array)
+          items(Schema.ref(:Domain))
+        end,
+      Domain:
+        swagger_schema do
+          properties do
+            id(:integer, "unique identifier", required: true)
+            name(:string, "domain name", required: true)
+          end
         end
     }
   end
@@ -402,14 +434,19 @@ defmodule TdAuthWeb.SwaggerDefinitions do
       Links:
         swagger_schema do
           properties do
-            self(Schema.new do
-              properties do
-                href(:string, "the url")
-                methods(Schema.new do
-                  type(:array)
-                end)
+            self(
+              Schema.new do
+                properties do
+                  href(:string, "the url")
+
+                  methods(
+                    Schema.new do
+                      type(:array)
+                    end
+                  )
+                end
               end
-            end)
+            )
           end
         end,
       EmbeddedAclEntries:
