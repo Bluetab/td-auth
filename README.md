@@ -6,7 +6,7 @@ To start your Phoenix server:
   * Create and migrate your database with `mix ecto.create && mix ecto.migrate`
   * Start Phoenix endpoint with `mix phx.server`
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+Now you can visit [`localhost:4001`](http://localhost:4001) from your browser.
 
 Ready to run in production? Please [check our deployment guides](http://www.phoenixframework.org/docs/deployment).
 
@@ -40,8 +40,6 @@ In order to use this software, it is necessary that, depending on the type of fu
 - Internationalization and localization support for Elixir by [Elixir Community](https://hexdocs.pm/gettext)
 - HTTP server for Erlang/OTP by [Nine Nines](https://ninenines.eu)
 - Static code analysis tool for the Elixir language by [René Föhring](http://credo-ci.org/)
-- Deployment for Elixir and Erlang by [edeliver](https://github.com/edeliver/edeliver)
-- Release packaging for the Erlang VM by [Paul Schoenfelder](https://github.com/bitwalker/distillery)
 - Authentication library by [ueberauth](http://blog.overstuffedgorilla.com/)
 - Password hashing library by [David Whitlock](https://hex.pm/packages/comeonin)
 - Bcrypt password hashing algorithm for Elixir by [David Whitlock](https://github.com/riverrun/bcrypt_elixir)

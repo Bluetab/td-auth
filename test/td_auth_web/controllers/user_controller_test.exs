@@ -76,7 +76,7 @@ defmodule TdAuthWeb.UserControllerTest do
   describe "get user" do
     @tag :admin_authenticated
     test "renders user with configured acls", %{conn: conn, swagger_schema: schema} do
-      domain = %{id: :rand.uniform(1000), parent_ids: [], name: "MyDomain"}
+      domain = build(:domain)
       role = insert(:role)
       group = insert(:group)
       user = insert(:user, groups: [group])

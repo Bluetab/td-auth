@@ -2,9 +2,7 @@ use Mix.Config
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :td_auth, TdAuthWeb.Endpoint,
-  http: [port: 4001],
-  server: true
+config :td_auth, TdAuthWeb.Endpoint, server: true
 
 # Configure your database
 config :td_auth, TdAuth.Repo,

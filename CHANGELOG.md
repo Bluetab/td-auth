@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-2361] Manage raw rule implementations permission
+
 ## [3.19.0] 2020-04-06
 
 ### Added

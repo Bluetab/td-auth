@@ -49,7 +49,8 @@ defmodule TdAuth.Permissions.Seeds do
       "execute_quality_rule",
       "manage_quality_rule",
       "manage_quality_rule_implementations",
-      "view_quality_rule"
+      "view_quality_rule",
+      "manage_raw_quality_rule_implementations"
     ],
     "ingests" => [
       "create_ingest",
