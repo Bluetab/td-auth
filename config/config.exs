@@ -16,8 +16,8 @@ config :td_auth, allow_proxy_login: "false"
 
 # Configures the endpoint
 config :td_auth, TdAuthWeb.Endpoint,
+  http: [port: 4001],
   url: [host: "localhost"],
-  secret_key_base: "qf8wPCPHk4ZqqM7ebnfKw2okARcnrqsnfsQjKSGC0AEK87/rkIlXWnYXa5cTZ2TX",
   render_errors: [view: TdAuthWeb.ErrorView, accepts: ~w(json)]
 
 config :td_auth, TdAuth.Repo,

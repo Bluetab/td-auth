@@ -74,7 +74,8 @@ defmodule TdAuth.Factory do
     %{
       id: sequence(:domain_id, & &1),
       parent_ids: [],
-      name: sequence(:domain_name, &"Domain #{&1}")
+      name: sequence(:domain_name, &"Domain #{&1}"),
+      updated_at: "2020-02-02T02:02:02.000000Z"
     }
   end
 end

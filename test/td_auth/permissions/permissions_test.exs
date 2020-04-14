@@ -3,8 +3,21 @@ defmodule TdAuth.PermissionsTest do
 
   alias TdAuth.Permissions
   alias TdAuth.Repo
+  alias TdCache.DomainCache
 
   @permission_keys [:id, :name, :permission_group_id]
+
+  setup_all do
+    domain_ids = 100_000..100_004
+    domains = Enum.map(domain_ids, &build(:domain, id: &1))
+    Enum.each(domains, &DomainCache.put/1)
+
+    on_exit(fn ->
+      Enum.each(domain_ids, &DomainCache.delete/1)
+    end)
+
+    [domains: domains]
+  end
 
   describe "permissions" do
     test "list_permissions/0 returns all permissions" do
@@ -170,58 +183,48 @@ defmodule TdAuth.PermissionsTest do
       assert q_perm_domain.id == domain2.id
     end
 
-    test "get_domains_with_perms/2 returns permission and all domains if default role contains permission " do
+    test "get_domains_with_perms/2 returns permission and all domains if default role contains permission",
+         %{domains: domains} do
+      %{id: domain_id} = Enum.random(domains)
       %{id: user_id} = user = insert(:user, groups: [build(:group)])
 
       permission = insert(:permission, name: "view_dashboard")
       q_permission = insert(:permission, name: "view_quality")
-      _role = insert(:role, permissions: [permission], is_default: true)
-      role2 = insert(:role, permissions: [q_permission])
-      _domain = build(:domain)
-      domain2 = build(:domain)
-      _domain3 = build(:domain)
-      insert(:acl_entry, user_id: user_id, role: role2, resource_id: domain2.id)
 
-      permission_domains =
-        Permissions.get_permissions_domains(user, ["view_dashboard", "view_quality"])
+      insert(:role, permissions: [permission], is_default: true)
+      role = insert(:role, permissions: [q_permission])
 
-      assert length(permission_domains) == 2
+      insert(:acl_entry, user_id: user_id, role: role, resource_id: domain_id)
 
-      d_domains =
-        permission_domains
-        |> Enum.find(fn p -> p.name == "view_dashboard" end)
-        |> Map.get(:domains)
+      assert [
+               %{name: "view_dashboard", domains: dashboard_domains},
+               %{name: "view_quality", domains: quality_domains}
+             ] = Permissions.get_permissions_domains(user, ["view_dashboard", "view_quality"])
 
-      assert length(d_domains) == 3
+      assert [%{id: ^domain_id}] = quality_domains
 
-      q_domains =
-        permission_domains
-        |> Enum.find(fn p -> p.name == "view_quality" end)
-        |> Map.get(:domains)
-
-      assert length(q_domains) == 1
-      [q_perm_domain | _o] = q_domains
-      assert q_perm_domain.id == domain2.id
+      assert domains
+             |> MapSet.new(& &1.id)
+             |> MapSet.subset?(MapSet.new(dashboard_domains, & &1.id))
     end
 
-    test "get_domains_with_perms/2 returns permissions all domains for admin user " do
+    test "get_domains_with_perms/2 returns permissions all domains for admin user", %{
+      domains: domains
+    } do
       user = insert(:user, is_admin: true)
 
-      build(:domain)
-      build(:domain)
-      build(:domain)
+      assert [
+               %{name: "view_dashboard", domains: dashboard_domains},
+               %{name: "view_quality", domains: quality_domains}
+             ] = Permissions.get_permissions_domains(user, ["view_dashboard", "view_quality"])
 
-      permission_domains =
-        Permissions.get_permissions_domains(user, ["view_dashboard", "view_quality"])
+      assert domains
+             |> MapSet.new(& &1.id)
+             |> MapSet.subset?(MapSet.new(dashboard_domains, & &1.id))
 
-      assert length(permission_domains) == 2
-
-      d_domains =
-        permission_domains
-        |> Enum.find(fn p -> p.name == "view_dashboard" end)
-        |> Map.get(:domains)
-
-      assert length(d_domains) == 3
+      assert domains
+             |> MapSet.new(& &1.id)
+             |> MapSet.subset?(MapSet.new(quality_domains, & &1.id))
     end
   end
 end
