@@ -62,7 +62,6 @@ defmodule TdAuthWeb.ResourceAclController do
         } = params
       ) do
     current_resource = conn.assigns[:current_resource]
-    # TODO
     acl_entry_params = normalize_params(acl_entry_params, params)
     acl_resource = Map.take(acl_entry_params, [:resource_type, :resource_id])
 
@@ -83,7 +82,7 @@ defmodule TdAuthWeb.ResourceAclController do
         } = params
       )
       when is_list(acl_entries) do
-    # TODO
+
     current_resource = conn.assigns[:current_resource]
     acl_entries = normalize_params(acl_entries, params)
     acl_resource = get_resource(acl_entries)
