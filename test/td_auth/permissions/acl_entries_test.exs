@@ -211,17 +211,95 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       assert {_, [constraint: :check, constraint_name: "user_xor_group"]} = errors[:group_id]
     end
 
-    test "update_acl_entry/2 enforces unique constraint on user_id and resource" do
+    test "update_acl_entry/2 enforces unique constraint on user_id resource and role" do
+      role = insert(:role)
+
       %{user_id: user_id, resource_type: resource_type, resource_id: resource_id} =
-        insert(:acl_entry, principal_type: :user)
+        insert(:acl_entry, principal_type: :user, role: role)
 
       assert {:error, %Changeset{errors: errors}} =
                :acl_entry
-               |> insert(resource_type: resource_type, resource_id: resource_id)
+               |> insert(resource_type: resource_type, resource_id: resource_id, role: role)
                |> AclEntries.update_acl_entry(%{user_id: user_id})
 
-      assert {_, [constraint: :unique, constraint_name: "unique_resource_user"]} =
+      assert {_, [constraint: :unique, constraint_name: "unique_resource_user_role"]} =
                errors[:user_id]
+    end
+
+    test "update/1 will update all acls for a given resource" do
+      %{id: user_id} = insert(:user)
+      %{id: group_id} = insert(:group)
+
+      resource_id = 1
+      resource_type = "domain"
+      acl_resource = %{resource_id: resource_id, resource_type: resource_type}
+
+      role = insert(:role, name: "role name 1")
+      role1 = insert(:role, name: "role name 2")
+      role2 = insert(:role, name: "role name 3")
+      role3 = insert(:role, name: "role name 4")
+      role4 = insert(:role, name: "role name 5")
+
+      insert(:acl_entry,
+        resource_type: resource_type,
+        resource_id: resource_id,
+        role: role2,
+        user_id: user_id
+      )
+
+      insert(:acl_entry,
+        resource_type: resource_type,
+        resource_id: resource_id,
+        role: role3,
+        group_id: group_id
+      )
+
+      acl_entries = [
+        %{
+          description: "description",
+          resource_id: resource_id,
+          resource_type: resource_type,
+          role_id: role.id,
+          user_id: user_id
+        },
+        %{
+          description: "description",
+          resource_id: resource_id,
+          resource_type: resource_type,
+          role_id: role1.id,
+          group_id: group_id
+        },
+        %{
+          description: "description",
+          resource_id: resource_id,
+          resource_type: resource_type,
+          role_id: role2.id,
+          group_id: group_id
+        },
+        %{
+          description: "description",
+          resource_id: resource_id,
+          resource_type: resource_type,
+          role_id: role4.id,
+          group_id: group_id
+        }
+      ]
+
+      assert {:ok, [_ | _] = results} = AclEntries.update(acl_entries)
+
+      resources =
+        acl_resource
+        |> AclEntries.list_acl_entries()
+        |> Enum.map(&Map.take(&1, [:resource_id, :resource_type, :role_id, :user_id, :group_id]))
+        |> Enum.sort_by(& &1.role_id)
+
+      results =
+        results
+        |> Enum.map(&elem(&1, 1))
+        |> Enum.map(&Map.take(&1, [:resource_id, :resource_type, :role_id, :user_id, :group_id]))
+        |> Enum.sort_by(& &1.role_id)
+
+      assert resources == results
     end
 
     test "delete_acl_entry/1 deletes the ACL Entry" do

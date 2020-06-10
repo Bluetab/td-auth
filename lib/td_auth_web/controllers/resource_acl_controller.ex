@@ -62,7 +62,7 @@ defmodule TdAuthWeb.ResourceAclController do
         } = params
       ) do
     current_resource = conn.assigns[:current_resource]
-
+    # TODO
     acl_entry_params = normalize_params(acl_entry_params, params)
     acl_resource = Map.take(acl_entry_params, [:resource_type, :resource_id])
 
@@ -74,8 +74,34 @@ defmodule TdAuthWeb.ResourceAclController do
     end
   end
 
-  defp normalize_params(params, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
-    params
+  def update(
+        conn,
+        %{
+          "resource_type" => resource_type,
+          "resource_id" => resource_id,
+          "acl_entries" => acl_entries
+        } = params
+      )
+      when is_list(acl_entries) do
+    # TODO
+    current_resource = conn.assigns[:current_resource]
+    acl_entries = normalize_params(acl_entries, params)
+    acl_resource = get_resource(acl_entries)
+
+    with {:can, true} <- {:can, can?(current_resource, create(acl_resource))},
+         {:ok, _} <- AclEntries.update(acl_entries) do
+      conn
+      |> put_resp_header("location", resource_acl_path(resource_type, resource_id))
+      |> send_resp(:see_other, "")
+    end
+  end
+
+  defp normalize_params(entries, params) when is_list(entries) do
+    Enum.map(entries, &normalize_params(&1, params))
+  end
+
+  defp normalize_params(entry, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
+    entry
     |> Map.put("resource_type", resource_type)
     |> Map.put("resource_id", resource_id)
     |> put_principal_id()
@@ -83,6 +109,12 @@ defmodule TdAuthWeb.ResourceAclController do
     |> AclEntry.changes()
     |> Map.put_new(:description, nil)
   end
+
+  defp get_resource([head | _]) do
+    Map.take(head, [:resource_type, :resource_id])
+  end
+
+  defp get_resource([]), do: Map.new()
 
   defp put_role_id(%{"role_name" => role_name} = params) do
     case Roles.get_by(name: role_name) do

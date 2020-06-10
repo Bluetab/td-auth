@@ -85,6 +85,7 @@ defmodule TdAuthWeb.AclEntryController do
 
   def update(conn, %{"id" => id, "acl_entry" => params}) do
     current_resource = conn.assigns[:current_resource]
+
     acl_entry = AclEntries.get_acl_entry!(id)
 
     with {:can, true} <- {:can, can?(current_resource, update(acl_entry))},
