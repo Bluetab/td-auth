@@ -3,7 +3,6 @@ defmodule TdAuth.Permissions.AclEntries do
   The ACL Entries Context
   """
 
-  alias Ecto.Multi
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.AclLoader
   alias TdAuth.Permissions.Roles
@@ -88,40 +87,38 @@ defmodule TdAuth.Permissions.AclEntries do
     |> refresh_cache()
   end
 
-  def create_or_update(params) do
-    case find_by_resource_and_principal(params) do
-      %AclEntry{} = acl_entry ->
-        update_acl_entry(acl_entry, params)
-
-      nil ->
-        create_acl_entry(params)
-    end
-  end
-
   def update([_ | _] = acl_entries) do
-    created =
-      acl_entries
-      |> Enum.group_by(
-        &[&1.resource_id, &1.resource_type, Map.get(&1, :user_id), Map.get(&1, :group_id)]
-      )
-      |> update_all()
-
-    {:ok, created}
+    acl_entries
+    |> Enum.group_by(
+      &[&1.resource_id, &1.resource_type, Map.get(&1, :user_id), Map.get(&1, :group_id)]
+    )
+    |> update_all()
+    |> case do
+      {:ok, created} -> {:ok, created}
+      error -> error
+    end
   end
 
   def update(_), do: {:ok, []}
 
   defp update_all(acls) do
-    Multi.new()
-    |> Multi.run(:deleted_acls, fn _, _ -> delete_acls_by_resource_and_principal(acls) end)
-    |> Multi.run(:created, fn _, _ -> create(acls) end)
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{created: created}} ->
-        Enum.map(created, &refresh_cache/1)
+    reply = Repo.transaction(fn -> update_acls_on_transaction(acls) end)
+
+    case reply do
+      {:ok, created} ->
+        {:ok, Enum.map(created, &refresh_cache/1)}
 
       error ->
         error
+    end
+  end
+
+  defp update_acls_on_transaction(acls) do
+    with {:ok, _deleted} <- delete_acls_by_resource_and_principal(acls),
+         {:ok, created} <- create(acls) do
+      created
+    else
+      {:error, error} -> Repo.rollback(error)
     end
   end
 
@@ -131,7 +128,7 @@ defmodule TdAuth.Permissions.AclEntries do
       |> Enum.map(fn {k, _v} ->
         Enum.zip([:resource_id, :resource_type, :user_id, :group_id], k)
       end)
-      |> Enum.map(fn filters -> build_resource_and_principal_clauses(filters) end)
+      |> Enum.map(&build_resource_and_principal_clauses/1)
       |> Enum.map(&delete_acl_entries/1)
       |> Enum.map(&elem(&1, 1))
       |> List.flatten()
@@ -148,7 +145,10 @@ defmodule TdAuth.Permissions.AclEntries do
       |> List.flatten()
       |> Enum.map(&create_acl_entry(&1, refresh: false))
 
-    {:ok, created}
+    case Enum.find(created, &(elem(&1, 0) == :error)) do
+      nil -> {:ok, created}
+      error -> error
+    end
   end
 
   @doc """
@@ -210,7 +210,7 @@ defmodule TdAuth.Permissions.AclEntries do
     clauses
     |> Enum.reject(fn {_, v} -> is_nil(v) end)
     |> Map.new()
-    |> Map.take([:resource_type, :resource_id, :user_id, :group_id])
+    |> Map.take([:resource_type, :resource_id, :user_id, :group_id, :role_id])
   end
 
   def find_acl_entry(clauses) do

@@ -66,7 +66,7 @@ defmodule TdAuthWeb.ResourceAclController do
     acl_resource = Map.take(acl_entry_params, [:resource_type, :resource_id])
 
     with {:can, true} <- {:can, can?(current_resource, create(acl_resource))},
-         {:ok, %AclEntry{}} <- AclEntries.create_or_update(acl_entry_params) do
+         {:ok, _} <- AclEntries.update([acl_entry_params]) do
       conn
       |> put_resp_header("location", resource_acl_path(resource_type, resource_id))
       |> send_resp(:see_other, "")

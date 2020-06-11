@@ -302,6 +302,52 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       assert resources == results
     end
 
+    test "update/1 will fail" do
+      %{id: user_id} = insert(:user)
+      %{id: group_id} = insert(:group)
+
+      resource_id = 1
+      resource_type = "domain"
+
+      role = insert(:role, name: "role name 1")
+      role1 = insert(:role, name: "role name 3")
+      role2 = insert(:role, name: "role name 4")
+
+      insert(:acl_entry,
+        resource_type: resource_type,
+        resource_id: resource_id,
+        role: role1,
+        user_id: user_id
+      )
+
+      insert(:acl_entry,
+        resource_type: resource_type,
+        resource_id: resource_id,
+        role: role2,
+        group_id: group_id
+      )
+
+      acl_entries = [
+        %{
+          description: "description",
+          resource_id: resource_id,
+          resource_type: resource_type,
+          role_id: role.id,
+          user_id: user_id
+        },
+        %{
+          description: "description",
+          resource_id: resource_id,
+          resource_type: resource_type,
+          role_id: role.id,
+          user_id: user_id
+        }
+      ]
+
+      assert {:error, %{errors: errors}} = AclEntries.update(acl_entries)
+      assert elem(Keyword.get(errors, :user_id), 0) == "has already been taken"
+    end
+
     test "delete_acl_entry/1 deletes the ACL Entry" do
       acl_entry = insert(:acl_entry)
       assert {:ok, %AclEntry{}} = AclEntries.delete_acl_entry(acl_entry)
