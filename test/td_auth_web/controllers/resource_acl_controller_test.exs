@@ -88,7 +88,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
     end
 
     @tag :admin_authenticated
-    test "creates an entry in a resource acl", %{
+    test "modify an entry in a resource acl", %{
       conn: conn,
       acl_entry: acl_entry,
       swagger_schema: schema
