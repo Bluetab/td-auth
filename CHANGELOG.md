@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-2684] Multiple acls by resource and user/group 
+
 ## [3.20.0] 2020-04-20
 
 ### Added
