@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] 2020-06-16
+
+### Changed
+
+- [TD-2687] Remove `email` and `is_admin` from principal in ACL entry responses
+
 ## [3.20.0] 2020-04-20
 
 ### Added

@@ -76,6 +76,8 @@ defmodule TdAuthWeb.AclEntryView do
   end
 
   defp render_principal(%{user: user}) when not is_nil(user) do
-    render_one(user, UserView, "user_embedded.json")
+    user
+    |> Map.drop([:email, :is_admin])
+    |> render_one(UserView, "user_embedded.json")
   end
 end
