@@ -4,6 +4,7 @@
 
 ### Changed
 
+- [TD-2687] Remove `email` and `is_admin` from principal in ACL entry responses
 - [TD-2684] Multiple acls by resource and user/group 
 
 ### Deleted

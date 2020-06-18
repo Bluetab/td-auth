@@ -2,6 +2,8 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  import Routes, only: [resource_acl_path: 4, resource_acl_path: 5]
+
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
     start_supervised!(TdAuth.Permissions.AclLoader)
@@ -14,7 +16,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
     {:ok, conn: conn, acl_entry: acl_entry}
   end
 
-  describe "show resource acl" do
+  describe "GET /api/:resource_type/:resource_id/acl_entries" do
     @tag :admin_authenticated
     test "returns OK and body on success", %{
       conn: conn,
@@ -26,23 +28,34 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       assert %{"_embedded" => embedded, "_links" => links} =
                conn
                |> get(
-                 Routes.resource_acl_path(
-                   conn,
-                   :show,
-                   Inflex.pluralize(resource_type),
-                   resource_id
-                 )
+                 resource_acl_path(conn, :show, Inflex.pluralize(resource_type), resource_id)
                )
                |> validate_resp_schema(schema, "ResourceAclEntriesResponse")
                |> json_response(:ok)
 
       assert %{"acl_entries" => [_acl_entry]} = embedded
     end
+
+    @tag :admin_authenticated
+    test "excludes user email and is_admin fields", %{conn: conn, acl_entry: acl_entry} do
+      %{resource_type: resource_type, resource_id: resource_id} = acl_entry
+
+      assert %{"_embedded" => embedded} =
+               conn
+               |> get(
+                 resource_acl_path(conn, :show, Inflex.pluralize(resource_type), resource_id)
+               )
+               |> json_response(:ok)
+
+      assert %{"acl_entries" => [acl_entry]} = embedded
+      assert %{"principal" => principal} = acl_entry
+      assert Map.keys(principal) == ["full_name", "id", "user_name"]
+    end
   end
 
-  describe "post resource acl entries" do
+  describe "POST /api/:resource_type/:resource_id/acl_entries" do
     @tag :admin_authenticated
-    test "add an entry to a resource acl", %{
+    test "adds an entry to a resource acl", %{
       conn: conn,
       acl_entry: acl_entry,
       swagger_schema: schema
@@ -65,7 +78,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       conn1 =
         post(
           conn,
-          Routes.resource_acl_path(
+          resource_acl_path(
             conn,
             :create,
             Inflex.pluralize(resource_type),
@@ -101,7 +114,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       }
 
       assert conn
-             |> post(Routes.resource_acl_path(conn, :create, "domains", "1"), params)
+             |> post(resource_acl_path(conn, :create, "domains", "1"), params)
              |> json_response(:forbidden)
     end
   end

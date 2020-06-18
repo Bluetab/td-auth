@@ -2,6 +2,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  import Routes, only: [acl_entry_path: 2, acl_entry_path: 3]
+
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
     start_supervised!(TdAuth.Permissions.AclLoader)
@@ -14,18 +16,31 @@ defmodule TdAuthWeb.AclEntryControllerTest do
     {:ok, conn: conn, acl_entry: acl_entry}
   end
 
-  describe "index" do
+  describe "GET /api/acl_entries/:id" do
+    @tag :admin_authenticated
+    test "returns an acl entry", %{conn: conn, acl_entry: acl_entry, swagger_schema: schema} do
+      %{id: id} = acl_entry
+
+      assert %{"data" => %{"id" => ^id}} =
+               conn
+               |> get(acl_entry_path(conn, :show, acl_entry))
+               |> validate_resp_schema(schema, "AclEntryResponse")
+               |> json_response(:ok)
+    end
+  end
+
+  describe "GET /api/acl_entries" do
     @tag :admin_authenticated
     test "lists all acl_entries", %{conn: conn, swagger_schema: schema} do
       assert %{"data" => [_acl_entry]} =
                conn
-               |> get(Routes.acl_entry_path(conn, :index))
+               |> get(acl_entry_path(conn, :index))
                |> validate_resp_schema(schema, "AclEntriesResponse")
                |> json_response(:ok)
     end
   end
 
-  describe "create acl_entry" do
+  describe "POST /api/acl_entries" do
     @tag :admin_authenticated
     test "renders acl_entry when data is valid", %{conn: conn, swagger_schema: schema} do
       %{id: user_id} = insert(:user)
@@ -43,7 +58,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
       assert %{"data" => data} =
                conn
-               |> post(Routes.acl_entry_path(conn, :create), acl_entry: acl_entry_attrs)
+               |> post(acl_entry_path(conn, :create), acl_entry: acl_entry_attrs)
                |> validate_resp_schema(schema, "AclEntryResponse")
                |> json_response(:created)
 
@@ -64,7 +79,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
       assert %{"errors" => errors} =
                conn
-               |> post(Routes.acl_entry_path(conn, :create), acl_entry: params)
+               |> post(acl_entry_path(conn, :create), acl_entry: params)
                |> json_response(:unprocessable_entity)
     end
 
@@ -74,20 +89,20 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
       assert %{"errors" => errors} =
                conn
-               |> post(Routes.acl_entry_path(conn, :create), params)
+               |> post(acl_entry_path(conn, :create), params)
                |> json_response(:unprocessable_entity)
     end
   end
 
-  describe "delete acl_entry" do
+  describe "DELETE /api/acl_entries/:id" do
     @tag :admin_authenticated
     test "deletes chosen acl_entry", %{conn: conn, acl_entry: acl_entry} do
       assert conn
-             |> delete(Routes.acl_entry_path(conn, :delete, acl_entry))
+             |> delete(acl_entry_path(conn, :delete, acl_entry))
              |> response(:no_content)
 
       assert_error_sent :not_found, fn ->
-        get(conn, Routes.acl_entry_path(conn, :show, acl_entry))
+        get(conn, acl_entry_path(conn, :show, acl_entry))
       end
     end
   end

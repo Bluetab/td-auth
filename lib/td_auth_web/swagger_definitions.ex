@@ -476,8 +476,6 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             id(:integer, "id of the principal (user or group)")
             full_name(:string, "full name of the principal")
-            email(:string, "email of the principal")
-            is_admin(:boolean, "true if the principal is an admin")
             user_name(:string, "user name of the principal")
             name(:string, "name of the principal")
           end
