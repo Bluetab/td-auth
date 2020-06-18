@@ -40,7 +40,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
     end
   end
 
-  describe "patch resource acl entries" do
+  describe "post resource acl entries" do
     @tag :admin_authenticated
     test "add an entry to a resource acl", %{
       conn: conn,
@@ -63,11 +63,11 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       }
 
       conn1 =
-        patch(
+        post(
           conn,
           Routes.resource_acl_path(
             conn,
-            :update,
+            :create,
             Inflex.pluralize(resource_type),
             resource_id,
             params
@@ -87,48 +87,6 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       assert %{"acl_entries" => [_acl_entry1, _acl_entry2]} = embedded
     end
 
-    @tag :admin_authenticated
-    test "modify an entry in a resource acl", %{
-      conn: conn,
-      acl_entry: acl_entry,
-      swagger_schema: schema
-    } do
-      %{resource_type: resource_type, resource_id: resource_id, user_id: user_id} = acl_entry
-      %{name: role_name} = insert(:role)
-
-      params = %{
-        "acl_entry" => %{
-          "principal_type" => "user",
-          "principal_id" => user_id,
-          "role_name" => role_name
-        }
-      }
-
-      conn1 =
-        patch(
-          conn,
-          Routes.resource_acl_path(
-            conn,
-            :update,
-            Inflex.pluralize(resource_type),
-            resource_id,
-            params
-          )
-        )
-
-      assert response(conn1, :see_other)
-      assert [location] = get_resp_header(conn1, "location")
-      assert location == "/api/domains/#{resource_id}/acl_entries"
-
-      assert %{"_embedded" => embedded, "_links" => links} =
-               conn
-               |> get(location, %{})
-               |> validate_resp_schema(schema, "ResourceAclEntriesResponse")
-               |> json_response(:ok)
-
-      assert %{"acl_entries" => [%{"role_name" => role_name}]} = embedded
-    end
-
     @tag :authenticated_user
     test "returns forbidden when user is not authorized", %{conn: conn} do
       user = insert(:user)
@@ -143,7 +101,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       }
 
       assert conn
-             |> patch(Routes.resource_acl_path(conn, :update, "domains", "1"), params)
+             |> post(Routes.resource_acl_path(conn, :create, "domains", "1"), params)
              |> json_response(:forbidden)
     end
   end

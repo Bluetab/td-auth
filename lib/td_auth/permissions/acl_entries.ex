@@ -53,19 +53,11 @@ defmodule TdAuth.Permissions.AclEntries do
   Returns `{:ok, struct}` if the ACL entry was created successfully or `{:error,
   changeset}` if there was a validation or constraint error.
   """
-  def create_acl_entry(%{} = params, opts \\ []) do
-    refresh = Keyword.get(opts, :refresh, true)
-
-    reply =
-      params
-      |> AclEntry.changeset()
-      |> Repo.insert()
-
-    unless not refresh do
-      refresh_cache(reply)
-    end
-
-    reply
+  def create_acl_entry(%{} = params) do
+    params
+    |> AclEntry.changeset()
+    |> Repo.insert()
+    |> refresh_cache()
   end
 
   @doc """
@@ -85,70 +77,6 @@ defmodule TdAuth.Permissions.AclEntries do
     |> AclEntry.changeset(params)
     |> Repo.update()
     |> refresh_cache()
-  end
-
-  def update([_ | _] = acl_entries) do
-    acl_entries
-    |> Enum.group_by(
-      &[&1.resource_id, &1.resource_type, Map.get(&1, :user_id), Map.get(&1, :group_id)]
-    )
-    |> update_all()
-    |> case do
-      {:ok, created} -> {:ok, created}
-      error -> error
-    end
-  end
-
-  def update(_), do: {:ok, []}
-
-  defp update_all(acls) do
-    reply = Repo.transaction(fn -> update_acls_on_transaction(acls) end)
-
-    case reply do
-      {:ok, created} ->
-        {:ok, Enum.map(created, &refresh_cache/1)}
-
-      error ->
-        error
-    end
-  end
-
-  defp update_acls_on_transaction(acls) do
-    with {:ok, _deleted} <- delete_acls_by_resource_and_principal(acls),
-         {:ok, created} <- create(acls) do
-      created
-    else
-      {:error, error} -> Repo.rollback(error)
-    end
-  end
-
-  defp delete_acls_by_resource_and_principal(acls) do
-    deleted_ids =
-      acls
-      |> Enum.map(fn {k, _v} ->
-        Enum.zip([:resource_id, :resource_type, :user_id, :group_id], k)
-      end)
-      |> Enum.map(&build_resource_and_principal_clauses/1)
-      |> Enum.map(&delete_acl_entries/1)
-      |> Enum.map(&elem(&1, 1))
-      |> List.flatten()
-      |> Enum.map(& &1)
-      |> Enum.map(&Map.get(&1, :id))
-
-    {:ok, deleted_ids}
-  end
-
-  defp create(acls) do
-    created =
-      acls
-      |> Enum.map(&elem(&1, 1))
-      |> List.flatten()
-      |> Enum.map(&create_acl_entry(&1, refresh: false))
-
-    case Enum.find(created, &(elem(&1, 0) == :error)) do
-      nil -> {:ok, created}
-      error -> error
-    end
   end
 
   @doc """
