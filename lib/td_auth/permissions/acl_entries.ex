@@ -61,25 +61,6 @@ defmodule TdAuth.Permissions.AclEntries do
   end
 
   @doc """
-  Updates an `%AclEntry{}`.
-
-  ## Examples
-
-      iex> update_acl_entry(acl_entry, %{field: new_value})
-      {:ok, %AclEntry{}}
-
-      iex> update_acl_entry(acl_entry, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_acl_entry(%AclEntry{} = acl_entry, params) do
-    acl_entry
-    |> AclEntry.changeset(params)
-    |> Repo.update()
-    |> refresh_cache()
-  end
-
-  @doc """
   Deletes a AclEntry.
 
   ## Examples

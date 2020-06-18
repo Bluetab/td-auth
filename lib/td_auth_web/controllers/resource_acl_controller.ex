@@ -129,7 +129,7 @@ defmodule TdAuthWeb.ResourceAclController do
   end
 
   defp methods(current_resource, acl_resource) do
-    ["GET"] ++ if can?(current_resource, create_or_update(acl_resource)), do: ["PATCH"], else: []
+    ["GET"] ++ if can?(current_resource, create(acl_resource)), do: ["POST"], else: []
   end
 
   defp resource_acl_path(resource_type, resource_id) do
