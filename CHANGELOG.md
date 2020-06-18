@@ -6,6 +6,11 @@
 
 - [TD-2684] Multiple acls by resource and user/group 
 
+### Deleted
+
+- [TD-2684] `update_acl_entry` permission check
+- [TD-2684] `update` acl entry by id
+
 ## [3.20.0] 2020-04-20
 
 ### Added
