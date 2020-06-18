@@ -1,10 +1,16 @@
 # Changelog
 
-## [Unreleased] 2020-06-16
+## [Unreleased]
 
 ### Changed
 
 - [TD-2687] Remove `email` and `is_admin` from principal in ACL entry responses
+- [TD-2684] Multiple acls by resource and user/group 
+
+### Deleted
+
+- [TD-2684] `update_acl_entry` permission check
+- [TD-2684] `update` acl entry by id
 
 ## [3.20.0] 2020-04-20
 

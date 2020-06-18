@@ -15,10 +15,6 @@ defmodule TdBg.Canada.Abilities do
       authorized?(session, :create_acl_entry, domain_id)
     end
 
-    def can?(session, :update, %{resource_type: "domain", resource_id: domain_id}) do
-      authorized?(session, :update_acl_entry, domain_id)
-    end
-
     def can?(session, :view, AclEntry) do
       authorized?(session, :view_domain, 1)
     end
@@ -27,28 +23,20 @@ defmodule TdBg.Canada.Abilities do
       authorized?(session, :view_domain, domain_id)
     end
 
-    def can?(session, :create_or_update, %{resource_type: "domain", resource_id: domain_id}) do
-      authorized?(session, :create_acl_entry, domain_id) or
-        authorized?(session, :update_acl_entry, domain_id)
-    end
-
     def can?(session, :delete, %{resource_type: "domain", resource_id: domain_id}) do
       authorized?(session, :delete_acl_entry, domain_id)
     end
 
     def can?(%Session{jti: jti}, :list, Group) do
-      permissions = [:create_acl_entry, :update_acl_entry]
-      Permissions.has_any_permission_on_resource_type?(jti, permissions, "domain")
+      Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain")
     end
 
     def can?(%Session{jti: jti}, :list, User) do
-      permissions = [:create_acl_entry, :update_acl_entry]
-      Permissions.has_any_permission_on_resource_type?(jti, permissions, "domain")
+      Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain")
     end
 
     def can?(%Session{jti: jti}, :list, Role) do
-      permissions = [:create_acl_entry, :update_acl_entry]
-      Permissions.has_any_permission_on_resource_type?(jti, permissions, "domain")
+      Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain")
     end
 
     def can?(%Session{} = _session, _action, _entity), do: false

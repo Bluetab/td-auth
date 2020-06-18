@@ -58,7 +58,7 @@ defmodule TdAuthWeb.Router do
     end
 
     resources("/:resource_type", ResourceController, only: [:show]) do
-      resources("/acl_entries", ResourceAclController, singleton: true, only: [:show, :update], name: "acl")
+      resources("/acl_entries", ResourceAclController, singleton: true, only: [:show, :create], name: "acl")
     end
   end
 

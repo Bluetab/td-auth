@@ -40,7 +40,7 @@ defmodule TdAuthWeb.ResourceAclController do
     end
   end
 
-  swagger_path :update do
+  swagger_path :create do
     description("Creates or Updates an Acl Entry associated with a resources")
     produces("application/json")
 
@@ -53,7 +53,7 @@ defmodule TdAuthWeb.ResourceAclController do
     response(303, "See Other")
   end
 
-  def update(
+  def create(
         conn,
         %{
           "resource_type" => resource_type,
@@ -62,20 +62,19 @@ defmodule TdAuthWeb.ResourceAclController do
         } = params
       ) do
     current_resource = conn.assigns[:current_resource]
-
     acl_entry_params = normalize_params(acl_entry_params, params)
     acl_resource = Map.take(acl_entry_params, [:resource_type, :resource_id])
 
     with {:can, true} <- {:can, can?(current_resource, create(acl_resource))},
-         {:ok, %AclEntry{}} <- AclEntries.create_or_update(acl_entry_params) do
+         {:ok, _} <- AclEntries.create_acl_entry(acl_entry_params) do
       conn
       |> put_resp_header("location", resource_acl_path(resource_type, resource_id))
       |> send_resp(:see_other, "")
     end
   end
 
-  defp normalize_params(params, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
-    params
+  defp normalize_params(entry, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
+    entry
     |> Map.put("resource_type", resource_type)
     |> Map.put("resource_id", resource_id)
     |> put_principal_id()
@@ -130,7 +129,7 @@ defmodule TdAuthWeb.ResourceAclController do
   end
 
   defp methods(current_resource, acl_resource) do
-    ["GET"] ++ if can?(current_resource, create_or_update(acl_resource)), do: ["PATCH"], else: []
+    ["GET"] ++ if can?(current_resource, create(acl_resource)), do: ["POST"], else: []
   end
 
   defp resource_acl_path(resource_type, resource_id) do

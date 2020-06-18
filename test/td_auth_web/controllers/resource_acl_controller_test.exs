@@ -53,7 +53,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
     end
   end
 
-  describe "PATCH /api/:resource_type/:resource_id/acl_entries" do
+  describe "POST /api/:resource_type/:resource_id/acl_entries" do
     @tag :admin_authenticated
     test "adds an entry to a resource acl", %{
       conn: conn,
@@ -76,9 +76,15 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       }
 
       conn1 =
-        patch(
+        post(
           conn,
-          resource_acl_path(conn, :update, Inflex.pluralize(resource_type), resource_id, params)
+          resource_acl_path(
+            conn,
+            :create,
+            Inflex.pluralize(resource_type),
+            resource_id,
+            params
+          )
         )
 
       assert response(conn1, :see_other)
@@ -92,42 +98,6 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
                |> json_response(:ok)
 
       assert %{"acl_entries" => [_acl_entry1, _acl_entry2]} = embedded
-    end
-
-    @tag :admin_authenticated
-    test "modifies an entry in a resource acl", %{
-      conn: conn,
-      acl_entry: acl_entry,
-      swagger_schema: schema
-    } do
-      %{resource_type: resource_type, resource_id: resource_id, user_id: user_id} = acl_entry
-      %{name: role_name} = insert(:role)
-
-      params = %{
-        "acl_entry" => %{
-          "principal_type" => "user",
-          "principal_id" => user_id,
-          "role_name" => role_name
-        }
-      }
-
-      conn1 =
-        patch(
-          conn,
-          resource_acl_path(conn, :update, Inflex.pluralize(resource_type), resource_id, params)
-        )
-
-      assert response(conn1, :see_other)
-      assert [location] = get_resp_header(conn1, "location")
-      assert location == "/api/domains/#{resource_id}/acl_entries"
-
-      assert %{"_embedded" => embedded, "_links" => links} =
-               conn
-               |> get(location, %{})
-               |> validate_resp_schema(schema, "ResourceAclEntriesResponse")
-               |> json_response(:ok)
-
-      assert %{"acl_entries" => [%{"role_name" => role_name}]} = embedded
     end
 
     @tag :authenticated_user
@@ -144,7 +114,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       }
 
       assert conn
-             |> patch(resource_acl_path(conn, :update, "domains", "1"), params)
+             |> post(resource_acl_path(conn, :create, "domains", "1"), params)
              |> json_response(:forbidden)
     end
   end

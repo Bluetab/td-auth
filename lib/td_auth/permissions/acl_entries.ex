@@ -61,32 +61,6 @@ defmodule TdAuth.Permissions.AclEntries do
   end
 
   @doc """
-  Updates an `%AclEntry{}`.
-
-  ## Examples
-
-      iex> update_acl_entry(acl_entry, %{field: new_value})
-      {:ok, %AclEntry{}}
-
-      iex> update_acl_entry(acl_entry, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_acl_entry(%AclEntry{} = acl_entry, params) do
-    acl_entry
-    |> AclEntry.changeset(params)
-    |> Repo.update()
-    |> refresh_cache()
-  end
-
-  def create_or_update(params) do
-    case find_by_resource_and_principal(params) do
-      %AclEntry{} = acl_entry -> update_acl_entry(acl_entry, params)
-      nil -> create_acl_entry(params)
-    end
-  end
-
-  @doc """
   Deletes a AclEntry.
 
   ## Examples
@@ -137,10 +111,15 @@ defmodule TdAuth.Permissions.AclEntries do
 
   def find_by_resource_and_principal(clauses) do
     clauses
+    |> build_resource_and_principal_clauses()
+    |> find_acl_entry()
+  end
+
+  defp build_resource_and_principal_clauses(clauses) do
+    clauses
     |> Enum.reject(fn {_, v} -> is_nil(v) end)
     |> Map.new()
-    |> Map.take([:resource_type, :resource_id, :user_id, :group_id])
-    |> find_acl_entry()
+    |> Map.take([:resource_type, :resource_id, :user_id, :group_id, :role_id])
   end
 
   def find_acl_entry(clauses) do
@@ -153,6 +132,8 @@ defmodule TdAuth.Permissions.AclEntries do
       {:resource_id, {:not_in, ids}}, q -> where(q, [e], e.resource_id not in ^ids)
       {:resource_id, resource_id}, q -> where(q, resource_id: ^resource_id)
       {:user_groups, {uid, gids}}, q -> where(q, [e], e.user_id == ^uid or e.group_id in ^gids)
+      {:user_id, user_id}, q -> where(q, user_id: ^user_id)
+      {:group_id, group_id}, q -> where(q, group_id: ^group_id)
       _, q -> q
     end)
   end

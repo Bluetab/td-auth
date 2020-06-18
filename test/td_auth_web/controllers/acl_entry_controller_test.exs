@@ -94,44 +94,6 @@ defmodule TdAuthWeb.AclEntryControllerTest do
     end
   end
 
-  describe "PATCH /api/acl_entries/:id" do
-    @tag :admin_authenticated
-    test "renders acl_entry when data is valid", %{
-      conn: conn,
-      swagger_schema: schema,
-      acl_entry:
-        %{id: id, role_id: role_id, resource_id: resource_id, resource_type: resource_type} =
-          acl_entry
-    } do
-      %{id: group_id} = insert(:group)
-      params = %{"acl_entry" => %{"group_id" => group_id, "description" => "desc2"}}
-
-      assert %{"data" => data} =
-               conn
-               |> patch(acl_entry_path(conn, :update, acl_entry), params)
-               |> validate_resp_schema(schema, "AclEntryResponse")
-               |> json_response(:ok)
-
-      assert %{
-               "description" => "desc2",
-               "group_id" => ^group_id,
-               "id" => ^id,
-               "resource_id" => ^resource_id,
-               "resource_type" => ^resource_type,
-               "role_id" => ^role_id,
-               "user_id" => nil
-             } = data
-    end
-
-    @tag :admin_authenticated
-    test "renders errors when data is invalid", %{conn: conn, acl_entry: acl_entry} do
-      assert %{"errors" => errors} =
-               conn
-               |> patch(acl_entry_path(conn, :update, acl_entry), acl_entry: %{role_id: nil})
-               |> json_response(:unprocessable_entity)
-    end
-  end
-
   describe "DELETE /api/acl_entries/:id" do
     @tag :admin_authenticated
     test "deletes chosen acl_entry", %{conn: conn, acl_entry: acl_entry} do

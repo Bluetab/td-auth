@@ -63,8 +63,8 @@ defmodule TdAuth.Permissions.AclEntry do
     |> foreign_key_constraint(:group_id, name: :acl_entries_group_id_fkey)
     |> foreign_key_constraint(:role_id, name: :acl_entries_role_id_fkey)
     |> foreign_key_constraint(:user_id, name: :acl_entries_user_id_fkey)
-    |> unique_constraint(:group_id, name: :unique_resource_group)
-    |> unique_constraint(:user_id, name: :unique_resource_user)
+    |> unique_constraint(:user_id, name: :unique_resource_user_role, message: "taken")
+    |> unique_constraint(:group_id, name: :unique_resource_group_role, message: "taken")
     |> check_constraint(:group_id, name: :user_xor_group)
   end
 

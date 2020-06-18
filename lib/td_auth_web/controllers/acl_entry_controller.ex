@@ -70,29 +70,6 @@ defmodule TdAuthWeb.AclEntryController do
     render(conn, "show.json", acl_entry: acl_entry)
   end
 
-  swagger_path :update do
-    description("Updates Acl entry")
-    produces("application/json")
-
-    parameters do
-      acl_entry(:body, Schema.ref(:AclEntryCreateUpdate), "Acl entry update attrs")
-      id(:path, :integer, "Acl Entry ID", required: true)
-    end
-
-    response(200, "OK", Schema.ref(:AclEntryResponse))
-    response(400, "Client Error")
-  end
-
-  def update(conn, %{"id" => id, "acl_entry" => params}) do
-    current_resource = conn.assigns[:current_resource]
-    acl_entry = AclEntries.get_acl_entry!(id)
-
-    with {:can, true} <- {:can, can?(current_resource, update(acl_entry))},
-         {:ok, %AclEntry{} = acl_entry} <- AclEntries.update_acl_entry(acl_entry, params) do
-      render(conn, "show.json", acl_entry: acl_entry)
-    end
-  end
-
   swagger_path :delete do
     description("Delete Acl Entry")
     produces("application/json")
