@@ -5,16 +5,12 @@ defmodule TdAuth.Application do
 
   use Application
 
-  alias TdAuth.Metrics.PrometheusExporter
   alias TdAuthWeb.Endpoint
 
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
     env = Application.get_env(:td_auth, :env)
-
-    # Setup metrics exporter
-    PrometheusExporter.setup()
 
     # Define workers and child supervisors to be supervised
     children =

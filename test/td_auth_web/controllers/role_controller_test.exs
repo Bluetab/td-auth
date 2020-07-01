@@ -81,10 +81,11 @@ defmodule TdAuthWeb.RoleControllerTest do
 
     @tag :admin_authenticated
     test "deletes chosen role", %{conn: conn, role: role} do
-      conn = delete(conn, Routes.role_path(conn, :delete, role))
-      assert response(conn, 204)
-      conn = recycle_and_put_headers(conn)
-      assert_error_sent 404, fn -> get(conn, Routes.role_path(conn, :show, role)) end
+      assert conn
+             |> delete(Routes.role_path(conn, :delete, role))
+             |> response(:no_content)
+
+      assert_error_sent :not_found, fn -> get(conn, Routes.role_path(conn, :show, role)) end
     end
   end
 

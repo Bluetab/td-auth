@@ -87,4 +87,6 @@ config :td_auth, :saml,
   sp_trusted_fingerprints: System.get_env("SAML_TRUSTED_FINGERPRINTS"),
   reject_roles: System.get_env("SAML_REJECT_ROLES")
 
-config :td_cache, redis_host: System.fetch_env!("REDIS_HOST")
+config :td_cache,
+  redis_host: System.fetch_env!("REDIS_HOST"),
+  port: System.get_env("REDIS_PORT", "6379") |> String.to_integer()

@@ -1,16 +1,19 @@
 # Changelog
 
-## [Unreleased]
+## [4.0.0] 2020-07-01
 
 ### Changed
 
 - [TD-2687] Remove `email` and `is_admin` from principal in ACL entry responses
-- [TD-2684] Multiple acls by resource and user/group 
+- [TD-2684] `POST /api/:resource_type/:resource_id/acl_entries` to create a new
+  ACL entry for a resource
+- Updated to Phoenix 1.5
 
-### Deleted
+### Removed
 
-- [TD-2684] `update_acl_entry` permission check
-- [TD-2684] `update` acl entry by id
+- [TD-2684] `PATCH /api/:resource_type/:resource_id/acl_entries` is no longer
+  used, removed unused `update_acl_entry` permission check
+- Prometheus metrics exporter
 
 ## [3.20.0] 2020-04-20
 

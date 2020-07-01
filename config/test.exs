@@ -23,7 +23,7 @@ config :td_auth, :auth,
   profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}
 
 # Redis configuration
-config :td_cache, redis_host: "redis"
+config :td_cache, redis_host: "redis", port: 6380
 
 config :td_auth, :openid_connect_providers,
   oidc: [
