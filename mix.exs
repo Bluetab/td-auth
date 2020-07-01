@@ -6,7 +6,7 @@ defmodule TdAuth.Mixfile do
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "3.20.0-local"
+          nil -> "4.0.0-local"
           v -> v
         end,
       elixir: "~> 1.10",
@@ -49,18 +49,18 @@ defmodule TdAuth.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.4.16"},
+      {:phoenix, "~> 1.5.0"},
       {:phoenix_ecto, "~> 4.0"},
       {:ecto_sql, "~> 3.1"},
       {:postgrex, ">= 0.0.0"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"},
-      {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
+      {:plug_cowboy, "~> 2.1"},
+      {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:guardian, "~> 2.0"},
-      {:canada, "~> 2.0", override: true},
+      {:canada, "~> 2.0"},
       {:bcrypt_elixir, "~> 2.0"},
-      {:cors_plug, "~> 1.2"},
+      {:cors_plug, "~> 2.0"},
       {:httpoison, "~> 1.6"},
       {:cabbage,
        git: "https://github.com/Bluetab/cabbage", branch: "feature/background", only: :test},
@@ -68,13 +68,13 @@ defmodule TdAuth.Mixfile do
       {:assertions, "~> 0.15", only: :test},
       {:phoenix_swagger, "~> 0.8"},
       {:ex_json_schema, "~> 0.6"},
-      {:inflex, "~> 2.0.0"},
-      {:prometheus_ex, "~> 3.0.2"},
-      {:prometheus_plugs, "~> 1.1.5"},
+      {:inflex, "~> 2.0"},
       {:exldap, "~> 0.6"},
       {:openid_connect, "~> 0.2.0"},
-      {:esaml, "~> 4.1"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "3.24.3"}
+      {:esaml, "~> 4.2"},
+      # See https://github.com/handnot2/esaml/issues/29
+      {:cowboy, "~> 2.7", override: true},
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.0.0"}
     ]
   end
 
