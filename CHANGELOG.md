@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] 
+
+### Changed
+
+- [TD-2280] Do not reference to domains by their names
+
 ## [4.0.0] 2020-07-01
 
 ### Changed
