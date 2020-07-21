@@ -27,10 +27,7 @@ defmodule TdAuth.Permissions.AclRemover do
 
   @impl GenServer
   def handle_info(:work, state) do
-    domain_ids =
-      TaxonomyCache.get_domain_name_to_id_map()
-      |> Map.values()
-
+    domain_ids = TaxonomyCache.get_domain_ids()
     AclEntries.delete_acl_entries(resource_type: "domain", resource_id: {:not_in, domain_ids})
 
     schedule_work()

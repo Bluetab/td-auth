@@ -225,7 +225,9 @@ defmodule TdAuth.Permissions do
 
   def get_permissions_domains(%{is_admin: true}, perms) do
     all_domains =
-      Enum.map(TaxonomyCache.get_domain_name_to_id_map(), fn {k, v} -> %{id: v, name: k} end)
+      TaxonomyCache.get_domain_ids()
+      |> Enum.map(&TaxonomyCache.get_domain/1)
+      |> Enum.map(&Map.take(&1, [:id, :name]))
 
     Enum.map(perms, &%{name: &1, domains: all_domains})
   end
@@ -237,7 +239,7 @@ defmodule TdAuth.Permissions do
       case Roles.get_by(is_default: true, preload: [permissions: :permission_group]) do
         %{permissions: permissions} ->
           names = Enum.map(permissions, &%{name: &1.name})
-          domain_ids = Enum.map(TaxonomyCache.get_domain_name_to_id_map(), fn {_k, v} -> v end)
+          domain_ids = TaxonomyCache.get_domain_ids()
           domain_ids
           |> Enum.map(
             &%{
