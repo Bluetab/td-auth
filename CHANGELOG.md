@@ -2,6 +2,10 @@
 
 ## [Unreleased] 
 
+### Fixed
+
+- [TD-2534] Refresh acl cache after group is updated
+
 ### Changed
 
 - [TD-2280] Do not reference to domains by their names

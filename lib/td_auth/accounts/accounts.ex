@@ -9,6 +9,7 @@ defmodule TdAuth.Accounts do
   alias TdAuth.Accounts.User
   alias TdAuth.Accounts.UserLoader
   alias TdAuth.Permissions.AclEntries
+  alias TdAuth.Permissions.AclLoader
   alias TdAuth.Repo
 
   def user_exists? do
@@ -246,6 +247,39 @@ defmodule TdAuth.Accounts do
     group
     |> Group.changeset(params)
     |> Repo.update()
+    |> refresh_cache()
+  end
+
+  # ACL Cache
+
+  defp refresh_cache({:ok, group}), do: refresh_cache(group)
+
+  defp refresh_cache(%Group{id: id} = group) do
+    group_domains = AclEntries.list_acl_entries(resource_type: "domain", group_id: id)
+    do_refresh_cache(group_domains)
+    {:ok, group}
+  end
+
+  defp refresh_cache(changeset), do: changeset
+
+  defp refresh_cache(%Group{} = group, group_domains) do
+    do_refresh_cache(group_domains)
+    {:ok, group}
+  end
+
+  defp refresh_cache({:ok, group}, group_domains) do
+    refresh_cache(group, group_domains)
+  end
+
+  defp refresh_cache(changeset, _group_domains) do
+    changeset
+  end
+
+  defp do_refresh_cache(group_domains) do
+    group_domains
+    |> Enum.map(&Map.get(&1, :resource_id))
+    |> Enum.uniq()
+    |> Enum.each(&AclLoader.refresh("domain", &1))
   end
 
   @doc """
@@ -261,7 +295,11 @@ defmodule TdAuth.Accounts do
 
   """
   def delete_group(%Group{} = group) do
-    Repo.delete(group)
+    group_domains = AclEntries.list_acl_entries(resource_type: "domain", group_id: group.id)
+
+    group
+    |> Repo.delete()
+    |> refresh_cache(group_domains)
   end
 
   defp get!(queryable, id, opts) do
