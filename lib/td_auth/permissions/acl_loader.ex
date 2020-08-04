@@ -39,24 +39,24 @@ defmodule TdAuth.Permissions.AclLoader do
 
   @impl GenServer
   def handle_call({:refresh, resource_type, resource_id}, _from, state) do
-    AclEntries.get_user_ids_by_resource_and_role(
-      resource_type: resource_type,
-      resource_id: resource_id
-    )
-    |> put_cache()
+    acls =
+      AclEntries.get_user_ids_by_resource_and_role(
+        resource_type: resource_type,
+        resource_id: resource_id
+      )
+
+    if map_size(acls) == 0 do
+      delete_resource(resource_type, resource_id)
+    else
+      put_cache(acls)
+    end
 
     {:reply, :ok, state}
   end
 
   @impl GenServer
   def handle_call({:delete, resource_type, resource_id}, _from, state) do
-    roles = AclCache.get_acl_roles(resource_type, resource_id)
-
-    Enum.each(roles, fn role ->
-      {:ok, _} = AclCache.delete_acl_role_users(resource_type, resource_id, role)
-    end)
-
-    {:ok, _} = AclCache.delete_acl_roles(resource_type, resource_id)
+    delete_resource(resource_type, resource_id)
     {:reply, :ok, state}
   end
 
@@ -72,6 +72,16 @@ defmodule TdAuth.Permissions.AclLoader do
     |> put_cache()
 
     {:noreply, state}
+  end
+
+  defp delete_resource(resource_type, resource_id) do
+    roles = AclCache.get_acl_roles(resource_type, resource_id)
+
+    Enum.each(roles, fn role ->
+      {:ok, _} = AclCache.delete_acl_role_users(resource_type, resource_id, role)
+    end)
+
+    {:ok, _} = AclCache.delete_acl_roles(resource_type, resource_id)
   end
 
   defp schedule_work(action, seconds) do
