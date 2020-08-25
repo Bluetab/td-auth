@@ -21,6 +21,7 @@ defmodule TdAuthWeb.Router do
     get("/ping", PingController, :ping)
     post("/sessions", SessionController, :create)
     post("/init", UserController, :init)
+    get("/init/can", UserController, :can_init)
   end
 
   scope "/", TdAuthWeb do

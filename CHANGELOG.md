@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-2872] `GET /api/users/init/can` Can create initial user
+
 ## [4.2.0] 2020-08-17
 
 ### Fixed
