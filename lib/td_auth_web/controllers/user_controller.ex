@@ -3,6 +3,7 @@ defmodule TdAuthWeb.UserController do
 
   import Canada, only: [can?: 2]
 
+  alias Jason, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
   alias TdAuthWeb.ErrorView
@@ -68,6 +69,11 @@ defmodule TdAuthWeb.UserController do
     )
 
     response(403, "Forbidden")
+  end
+
+  def can_init(conn, _params) do
+    can_init = !Accounts.user_exists?()
+    send_resp(conn, 200, JSON.encode!(can_init))
   end
 
   def init(conn, %{"user" => user_params}) do

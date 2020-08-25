@@ -203,4 +203,20 @@ defmodule TdAuthWeb.UserControllerTest do
              |> json_response(:created)
     end
   end
+
+  describe "can init" do
+    test "can init will return false if exist users", %{conn: conn} do
+      insert(:user)
+
+      assert conn
+             |> get(Routes.user_path(conn, :can_init))
+             |> response(:ok) == "false"
+    end
+
+    test "can init will return true if no users exist", %{conn: conn} do
+      assert conn
+             |> get(Routes.user_path(conn, :can_init))
+             |> response(:ok) == "true"
+    end
+  end
 end
