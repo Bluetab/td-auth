@@ -74,7 +74,7 @@ defmodule TdAuth.Mixfile do
       {:esaml, "~> 4.2"},
       # See https://github.com/handnot2/esaml/issues/29
       {:cowboy, "~> 2.7", override: true},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.2.0"}
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", branch: "feature/td-3047"}
     ]
   end
 

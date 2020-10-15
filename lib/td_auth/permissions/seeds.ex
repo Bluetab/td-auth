@@ -46,7 +46,7 @@ defmodule TdAuth.Permissions.Seeds do
       "view_data_structures_profile"
     ],
     "data_quality" => [
-      "execute_quality_rule",
+      "execute_quality_rule_implementations",
       "manage_quality_rule",
       "manage_quality_rule_implementations",
       "view_quality_rule",

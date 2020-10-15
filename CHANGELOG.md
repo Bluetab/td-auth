@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-3047] Permission `execute_quality_rule` to `execute_quality_rule_implementations`
+
 ## [4.3.0] 2020-09-07
 
 ### Added
