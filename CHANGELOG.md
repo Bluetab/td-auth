@@ -1,10 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- [TD-3110] Increased maximum accepted length of HTTP request header values
+
 ## [4.7.0] 2020-11-03
 
 ### Changed
 
-- [TD-3047] Permission `execute_quality_rule` to `execute_quality_rule_implementations`
+- [TD-3047] Renamed permission `execute_quality_rule` to
+  `execute_quality_rule_implementations`
 
 ## [4.3.0] 2020-09-07
 
@@ -58,7 +65,8 @@
 
 ### Added
 
-- [TD-2281] Include permission groups in JWT token, added permissions for dashboards and lineage
+- [TD-2281] Include permission groups in JWT token, added permissions for
+  dashboards and lineage
 
 ## [3.15.0] 2020-02-10
 
@@ -71,7 +79,8 @@
 
 ### Changed
 
-- Default log format is now with UTC timestamp and includes PID and module metadata
+- Default log format is now with UTC timestamp and includes PID and module
+  metadata
 
 ## [3.9.0] 2019-10-29
 
@@ -174,7 +183,8 @@
 ### Added
 
 - [TD-1544] Added a connection parameter to Auth0 config
-- [TD-1571] Elixir's Logger config will check for EX_LOGGER_FORMAT variable to override format
+- [TD-1571] Elixir's Logger config will check for EX_LOGGER_FORMAT variable to
+  override format
 
 ## [2.14.0] 2019-03-04
 
@@ -205,7 +215,8 @@
 
 ### Added
 
-- [TD-980] An user can change his password if he is logged with username and password
+- [TD-980] An user can change his password if he is logged with username and
+  password
 
 ## [2.12.2] 2019-01-25
 
@@ -242,7 +253,8 @@
 
 ### Changed
 
-- [TD-1357] removed default users from migration and added init_credential endpoint
+- [TD-1357] removed default users from migration and added init_credential
+  endpoint
 
 ## [2.11.7] 2019-01-15
 
@@ -262,7 +274,8 @@
 
 ### Fixed
 
-- Response codes 403 (forbidden) and 401 (unauthorized) were sometimes being used incorrectly
+- Response codes 403 (forbidden) and 401 (unauthorized) were sometimes being
+  used incorrectly
 
 ### Changed
 
@@ -292,7 +305,8 @@
 
 ### Changed
 
-- [TD-1153] Refactor /api/auth :index. Now it returns a map with the various available auth methods configurated
+- [TD-1153] Refactor /api/auth :index. Now it returns a map with the various
+  available auth methods configurated
 - Production build requires new environment variable: AUTH_CLIENT_ID
 
 ## [2.8.2] 2018-11-25
@@ -318,13 +332,15 @@
 
 ### Added
 
-- API endpoint to list authentication methods (currently only returns OIDC endpoint)
+- API endpoint to list authentication methods (currently only returns OIDC
+  endpoint)
 
 ## [2.7.6] 2018-11-08
 
 ### Fixed
 
-- Prevent application startup from failing if OIDC environment variables are absent
+- Prevent application startup from failing if OIDC environment variables are
+  absent
 
 ## [2.7.5] 2018-10-31
 
