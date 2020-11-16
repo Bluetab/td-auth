@@ -66,7 +66,6 @@ defmodule TdAuth.AccountsTest do
       user = insert(:user)
       assert {:error, %Ecto.Changeset{}} = Accounts.update_user(user, @invalid_attrs)
       assert user.id == Accounts.get_user!(user.id).id
-      #      assert user == Accounts.get_user!(user.id)
     end
 
     test "delete_user/1 deletes the user" do
@@ -89,6 +88,16 @@ defmodule TdAuth.AccountsTest do
         |> Accounts.create_user()
 
       assert user.user_name == downcase_name
+    end
+
+    test "user_exists? verifies if exists any unprotected user" do
+      assert not Accounts.user_exists?()
+
+      insert(:user, is_protected: true)
+      assert not Accounts.user_exists?()
+
+      insert(:user, is_protected: false)
+      assert Accounts.user_exists?()
     end
   end
 
