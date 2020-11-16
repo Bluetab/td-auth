@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-3101] `GET /api/users/init/can` Verifies if unprotected users exists
+
 ## [4.3.0] 2020-09-07
 
 ### Added
