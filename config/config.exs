@@ -16,7 +16,12 @@ config :td_auth, allow_proxy_login: "false"
 
 # Configures the endpoint
 config :td_auth, TdAuthWeb.Endpoint,
-  http: [port: 4001],
+  http: [
+    port: 4001,
+    protocol_options: [
+      max_header_value_length: 16_384
+    ]
+  ],
   url: [host: "localhost"],
   render_errors: [view: TdAuthWeb.ErrorView, accepts: ~w(json)]
 
