@@ -32,6 +32,9 @@ defmodule TdAuth.Permissions.Seeds do
       "view_rejected_business_concepts",
       "view_versioned_business_concepts"
     ],
+    "configurations" => [
+      "manage_configurations"
+    ],
     "dashboards" => [
       "view_dashboard"
     ],
@@ -51,6 +54,9 @@ defmodule TdAuth.Permissions.Seeds do
       "manage_quality_rule_implementations",
       "view_quality_rule",
       "manage_raw_quality_rule_implementations"
+    ],
+    "data_sources" => [
+      "manage_data_sources"
     ],
     "ingests" => [
       "create_ingest",
