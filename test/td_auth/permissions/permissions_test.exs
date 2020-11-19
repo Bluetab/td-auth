@@ -143,7 +143,7 @@ defmodule TdAuth.PermissionsTest do
       assert key == "group.delete.existing.permissions"
     end
 
-    test "get_domains_with_perms/2 returns permission and domains with that permission for user " do
+    test "get_domains_with_perms/2 returns permission and domains with that permission for user ", %{domains: domains} do
       %{id: user_id} = user = insert(:user, groups: [build(:group)])
       %{id: group_id} = hd(user.groups)
 
@@ -151,9 +151,7 @@ defmodule TdAuth.PermissionsTest do
       q_permission = insert(:permission, name: "view_quality")
       role = insert(:role, permissions: [permission])
       role2 = insert(:role, permissions: [q_permission])
-      domain = build(:domain)
-      domain2 = build(:domain)
-      domain3 = build(:domain)
+      [domain, domain2, domain3] = Enum.slice(domains, 0..2)
 
       insert(:acl_entry, group_id: group_id, role: role, resource_id: domain.id)
       insert(:acl_entry, user_id: user_id, role: role2, resource_id: domain2.id)

@@ -227,6 +227,7 @@ defmodule TdAuth.Permissions do
     all_domains =
       TaxonomyCache.get_domain_ids()
       |> Enum.map(&TaxonomyCache.get_domain/1)
+      |> Enum.filter(& &1)
       |> Enum.map(&Map.take(&1, [:id, :name, :external_id]))
 
     Enum.map(perms, &%{name: &1, domains: all_domains})
@@ -266,6 +267,7 @@ defmodule TdAuth.Permissions do
         |> Enum.map(&Map.get(&1, :resource_id))
         |> Enum.uniq()
         |> Enum.map(&TaxonomyCache.get_domain/1)
+        |> Enum.filter(& &1)
         |> Enum.map(&Map.take(&1, [:id, :name, :external_id]))
 
       %{name: perm_name, domains: domains}
