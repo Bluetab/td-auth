@@ -5,6 +5,11 @@
 ### Added
 
 - [TD-2486] Permissions `manage_data_sources` and `manage_configurations`
+
+### Changed
+
+- [TD-3101] `GET /api/users/init/can` Verifies if unprotected users exists
+
 ## [4.8.0] 2020-11-16
 
 ### Fixed

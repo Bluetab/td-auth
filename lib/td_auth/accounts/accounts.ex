@@ -13,7 +13,9 @@ defmodule TdAuth.Accounts do
   alias TdAuth.Repo
 
   def user_exists? do
-    Repo.exists?(User)
+    User
+    |> where([_u], is_protected: false)
+    |> Repo.exists?()
   end
 
   @doc """
