@@ -3,7 +3,7 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
 
   alias Jason, as: JSON
 
-  @auth0_service Application.get_env(:td_auth, :auth)[:auth0_service]
+  @auth0_service Application.compile_env(:td_auth, :auth)[:auth0_service]
 
   def authenticate(authorization_header) do
     with {:ok, access_token} <- fetch_access_token(authorization_header),
