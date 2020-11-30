@@ -3,8 +3,6 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
 
   alias Jason, as: JSON
 
-  @auth0_service Application.compile_env(:td_auth, :auth)[:auth0_service]
-
   def authenticate(authorization_header) do
     with {:ok, access_token} <- fetch_access_token(authorization_header),
          {:ok, profile} <- get_auth0_profile(access_token) do
@@ -38,7 +36,7 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
       Authorization: "Bearer #{access_token}"
     ]
 
-    {status_code, user_info} = @auth0_service.get_user_info(get_auth0_profile_path(), headers)
+    {status_code, user_info} = auth0_service().get_user_info(get_auth0_profile_path(), headers)
 
     case status_code do
       200 ->
@@ -64,5 +62,9 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
     keys
     |> Enum.map(&Map.get(profile, &1, ""))
     |> Enum.join(" ")
+  end
+
+  defp auth0_service do
+    Application.get_env(:td_auth, :auth)[:auth0_service]
   end
 end
