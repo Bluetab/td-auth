@@ -2,8 +2,6 @@ defmodule TdAuthWeb.RoleControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
-  import TdAuthWeb.Authentication, only: :functions
-
   alias TdAuth.Permissions.Roles
 
   @create_attrs %{name: "some name", is_default: false}

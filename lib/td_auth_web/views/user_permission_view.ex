@@ -21,6 +21,6 @@ defmodule TdAuthWeb.UserPermissionView do
   end
 
   def render("domain.json", %{user_permission: domain}) do
-    %{id: domain.id, name: domain.name}
+    Map.take(domain, [:id, :name, :external_id])
   end
 end
