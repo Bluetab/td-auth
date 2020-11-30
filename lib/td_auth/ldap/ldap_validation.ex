@@ -6,8 +6,8 @@ defmodule TdAuth.Ldap.LdapValidation do
 
   require Logger
 
-  @eldap_module Application.get_env(:td_auth, :eldap_module)
-  @exldap_module Application.get_env(:td_auth, :exldap_module)
+  @eldap_module Application.compile_env(:td_auth, :eldap_module)
+  @exldap_module Application.compile_env(:td_auth, :exldap_module)
 
   def validate_entry(conn, entry) do
     validations = LdapWorker.get_validations()
