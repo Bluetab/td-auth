@@ -14,7 +14,15 @@ defmodule TdAuth.Permissions.Seeds do
   require Logger
 
   @permissions_by_group %{
-    "business_glossary" => [
+    "business_glossary_view" => [
+      "view_approval_pending_business_concepts",
+      "view_deprecated_business_concepts",
+      "view_draft_business_concepts",
+      "view_published_business_concepts",
+      "view_rejected_business_concepts",
+      "view_versioned_business_concepts"
+    ],
+    "business_glossary_management" => [
       "create_business_concept",
       "delete_business_concept",
       "deprecate_business_concept",
@@ -24,13 +32,7 @@ defmodule TdAuth.Permissions.Seeds do
       "publish_business_concept",
       "reject_business_concept",
       "send_business_concept_for_approval",
-      "update_business_concept",
-      "view_approval_pending_business_concepts",
-      "view_deprecated_business_concepts",
-      "view_draft_business_concepts",
-      "view_published_business_concepts",
-      "view_rejected_business_concepts",
-      "view_versioned_business_concepts"
+      "update_business_concept"
     ],
     "dashboards" => [
       "view_dashboard"
