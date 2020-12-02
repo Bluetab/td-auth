@@ -19,13 +19,15 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
         |> Enum.map(fn _ -> insert(:permission_group) end)
         |> Enum.map(fn %{id: id, name: name} -> %{"id" => id, "name" => name} end)
 
+      names = Enum.map(expected, fn %{"name" => name} -> name end)
+
       assert %{"data" => data} =
                conn
                |> get(Routes.permission_group_path(conn, :index))
                |> json_response(200)
 
       assert_lists_equal(
-        data,
+        Enum.filter(data, fn %{"name" => name} -> name in names end),
         expected,
         &assert_maps_equal(&1, &2, ["id", "name"])
       )
