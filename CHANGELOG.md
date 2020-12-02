@@ -6,6 +6,10 @@
 
 - [TD-2486] Permissions `manage_data_sources` and `manage_configurations`
 
+### Changed
+
+- [TD-2461] Split `business_glossary` permission group into groups `business_glossary_view` and `business_glossary_management`
+
 ## [4.9.0] 2020-11-30
 
 ### Changed
