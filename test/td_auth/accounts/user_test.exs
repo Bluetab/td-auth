@@ -27,7 +27,7 @@ defmodule TdAuth.Accounts.UserTest do
       assert %Changeset{errors: errors} = changeset = User.changeset(%{password: "foo"})
 
       refute changeset.valid?
-      assert {_, [count: 6, validation: :length, kind: min, type: :string]} = errors[:password]
+      assert {_, [count: 6, validation: :length, kind: :min, type: :string]} = errors[:password]
     end
 
     test "changeset/2 puts password_hash if password is valid" do

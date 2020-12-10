@@ -63,7 +63,7 @@ defmodule TdAuth.Permissions.AclEntriesTest do
     end
 
     test "create_acl_entry/1 enforces unique constraint on user_id and resource" do
-      assert {:error, changeset = %Changeset{errors: errors}} =
+      assert {:error, %Changeset{errors: errors}} =
                :acl_entry
                |> insert(principal_type: :user)
                |> Map.take([:user_id, :resource_type, :resource_id, :role_id])

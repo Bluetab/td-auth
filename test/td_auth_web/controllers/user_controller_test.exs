@@ -148,7 +148,7 @@ defmodule TdAuthWeb.UserControllerTest do
 
     @tag :admin_authenticated
     test "update user is admin flag", %{conn: conn, swagger_schema: schema, user: user} do
-      assert %{"data" => %{"user_name" => user_name, "is_admin" => true}} =
+      assert %{"data" => %{"user_name" => _, "is_admin" => true}} =
                conn
                |> put(Routes.user_path(conn, :update, user), user: @update_is_admin)
                |> validate_resp_schema(schema, "UserResponse")
