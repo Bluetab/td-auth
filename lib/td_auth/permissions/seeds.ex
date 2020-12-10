@@ -15,24 +15,23 @@ defmodule TdAuth.Permissions.Seeds do
 
   @permissions_by_group %{
     "business_glossary_view" => [
-      "view_approval_pending_business_concepts",
-      "view_deprecated_business_concepts",
-      "view_draft_business_concepts",
       "view_published_business_concepts",
-      "view_rejected_business_concepts",
       "view_versioned_business_concepts"
     ],
     "business_glossary_management" => [
       "create_business_concept",
       "delete_business_concept",
       "deprecate_business_concept",
-      "manage_business_concept_alias",
       "manage_business_concept_links",
       "manage_confidential_business_concepts",
       "publish_business_concept",
       "reject_business_concept",
       "send_business_concept_for_approval",
-      "update_business_concept"
+      "update_business_concept",
+      "view_approval_pending_business_concepts",
+      "view_deprecated_business_concepts",
+      "view_draft_business_concepts",
+      "view_rejected_business_concepts"
     ],
     "configurations" => [
       "manage_configurations"
@@ -112,11 +111,11 @@ defmodule TdAuth.Permissions.Seeds do
 
   defp seed_permissions do
     ts = timestamp()
-    obsolete_permissions()
-    obsolete_groups()
     insert_permissions(ts)
     insert_groups(ts)
     update_groups(ts)
+    obsolete_permissions()
+    obsolete_groups()
   end
 
   defp timestamp do
