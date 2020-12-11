@@ -25,7 +25,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
     } do
       %{resource_type: resource_type, resource_id: resource_id} = acl_entry
 
-      assert %{"_embedded" => embedded, "_links" => links} =
+      assert %{"_embedded" => embedded, "_links" => _links} =
                conn
                |> get(
                  resource_acl_path(conn, :show, Inflex.pluralize(resource_type), resource_id)
@@ -91,7 +91,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       assert [location] = get_resp_header(conn1, "location")
       assert location == "/api/domains/#{resource_id}/acl_entries"
 
-      assert %{"_embedded" => embedded, "_links" => links} =
+      assert %{"_embedded" => embedded, "_links" => _links} =
                conn
                |> get(location, %{})
                |> validate_resp_schema(schema, "ResourceAclEntriesResponse")

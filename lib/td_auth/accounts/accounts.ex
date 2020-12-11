@@ -142,13 +142,12 @@ defmodule TdAuth.Accounts do
   @doc """
   Returns the acl entries associated with a user or its groups.
   """
+  def get_user_acls(user_or_user_id)
+
   def get_user_acls(%User{id: user_id}) do
     get_user_acls(user_id)
   end
 
-  @doc """
-  Returns the acl entries associated with a user_id or its groups.
-  """
   def get_user_acls(user_id) do
     group_ids =
       "users_groups"

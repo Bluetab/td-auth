@@ -81,6 +81,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
                conn
                |> post(acl_entry_path(conn, :create), acl_entry: params)
                |> json_response(:unprocessable_entity)
+
+      assert errors == %{"user_id" => ["taken"]}
     end
 
     @tag :admin_authenticated
@@ -91,6 +93,12 @@ defmodule TdAuthWeb.AclEntryControllerTest do
                conn
                |> post(acl_entry_path(conn, :create), params)
                |> json_response(:unprocessable_entity)
+
+      assert errors == %{
+               "resource_id" => ["can't be blank"],
+               "resource_type" => ["can't be blank"],
+               "role_id" => ["can't be blank"]
+             }
     end
   end
 

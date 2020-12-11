@@ -66,6 +66,10 @@ defmodule TdAuthWeb.SessionController do
     authenticate_using_ldap_and_create_session(conn, user_name, password)
   end
 
+  def create(conn, %{"auth_realm" => "oidc", "code" => code} = params) when is_binary(code) do
+    authenticate_using_oidc_and_create_session(conn, params)
+  end
+
   def create(conn, %{"auth_realm" => "oidc"}) do
     authenticate_using_oidc_and_create_session(conn)
   end
@@ -238,10 +242,23 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp authenticate_using_oidc_and_create_session(conn) do
-    authorization_header = get_req_header(conn, "authorization")
+  defp authenticate_using_oidc_and_create_session(conn, params \\ nil)
 
-    with {:ok, profile} <- OIDC.authenticate(authorization_header),
+  defp authenticate_using_oidc_and_create_session(conn, %{"code" => code} = params)
+       when is_binary(code) do
+    with %{} = params <- Map.delete(params, "auth_realm"),
+         {:ok, profile} <- OIDC.authenticate(params),
+         {:ok, user} <- Accounts.create_or_update_user(profile) do
+      create_session(conn, user, nil)
+    else
+      error ->
+        Logger.info("While authenticating using OpenID Connect... #{inspect(error)}")
+        unauthorized(conn)
+    end
+  end
+
+  defp authenticate_using_oidc_and_create_session(conn, _params) do
+    with {:ok, profile} <- OIDC.authenticate(conn),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
       create_session(conn, user, nil)
     else

@@ -71,6 +71,8 @@ defmodule TdAuthWeb.RoleControllerTest do
                conn
                |> put(Routes.role_path(conn, :update, role), role: %{name: nil})
                |> json_response(:unprocessable_entity)
+
+      assert errors == %{"name" => ["can't be blank"]}
     end
   end
 

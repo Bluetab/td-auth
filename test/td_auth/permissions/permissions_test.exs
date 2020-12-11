@@ -84,7 +84,7 @@ defmodule TdAuth.PermissionsTest do
     end
 
     test "create_permission_group/1 with valid data creates a permission_group" do
-      assert {:ok, %PermissionGroup{} = permission_group} =
+      assert {:ok, %PermissionGroup{} = _permission_group} =
                Permissions.create_permission_group(@valid_attrs)
     end
 

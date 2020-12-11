@@ -35,24 +35,26 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
   describe "create permission_group" do
     @tag :admin_authenticated
     test "renders permission_group when data is valid", %{conn: conn} do
-      conn =
-        post(conn, Routes.permission_group_path(conn, :create), permission_group: @create_attrs)
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.permission_group_path(conn, :create),
+                 permission_group: @create_attrs
+               )
+               |> json_response(:created)
 
-      assert %{"id" => id} = json_response(conn, :created)["data"]
-
-      conn = get(conn, Routes.permission_group_path(conn, :show, id))
-
-      assert %{
-               "id" => id
-             } = json_response(conn, 200)["data"]
+      assert %{"id" => _id} = data
     end
 
     @tag :admin_authenticated
     test "renders errors when data is invalid", %{conn: conn} do
-      conn =
-        post(conn, Routes.permission_group_path(conn, :create), permission_group: @invalid_attrs)
+      assert %{"errors" => errors} =
+               conn
+               |> post(Routes.permission_group_path(conn, :create),
+                 permission_group: @invalid_attrs
+               )
+               |> json_response(:unprocessable_entity)
 
-      assert json_response(conn, 422)["errors"] != %{}
+      assert errors == %{"name" => ["can't be blank"]}
     end
   end
 
@@ -64,18 +66,14 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
       conn: conn,
       permission_group: %PermissionGroup{id: id} = permission_group
     } do
-      conn =
-        put(conn, Routes.permission_group_path(conn, :update, permission_group),
-          permission_group: @update_attrs
-        )
+      assert %{"data" => data} =
+               conn
+               |> put(Routes.permission_group_path(conn, :update, permission_group),
+                 permission_group: @update_attrs
+               )
+               |> json_response(:ok)
 
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
-
-      conn = get(conn, Routes.permission_group_path(conn, :show, id))
-
-      assert %{
-               "id" => id
-             } = json_response(conn, 200)["data"]
+      assert %{"id" => ^id} = data
     end
 
     @tag :admin_authenticated

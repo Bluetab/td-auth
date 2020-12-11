@@ -41,7 +41,7 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
 
       assert %{"data" => data} =
                conn
-               |> put(Routes.role_permission_path(conn, :update, role.id),
+               |> put(Routes.role_permission_path(conn, :update, role_id),
                  permissions: id_params
                )
                |> validate_resp_schema(schema, "PermissionsResponse")

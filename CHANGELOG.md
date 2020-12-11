@@ -4,6 +4,7 @@
 
 ### Added
 
+- [TD-3143] Support Azure Active Directory with OAuth 2.0 auth code flow
 - [TD-2486] Permissions `manage_data_sources` and `manage_configurations`
 
 ## [4.9.0] 2020-11-30
