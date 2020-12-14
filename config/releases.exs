@@ -68,7 +68,7 @@ config :td_auth, :openid_connect_providers,
     client_secret: System.get_env("OIDC_CLIENT_SECRET"),
     redirect_uri: System.get_env("OIDC_REDIRECT_URI"),
     scope: System.get_env("OIDC_SCOPE"),
-    response_type: "id_token"
+    response_type: System.get_env("OIDC_RESPONSE_TYPE", "id_token")
   ]
 
 config :td_auth, :saml,
