@@ -5,6 +5,8 @@ defmodule TdAuthWeb.UserControllerTest do
   alias TdAuth.Accounts.User
   alias TdCache.TaxonomyCache
 
+  import TdAuthWeb.Authentication, only: [authenticate: 2]
+
   @create_attrs %{
     password: "some password_hash",
     user_name: "some user_name",
@@ -188,19 +190,57 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "init credential" do
-    test "init credential will fail if exist users", %{conn: conn} do
+    test "returns forbidden if exist users", %{conn: conn} do
       insert(:user)
 
       assert conn
              |> post(Routes.user_path(conn, :init), user: @create_attrs)
-             |> response(403)
+             |> response(:forbidden)
     end
 
-    test "init credential will succeed if no users exist", %{conn: conn, swagger_schema: schema} do
-      assert conn
-             |> post(Routes.user_path(conn, :init), user: @create_attrs)
-             |> validate_resp_schema(schema, "UserResponse")
-             |> json_response(:created)
+    test "creates unprotected admin user if no protected users exist", %{
+      conn: conn,
+      swagger_schema: schema
+    } do
+      admin = insert(:user, is_protected: true, is_admin: true)
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_path(conn, :init), user: @create_attrs)
+               |> validate_resp_schema(schema, "UserResponse")
+               |> json_response(:created)
+
+      assert %{"id" => id} = data
+
+      assert %{"data" => data} =
+               conn
+               |> authenticate(admin)
+               |> get(Routes.user_path(conn, :index))
+               |> validate_resp_schema(schema, "UsersResponseData")
+               |> json_response(:ok)
+
+      assert [%{"id" => ^id}] = data
+    end
+
+    test "creates protected admin user if is_protected is specified", %{
+      conn: conn,
+      swagger_schema: schema
+    } do
+      admin = insert(:user, is_protected: true, is_admin: true)
+
+      params = %{user: Map.put(@create_attrs, :is_protected, true)}
+
+      assert %{"data" => _} =
+               conn
+               |> post(Routes.user_path(conn, :init), params)
+               |> validate_resp_schema(schema, "UserResponse")
+               |> json_response(:created)
+
+      assert %{"data" => []} =
+               conn
+               |> authenticate(admin)
+               |> get(Routes.user_path(conn, :index))
+               |> json_response(:ok)
     end
   end
 
