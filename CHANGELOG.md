@@ -4,6 +4,7 @@
 
 ### Changed
 
+- [TD-3170] Build docker image which runs with non-root user
 - [TD-3139] `/api/init` now creates the initial admin user as unprotected unless
   `is_protected: true` is specified in the payload
 
