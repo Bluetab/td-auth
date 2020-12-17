@@ -86,7 +86,7 @@ defmodule TdAuthWeb.UserController do
       user_params =
         user_params
         |> Map.put("is_admin", true)
-        |> Map.put("is_protected", true)
+        |> Map.put_new("is_protected", false)
 
       do_create(conn, user_params)
     end

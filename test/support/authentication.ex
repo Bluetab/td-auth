@@ -20,6 +20,11 @@ defmodule TdAuthWeb.Authentication do
     |> put_req_header("authorization", "Bearer #{jwt}")
   end
 
+  def authenticate(conn, user) do
+    {:ok, jwt, _full_claims} = Guardian.encode_and_sign(user)
+    put_auth_headers(conn, jwt)
+  end
+
   def create_user_auth_conn(user) do
     {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
     conn = ConnTest.build_conn()

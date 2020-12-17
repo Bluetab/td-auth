@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-3139] `/api/init` now creates the initial admin user as unprotected unless
+  `is_protected: true` is specified in the payload
+
 ## [4.10.0] 2020-12-14
 
 ### Added
