@@ -9,6 +9,7 @@
 ### Changed
 
 - [TD-3163] Auth tokens now include rule claim instead of is_admin flag
+- [TD-3182] Allow to use redis with password
 
 ## [4.11.0] 2021-01-11
 
