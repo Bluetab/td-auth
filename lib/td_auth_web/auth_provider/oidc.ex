@@ -4,9 +4,9 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   """
 
   alias Plug.Conn
-  alias TdCache.NonceCache
   alias TdAuthWeb.AuthProvider.CustomProfileMapping
   alias TdAuthWeb.AuthProvider.DefaultProfileMapping
+  alias TdCache.NonceCache
 
   require Logger
 
@@ -63,7 +63,6 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
       mapping when is_binary(mapping) -> mapping |> Jason.decode!() |> CustomProfileMapping.map_profile(claims)
       nil -> DefaultProfileMapping.map_profile(claims)
     end
-    |> IO.inspect()
   end
 
   # Obtains a bearer token from request headers

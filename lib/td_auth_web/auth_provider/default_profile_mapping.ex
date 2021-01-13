@@ -1,4 +1,8 @@
 defmodule TdAuthWeb.AuthProvider.DefaultProfileMapping do
+  @moduledoc """
+  Default profile mapping for authentication providers.
+  """
+
   require Logger
 
   # Create profile from email and name claims

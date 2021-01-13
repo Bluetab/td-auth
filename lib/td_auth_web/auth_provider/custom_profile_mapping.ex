@@ -1,4 +1,8 @@
 defmodule TdAuthWeb.AuthProvider.CustomProfileMapping do
+  @moduledoc """
+  Support customized profile mapping from authentication providers.
+  """
+
   def map_profile(mapping, claims)
 
   def map_profile(mapping, %{} = claims) when is_binary(mapping) do
