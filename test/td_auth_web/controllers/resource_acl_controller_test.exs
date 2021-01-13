@@ -37,7 +37,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
     end
 
     @tag :admin_authenticated
-    test "excludes user email and is_admin fields", %{conn: conn, acl_entry: acl_entry} do
+    test "excludes user email field", %{conn: conn, acl_entry: acl_entry} do
       %{resource_type: resource_type, resource_id: resource_id} = acl_entry
 
       assert %{"_embedded" => embedded} =

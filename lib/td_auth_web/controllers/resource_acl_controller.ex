@@ -30,12 +30,12 @@ defmodule TdAuthWeb.ResourceAclController do
   def show(conn, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
     resource_type = Inflex.singularize(resource_type)
 
-    current_resource = conn.assigns[:current_resource]
+    claims = conn.assigns[:current_resource]
     acl_resource = %{resource_type: resource_type, resource_id: resource_id}
 
-    with {:can, true} <- {:can, can?(current_resource, view_acl_entries(acl_resource))},
+    with {:can, true} <- {:can, can?(claims, view_acl_entries(acl_resource))},
          acl_entries <- AclEntries.list_acl_entries(acl_resource) do
-      assigns = with_links(current_resource, acl_resource, acl_entries)
+      assigns = with_links(claims, acl_resource, acl_entries)
       render(conn, "show.json", assigns)
     end
   end
@@ -61,11 +61,11 @@ defmodule TdAuthWeb.ResourceAclController do
           "acl_entry" => acl_entry_params
         } = params
       ) do
-    current_resource = conn.assigns[:current_resource]
+    claims = conn.assigns[:current_resource]
     acl_entry_params = normalize_params(acl_entry_params, params)
     acl_resource = Map.take(acl_entry_params, [:resource_type, :resource_id])
 
-    with {:can, true} <- {:can, can?(current_resource, create(acl_resource))},
+    with {:can, true} <- {:can, can?(claims, create(acl_resource))},
          {:ok, _} <- AclEntries.create_acl_entry(acl_entry_params) do
       conn
       |> put_resp_header("location", resource_acl_path(resource_type, resource_id))
@@ -103,33 +103,33 @@ defmodule TdAuthWeb.ResourceAclController do
   defp put_principal_id(params), do: params
 
   defp with_links(
-         current_resource,
+         claims,
          %{resource_type: resource_type, resource_id: resource_id} = acl_resource,
          acl_entries
        ) do
     self = %{
       href: resource_acl_path(resource_type, resource_id),
-      methods: methods(current_resource, acl_resource)
+      methods: methods(claims, acl_resource)
     }
 
     links = %{self: self}
-    embedded = %{acl_entries: Enum.map(acl_entries, &with_links(current_resource, &1))}
+    embedded = %{acl_entries: Enum.map(acl_entries, &with_links(claims, &1))}
     %{embedded: embedded, links: links}
   end
 
-  defp with_links(current_resource, %AclEntry{} = acl_entry) do
-    self = %{href: acl_entry_path(acl_entry), methods: methods(current_resource, acl_entry)}
+  defp with_links(claims, %AclEntry{} = acl_entry) do
+    self = %{href: acl_entry_path(acl_entry), methods: methods(claims, acl_entry)}
     links = %{self: self}
 
     %{acl_entry: acl_entry, links: links}
   end
 
-  defp methods(current_resource, %AclEntry{} = acl_entry) do
-    ["GET"] ++ if can?(current_resource, delete(acl_entry)), do: ["DELETE"], else: []
+  defp methods(claims, %AclEntry{} = acl_entry) do
+    ["GET"] ++ if can?(claims, delete(acl_entry)), do: ["DELETE"], else: []
   end
 
-  defp methods(current_resource, acl_resource) do
-    ["GET"] ++ if can?(current_resource, create(acl_resource)), do: ["POST"], else: []
+  defp methods(claims, acl_resource) do
+    ["GET"] ++ if can?(claims, create(acl_resource)), do: ["POST"], else: []
   end
 
   defp resource_acl_path(resource_type, resource_id) do

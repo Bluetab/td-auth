@@ -34,9 +34,9 @@ defmodule TdAuthWeb.UserPermissionController do
 
   def show(conn, %{"user_id" => "me", "permissions" => perms}) do
     permissions = String.split(perms, ",")
-    %{id: id} = conn.assigns[:current_resource]
+    %{user_id: user_id} = conn.assigns[:current_resource]
 
-    case Accounts.get_user!(id) do
+    case Accounts.get_user!(user_id) do
       %User{} = user ->
         permission_domains = Permissions.get_permissions_domains(user, permissions)
         render(conn, "show.json", permission_domains: permission_domains)

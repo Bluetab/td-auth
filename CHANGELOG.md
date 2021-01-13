@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-3163] Initial support for service accounts
+
+### Changed
+
+- [TD-3163] Auth tokens now include rule claim instead of is_admin flag
+
 ## [4.11.0] 2021-01-11
 
 ### Changed

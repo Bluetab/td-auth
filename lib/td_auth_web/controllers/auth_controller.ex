@@ -2,6 +2,7 @@ defmodule TdAuthWeb.AuthController do
   use TdAuthWeb, :controller
 
   alias TdAuth.Saml.SamlWorker
+  alias TdAuthWeb.AuthProvider.Auth0
   alias TdAuthWeb.AuthProvider.OIDC
   alias TdAuthWeb.SwaggerDefinitions
 
@@ -24,7 +25,7 @@ defmodule TdAuthWeb.AuthController do
       |> Enum.into(%{})
       |> Map.get(:oidc, [])
 
-    auth0_config = Application.get_env(:td_auth, :auth)
+    auth0_config = Application.get_env(:td_auth, :auth0)
 
     auth_methods =
       %{}
@@ -53,22 +54,13 @@ defmodule TdAuthWeb.AuthController do
     end
   end
 
-  defp add_auth0_auth(auth_methods, auth0_config) do
-    case empty_config?(auth0_config, :domain) do
+  defp add_auth0_auth(auth_methods, config) do
+    case empty_config?(config, :domain) do
       true ->
         auth_methods
 
       _ ->
-        auth0 = %{
-          domain: auth0_config[:domain],
-          clientID: auth0_config[:client_id],
-          redirectUri: auth0_config[:redirect_uri],
-          audience: Enum.join([auth0_config[:audience], auth0_config[:userinfo]], ""),
-          responseType: auth0_config[:response_type],
-          scope: auth0_config[:scope],
-          connection: auth0_config[:connection]
-        }
-
+        auth0 = Auth0.auth0_config(config)
         Map.put(auth_methods, :auth0, auth0)
     end
   end

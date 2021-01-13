@@ -3,9 +3,9 @@ defmodule TdAuthWeb.UserController do
 
   import Canada, only: [can?: 2]
 
-  alias Jason, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
+  alias TdAuth.Auth.Claims
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
 
@@ -44,7 +44,7 @@ defmodule TdAuthWeb.UserController do
   end
 
   def create(conn, %{"user" => user_params}) do
-    with {:can, true} <- {:can, is_admin?(conn)} do
+    with {:can, true} <- {:can, Claims.is_admin?(conn)} do
       do_create(conn, user_params)
     end
   end
@@ -73,7 +73,7 @@ defmodule TdAuthWeb.UserController do
 
   def can_init(conn, _params) do
     can_init = !Accounts.user_exists?()
-    send_resp(conn, 200, JSON.encode!(can_init))
+    send_resp(conn, 200, Jason.encode!(can_init))
   end
 
   def init(conn, %{"user" => user_params}) do
@@ -107,7 +107,7 @@ defmodule TdAuthWeb.UserController do
   def show(conn, %{"id" => id}) do
     alias TdAuth.Permissions.UserAclMapper
 
-    with {:can, true} <- {:can, is_admin?(conn)},
+    with {:can, true} <- {:can, Claims.is_admin?(conn)},
          user <- Accounts.get_user!(id, preload: :groups) do
       acls =
         user
@@ -132,9 +132,9 @@ defmodule TdAuthWeb.UserController do
   end
 
   def update(conn, %{"id" => id, "user" => %{"password" => _password} = user_params}) do
-    current_resource = conn.assigns[:current_resource]
+    %{is_admin: is_admin} = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, current_resource.is_admin},
+    with {:can, true} <- {:can, is_admin},
          user <- Accounts.get_user!(id),
          {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user)
@@ -142,9 +142,9 @@ defmodule TdAuthWeb.UserController do
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
-    %{is_admin: is_admin, id: current_id} = conn.assigns[:current_resource]
+    %{is_admin: is_admin, user_id: user_id} = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, is_admin || id == "#{current_id}"},
+    with {:can, true} <- {:can, is_admin || id == "#{user_id}"},
          user <- Accounts.get_user!(id),
          {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user)
@@ -164,7 +164,7 @@ defmodule TdAuthWeb.UserController do
   end
 
   def delete(conn, %{"id" => id}) do
-    with {:can, true} <- {:can, is_admin?(conn)},
+    with {:can, true} <- {:can, Claims.is_admin?(conn)},
          user <- Accounts.get_user!(id),
          {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")
@@ -191,7 +191,7 @@ defmodule TdAuthWeb.UserController do
       }) do
     with {:ok, user} <- check_user_conn(conn, id),
          {:ok, user} <- User.check_password(user, old_password),
-         {:ok, %User{} = _user} <- Accounts.update_user(user, %{password: new_password}) do
+         {:ok, %User{}} <- Accounts.update_user(user, %{password: new_password}) do
       send_resp(conn, :ok, "")
     else
       _error -> send_resp(conn, :unprocessable_entity, "")
@@ -211,11 +211,11 @@ defmodule TdAuthWeb.UserController do
   end
 
   def update_password(conn, %{"new_password" => new_password}) do
-    user = conn.assigns[:current_resource]
+    %{user_id: user_id} = conn.assigns[:current_resource]
 
-    user = Accounts.get_user!(user.id, preload: :groups)
+    user = Accounts.get_user!(user_id, preload: :groups)
 
-    with {:ok, %User{} = _user} <- Accounts.update_user(user, %{password: new_password}) do
+    with {:ok, %User{}} <- Accounts.update_user(user, %{password: new_password}) do
       send_resp(conn, :no_content, "")
     end
   end
@@ -230,16 +230,11 @@ defmodule TdAuthWeb.UserController do
   end
 
   defp check_user_conn(conn, user_id) do
-    %{id: id} = conn.assigns[:current_resource]
+    %{user_id: id} = conn.assigns[:current_resource]
 
     case id == String.to_integer(user_id) do
       true -> {:ok, Accounts.get_user!(id)}
       false -> {:error, "You are not the user conn"}
     end
-  end
-
-  defp is_admin?(conn) do
-    current_resource = conn.assigns[:current_resource]
-    current_resource.is_admin
   end
 end
