@@ -209,7 +209,7 @@ defmodule TdAuth.PermissionsTest do
     test "get_domains_with_perms/2 returns permissions all domains for admin user", %{
       domains: domains
     } do
-      user = insert(:user, is_admin: true)
+      user = insert(:user, role: :admin)
 
       assert [
                %{name: "view_dashboard", domains: dashboard_domains},

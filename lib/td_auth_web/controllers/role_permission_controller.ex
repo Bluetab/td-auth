@@ -48,10 +48,10 @@ defmodule TdAuthWeb.RolePermissionController do
   end
 
   def update(conn, %{"role_id" => role_id, "permissions" => perms}) do
-    current_resource = conn.assigns[:current_resource]
+    claims = conn.assigns[:current_resource]
 
     with %Role{} = role <- Roles.get_role!(role_id),
-         {:can, true} <- {:can, can?(current_resource, update(role))},
+         {:can, true} <- {:can, can?(claims, update(role))},
          ids <- Enum.map(perms, &Map.get(&1, "id")),
          permissions <- Permissions.list_permissions(id: {:in, ids}) do
       Roles.put_permissions(role, permissions)

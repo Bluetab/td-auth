@@ -75,7 +75,7 @@ config :td_auth, :ldap,
 config :td_auth, :openid_connect_providers, oidc: []
 
 # --------- Auht0 default --------------
-config :td_auth, :auth, auth0_service: TdAuthWeb.ApiServices.HttpAuth0Service
+config :td_auth, :auth0, auth0_service: TdAuthWeb.ApiServices.HttpAuth0Service
 
 # ------------ ad ----------
 

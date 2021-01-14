@@ -26,9 +26,7 @@ defmodule TdAuthWeb.SessionController do
 
   defp handle_sign_in(conn, user, custom_claims) do
     resource = user |> JSON.encode!() |> JSON.decode!()
-
-    conn
-    |> GuardianPlug.sign_in(resource, custom_claims)
+    GuardianPlug.sign_in(conn, resource, custom_claims)
   end
 
   swagger_path :create do
@@ -74,6 +72,10 @@ defmodule TdAuthWeb.SessionController do
     authenticate_using_oidc_and_create_session(conn)
   end
 
+  def create(conn, %{"auth_realm" => "auth0"} = _params) do
+    authenticate_using_auth0_and_create_session(conn)
+  end
+
   def create(conn, %{"auth_realm" => auth_realm, "nonce" => nonce}) do
     case NonceCache.pop(nonce) do
       nil -> unauthorized(conn)
@@ -96,10 +98,6 @@ defmodule TdAuthWeb.SessionController do
   defp create(conn, %{"proxy-remote-user" => user_name}, _params) do
     allow_proxy_login = Application.get_env(:td_auth, :allow_proxy_login)
     authenticate_proxy_login(conn, user_name, allow_proxy_login)
-  end
-
-  defp create(conn, %{"authorization" => authorization}, _params) do
-    authenticate_using_auth0_and_create_session(conn, authorization)
   end
 
   defp create(conn, _headers, _params) do
@@ -151,14 +149,14 @@ defmodule TdAuthWeb.SessionController do
     |> render("422.json")
   end
 
-  defp has_user_permissions?(%User{is_admin: true}, _acl_entries), do: true
+  defp has_user_permissions?(%User{role: :admin}, _acl_entries), do: true
 
   defp has_user_permissions?(%User{}, acl_entries) do
     acl_entries
     |> Enum.any?(&(Map.has_key?(&1, :permissions) && !Enum.empty?(&1.permissions)))
   end
 
-  defp retrieve_acl_with_permissions(%User{is_admin: true}), do: []
+  defp retrieve_acl_with_permissions(%User{role: :admin}), do: []
 
   defp retrieve_acl_with_permissions(%User{} = user) do
     acl_entries = Permissions.retrieve_acl_with_permissions(user.id)
@@ -268,8 +266,8 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp authenticate_using_auth0_and_create_session(conn, authorization_header) do
-    with {:ok, profile} <- Auth0.authenticate(authorization_header),
+  defp authenticate_using_auth0_and_create_session(conn) do
+    with {:ok, profile} <- Auth0.authenticate(conn),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
       create_session(conn, user, nil)
     else
@@ -281,7 +279,8 @@ defmodule TdAuthWeb.SessionController do
 
   defp claims(user, acl_entries, access_method) do
     user
-    |> Map.take([:user_name, :is_admin])
+    |> Map.take([:user_name, :role])
+    |> Map.new(fn {k, v} -> {k, to_string(v)} end)
     |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
     |> Map.put(:groups, permission_groups(user, acl_entries))
     |> with_access_method(access_method)
@@ -292,7 +291,7 @@ defmodule TdAuthWeb.SessionController do
 
   defp with_access_method(claims, _), do: claims
 
-  defp permission_groups(%User{is_admin: true}, _acl_entries), do: []
+  defp permission_groups(%User{role: :admin}, _acl_entries), do: []
 
   defp permission_groups(_user, acl_entries) do
     acl_entries

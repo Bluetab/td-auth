@@ -13,7 +13,7 @@ config :td_auth, TdAuth.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 1
 
-config :td_auth, :auth,
+config :td_auth, :auth0,
   auth0_service: TdAuthWeb.ApiServices.MockAuth0Service,
   protocol: "https",
   domain: "icbluetab.eu.auth0.com",

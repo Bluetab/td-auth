@@ -1,70 +1,80 @@
 defmodule TdAuthWeb.AuthProvider.Auth0 do
   @moduledoc false
 
-  alias Jason, as: JSON
+  alias Plug.Conn
+  alias TdCache.NonceCache
 
-  def authenticate(authorization_header) do
-    with {:ok, access_token} <- fetch_access_token(authorization_header),
-         {:ok, profile} <- get_auth0_profile(access_token) do
+  def authenticate(conn) do
+    with {:ok, auth0_access_token} <- bearer_token(conn),
+         {:ok, profile} <- get_auth0_profile(auth0_access_token) do
       {:ok, profile}
+    else
+      :error -> {:error, :no_access_token_found}
+      {:error, e} -> {:error, e}
     end
   end
 
-  defp fetch_access_token(authorization_header) do
-    trimmed_token = String.trim(authorization_header)
-
-    case Regex.run(~r/^Bearer (.*)$/, trimmed_token) do
-      [_, match] -> {:ok, String.trim(match)}
-      _ -> {:error, :no_access_token_found}
-    end
+  def auth0_config(config) do
+    %{
+      domain: config[:domain],
+      clientID: config[:client_id],
+      redirectUri: config[:redirect_uri],
+      audience: Enum.join([config[:audience], config[:userinfo]], ""),
+      responseType: config[:response_type],
+      scope: config[:scope],
+      connection: config[:connection],
+      state: NonceCache.create_nonce(),
+      nonce: NonceCache.create_nonce()
+    }
   end
 
   defp get_auth0_profile_path do
-    auth = Application.get_env(:td_auth, :auth)
+    auth = Application.get_env(:td_auth, :auth0)
     "#{auth[:protocol]}://#{auth[:domain]}#{auth[:userinfo]}"
   end
 
   defp get_auth0_profile_mapping do
-    auth = Application.get_env(:td_auth, :auth)
+    auth = Application.get_env(:td_auth, :auth0)
     auth[:profile_mapping]
   end
 
-  defp get_auth0_profile(access_token) do
-    headers = [
-      "Content-Type": "application/json",
-      Accept: "Application/json; Charset=utf-8",
-      Authorization: "Bearer #{access_token}"
-    ]
+  defp get_auth0_profile(auth0_access_token) do
+    headers = %{
+      "Content-Type" => "application/json",
+      "Accept" => "Application/json; Charset=utf-8",
+      "Authorization" => "Bearer #{auth0_access_token}"
+    }
 
-    {status_code, user_info} = auth0_service().get_user_info(get_auth0_profile_path(), headers)
+    with {200, user_info} <- auth0_service().get_user_info(get_auth0_profile_path(), headers),
+         {:ok, auth0_profile} <- Jason.decode(user_info),
+         mapping <- get_auth0_profile_mapping() do
+      profile = Map.new(mapping, fn {k, v} -> {k, profile_mapping_value(auth0_profile, v)} end)
 
-    case status_code do
-      200 ->
-        profile = JSON.decode!(user_info)
-        mapping = get_auth0_profile_mapping()
-
-        profile =
-          Enum.reduce(mapping, %{}, fn {k, v}, acc ->
-            attr = profile_mapping_value(v, profile)
-            Map.put(acc, k, attr)
-          end)
-
-        {:ok, profile}
-
-      _ ->
-        {:error, :unable_to_get_user_profile}
+      {:ok, profile}
+    else
+      _ -> {:error, :unable_to_get_user_profile}
     end
   end
 
-  defp profile_mapping_value(key, profile) when is_binary(key), do: Map.get(profile, key)
+  defp profile_mapping_value(profile, key) when is_binary(key), do: Map.get(profile, key)
 
-  defp profile_mapping_value(keys, profile) when is_list(keys) do
+  defp profile_mapping_value(profile, keys) when is_list(keys) do
     keys
     |> Enum.map(&Map.get(profile, &1, ""))
     |> Enum.join(" ")
   end
 
   defp auth0_service do
-    Application.get_env(:td_auth, :auth)[:auth0_service]
+    Application.get_env(:td_auth, :auth0)[:auth0_service]
+  end
+
+  # Obtains a bearer token from request headers
+  @spec bearer_token(Conn.t()) :: {:ok, binary()} | :error
+  defp bearer_token(%Conn{} = conn) do
+    conn
+    |> Conn.get_req_header("authorization")
+    |> Enum.filter(&String.starts_with?(&1, "Bearer "))
+    |> Enum.map(&String.replace_leading(&1, "Bearer ", ""))
+    |> Enum.fetch(0)
   end
 end

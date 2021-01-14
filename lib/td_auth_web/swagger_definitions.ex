@@ -17,7 +17,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
             refresh_token(:string, "access_method")
           end
         end,
-      Session:
+      Claims:
         swagger_schema do
           properties do
             user_name(:string, "user name", required: true)
@@ -33,7 +33,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
       SessionCreate:
         swagger_schema do
           properties do
-            user(Schema.ref(:Session))
+            user(Schema.ref(:Claims))
           end
         end
     }
@@ -125,7 +125,8 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             id(:integer, "unique identifier", required: true)
             user_name(:string, "user name", required: true)
-            is_admin(:boolean, "flag is admin", required: true)
+            is_admin(:boolean, "is admin flag (deprecated)")
+            role(:string, "user role (admin, user or service)")
             password(:string, "user password")
             email(:string, "email", required: true)
             full_name(:string, "full name")
@@ -136,7 +137,6 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           example(%{
             id: 123,
             user_name: "myuser",
-            is_admin: false,
             password: "myuserpass",
             email: "some@email.com",
             full_name: "My User",
@@ -154,9 +154,10 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             user_name(:string, "user name", required: true)
-            is_admin(:boolean, "is admin flag")
+            is_admin(:boolean, "is admin flag (deprecated)")
             password(:string, "user password", required: true)
             email(:string, "some@email.com", required: true)
+            role(:string, "user role")
             groups(Schema.array(:string))
           end
         end,
@@ -170,9 +171,10 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             user_name(:string, "user name", required: true)
-            is_admin(:boolean, "is admin flag")
+            is_admin(:boolean, "is admin flag (deprecated)")
             password(:string, "user password", required: true)
             email(:string, "some@email.com", required: true)
+            role(:string, "user role")
             groups(Schema.array(:string))
           end
         end,
@@ -207,8 +209,8 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             id(:integer, "unique identifier", required: true)
             user_name(:string, "user name", required: true)
-            is_admin(:boolean, "flag is admin", required: true)
             email(:string, "email", required: true)
+            role(:string, "role", required: true)
             full_name([:string, :null], "full name")
             groups(Schema.array(:string))
           end

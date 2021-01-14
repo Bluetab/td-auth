@@ -6,6 +6,7 @@ defmodule TdAuth.Permissions do
   import Ecto.Query, warn: false
 
   alias TdAuth.Accounts
+  alias TdAuth.Accounts.User
   alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.PermissionGroup
   alias TdAuth.Permissions.Roles
@@ -223,7 +224,7 @@ defmodule TdAuth.Permissions do
     end)
   end
 
-  def get_permissions_domains(%{is_admin: true}, perms) do
+  def get_permissions_domains(%User{role: :admin}, perms) do
     all_domains =
       TaxonomyCache.get_domain_ids()
       |> Enum.map(&TaxonomyCache.get_domain/1)
@@ -233,8 +234,8 @@ defmodule TdAuth.Permissions do
     Enum.map(perms, &%{name: &1, domains: all_domains})
   end
 
-  def get_permissions_domains(%{id: user}, perms) do
-    acls = Accounts.get_user_acls(user, [:group, [role: :permissions], :user])
+  def get_permissions_domains(%User{id: user_id}, perms) do
+    acls = Accounts.get_user_acls(user_id, [:group, [role: :permissions], :user])
 
     default_acls =
       case Roles.get_by(is_default: true, preload: [permissions: :permission_group]) do

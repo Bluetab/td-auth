@@ -10,7 +10,6 @@ defmodule TdAuthWeb.GroupControllerTest do
   @create_user_attrs %{
     password: "some password_hash",
     user_name: "some user_name",
-    is_admin: false,
     email: "some@email.com"
   }
 

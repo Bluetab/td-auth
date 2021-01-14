@@ -2,7 +2,6 @@ defmodule TdAuthWeb.Router do
   use TdAuthWeb, :router
 
   pipeline :api_unsecured do
-    plug(TdAuth.Auth.Pipeline.Unsecure)
     plug(:accepts, ["json"])
   end
 
