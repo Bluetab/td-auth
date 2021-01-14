@@ -21,15 +21,19 @@ defmodule TdAuthWeb.Authentication do
   end
 
   def authenticate(conn, user) do
-    {:ok, jwt, _full_claims} = Guardian.encode_and_sign(user)
+    {:ok, jwt, _full_claims} = Guardian.encode_and_sign(user, Map.take(user, [:role]))
     put_auth_headers(conn, jwt)
   end
 
   def create_user_auth_conn(user) do
-    {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
-    conn = ConnTest.build_conn()
-    conn = put_auth_headers(conn, jwt)
-    {:ok, %{conn: conn, jwt: jwt, claims: full_claims, user: user}}
+    {:ok, jwt, full_claims} = Guardian.encode_and_sign(user, Map.take(user, [:role]))
+    {:ok, claims} = Guardian.resource_from_claims(full_claims)
+
+    conn =
+      ConnTest.build_conn()
+      |> put_auth_headers(jwt)
+
+    {:ok, %{conn: conn, jwt: jwt, user: user, claims: claims}}
   end
 
   def get_default_headers do

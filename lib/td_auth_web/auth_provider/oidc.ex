@@ -4,6 +4,8 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   """
 
   alias Plug.Conn
+  alias TdAuthWeb.AuthProvider.CustomProfileMapping
+  alias TdAuthWeb.AuthProvider.DefaultProfileMapping
   alias TdCache.NonceCache
 
   require Logger
@@ -13,7 +15,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
     state = NonceCache.create_nonce()
 
     OpenIDConnect.authorization_uri(:oidc, %{
-      "response_mode" => "fragment",
+      # "response_mode" => "fragment",
       "nonce" => nonce,
       "state" => state
     })
@@ -25,7 +27,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   def authenticate(%Conn{} = conn) do
     with {:ok, token} <- bearer_token(conn),
          {:ok, claims} <- OpenIDConnect.verify(:oidc, token),
-         profile <- map_profile(claims) do
+         {:ok, profile} <- map_profile(claims) do
       {:ok, profile}
     end
   end
@@ -35,7 +37,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
          {:ok, %{"id_token" => token}} <- OpenIDConnect.fetch_tokens(:oidc, params),
          {:ok, claims} <- OpenIDConnect.verify(:oidc, token),
          :ok <- validate_nonce(claims),
-         profile <- map_profile(claims) do
+         {:ok, profile} <- map_profile(claims) do
       {:ok, profile}
     end
   end
@@ -52,25 +54,15 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
 
   defp validate_nonce(_map_or_nil), do: {:error, :invalid_nonce}
 
-  # Create profile from email and name claims
-  defp map_profile(%{"email" => email, "name" => full_name}) do
-    %{user_name: email, full_name: full_name, email: email}
-  end
-
-  # Create profile from name and preferred_username claims (Azure AD v2.0 ID Token)
-  defp map_profile(%{"preferred_username" => username, "name" => full_name}) do
-    %{user_name: username, full_name: full_name, email: username}
-  end
-
-  # Create profile from name and unique_name claims (Azure AD v1.0 ID Token)
-  defp map_profile(%{"unique_name" => unique_name, "name" => full_name}) do
-    %{user_name: unique_name, full_name: full_name, email: unique_name}
-  end
-
-  # Logs a warning if no mapping is defined for the claims
   defp map_profile(claims) do
-    Logger.warn("No mapping defined for claims #{inspect(claims)}")
-    {:error}
+    :td_auth
+    |> Application.get_env(__MODULE__, [])
+    |> Keyword.get(:profile_mapping)
+    |> case do
+      %{} = mapping -> CustomProfileMapping.map_profile(mapping, claims)
+      mapping when is_binary(mapping) -> mapping |> Jason.decode!() |> CustomProfileMapping.map_profile(claims)
+      nil -> DefaultProfileMapping.map_profile(claims)
+    end
   end
 
   # Obtains a bearer token from request headers

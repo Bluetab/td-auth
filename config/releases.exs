@@ -20,7 +20,7 @@ config :td_auth, TdAuth.Repo,
 
 config :td_auth, TdAuth.Auth.Guardian, secret_key: System.fetch_env!("GUARDIAN_SECRET_KEY")
 
-config :td_auth, :auth,
+config :td_auth, :auth0,
   protocol: System.get_env("AUTH0_PROTOCOL"),
   domain: System.get_env("AUTH0_DOMAIN"),
   client_id: System.get_env("AUTH0_CLIENT_ID"),
@@ -31,10 +31,6 @@ config :td_auth, :auth,
   userinfo: "/userinfo",
   profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"},
   connection: System.get_env("AUTH0_CONNECTION")
-
-config :td_auth, TdAuth.Auth.Auth0,
-  issuer: System.get_env("AUTH_ISSUER"),
-  secret_key: System.get_env("AUTH0_SECRET_KEY")
 
 config :td_auth, :ldap,
   server: System.get_env("LDAP_SERVER"),
@@ -91,3 +87,6 @@ config :td_cache,
   redis_host: System.fetch_env!("REDIS_HOST"),
   port: System.get_env("REDIS_PORT", "6379") |> String.to_integer(),
   password: System.get_env("REDIS_PASSWORD")
+
+config :td_auth, TdAuthWeb.AuthProvider.OIDC,
+  profile_mapping: System.get_env("OIDC_PROFILE_MAPPING")

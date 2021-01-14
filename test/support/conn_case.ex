@@ -46,7 +46,7 @@ defmodule TdAuthWeb.ConnCase do
     cond do
       tags[:admin_authenticated] ->
         :user
-        |> insert(is_admin: true)
+        |> insert(role: :admin)
         |> create_user_auth_conn()
 
       tags[:authenticated_user] ->

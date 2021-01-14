@@ -2,13 +2,13 @@ defmodule TdAuthWeb.SessionControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  import TdAuthWeb.Authentication, only: :functions
+
   alias Jason, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Auth.Guardian
   alias TdAuthWeb.ApiServices.MockAuth0Service
   alias TdCache.TaxonomyCache
-
-  import TdAuthWeb.Authentication, only: :functions
 
   @create_attrs %{password: "temporal", user_name: "usuariotemporal", email: "some@email.com"}
   @valid_attrs %{password: "temporal", user_name: "usuariotemporal"}
@@ -24,7 +24,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
-  describe "create session " do
+  describe "create session" do
     setup [:create_user]
 
     test "create valid user session", %{conn: conn, swagger_schema: schema} do
@@ -51,6 +51,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       assert {:ok, claims} = Guardian.decode_and_verify(token, %{"typ" => "access"})
 
+      assert %{"role" => "user"} = claims
       assert_lists_equal(claims["groups"], ["create_pg", "view_pg", "update_pg"])
     end
 
@@ -64,7 +65,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
   end
 
-  describe "create session with access token" do
+  describe "create session with Auth0 access token" do
     setup [:create_user]
 
     test "create valid non existing user session", %{conn: conn, swagger_schema: schema} do
@@ -81,7 +82,7 @@ defmodule TdAuthWeb.SessionControllerTest do
       MockAuth0Service.set_user_info(200, JSON.encode!(profile))
 
       assert conn
-             |> post(Routes.session_path(conn, :create))
+             |> post(Routes.session_path(conn, :create), %{auth_realm: "auth0"})
              |> validate_resp_schema(schema, "Token")
              |> json_response(:created)
 
@@ -105,7 +106,7 @@ defmodule TdAuthWeb.SessionControllerTest do
       MockAuth0Service.set_user_info(200, JSON.encode!(profile))
 
       assert conn
-             |> post(Routes.session_path(conn, :create))
+             |> post(Routes.session_path(conn, :create), %{auth_realm: "auth0"})
              |> validate_resp_schema(schema, "Token")
              |> json_response(:created)
 
@@ -122,7 +123,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       assert conn
              |> put_auth_headers(jwt)
-             |> post(Routes.session_path(conn, :create))
+             |> post(Routes.session_path(conn, :create), %{auth_realm: "auth0"})
              |> response(:unauthorized)
 
       refute Accounts.get_user_by_name(profile[:nickname])

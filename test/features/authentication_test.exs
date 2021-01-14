@@ -94,7 +94,7 @@ defmodule TdAuth.AuthenticationTest do
     {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
-  defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" without "super-admin" permission$/,
+  defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)"$/,
            %{user_name: user_name, password: password},
            state do
     {_, _status_code, json_resp} = session_create("app-admin", "mypass")
@@ -143,8 +143,8 @@ defmodule TdAuth.AuthenticationTest do
     {:ok, Map.merge(state, %{status_code: status_code, users: users})}
   end
 
-  defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" with super-admin property "(?<is_super_admin>[^"]+)"/,
-           %{user_name: user_name, password: password, is_super_admin: is_super_admin},
+  defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" with role "(?<role>[^"]+)"/,
+           %{user_name: user_name, password: password, role: role},
            state do
     {_, _status_code, json_resp} = session_create("app-admin", "mypass")
     token = json_resp["token"]
@@ -153,13 +153,13 @@ defmodule TdAuth.AuthenticationTest do
       user_create(token, %{
         user_name: user_name,
         password: password,
-        is_admin: is_super_admin == "yes",
+        role: role,
         email: "some@email.com"
       })
 
     users = state |> Map.get(:users, %{}) |> Map.put(user_name, user)
 
-    assert user["is_admin"] == (is_super_admin == "yes")
+    assert user["role"] == role
     {:ok, Map.merge(state, %{status_code: status_code, users: users})}
   end
 

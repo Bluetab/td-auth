@@ -9,31 +9,32 @@ defmodule TdAuthWeb.UserView do
 
   def render("show.json", %{user: user} = assigns) do
     %{
-      data: render_one(
-        user,
-        UserView,
-        "user.json",
-        Map.drop(assigns, [:user])
-      )
+      data:
+        render_one(
+          user,
+          UserView,
+          "user.json",
+          Map.drop(assigns, [:user])
+        )
     }
   end
 
-  def render("user.json", %{user: user} = assigns) do
-    %{id: user.id,
-      user_name: user.user_name,
-      email: user.email,
-      full_name: user.full_name,
-      is_admin: user.is_admin,
-      groups: render_many(user.groups, GroupView, "name.json")
-    } |> render_acls(assigns)
+  def render("user.json", %{user: %{groups: groups} = user} = assigns) do
+    groups = render_many(groups, GroupView, "name.json")
+
+    user
+    |> Map.take([:id, :user_name, :email, :full_name, :role])
+    |> Map.put(:groups, groups)
+    |> render_acls(assigns)
   end
 
   def render("user_embedded.json", %{user: user}) do
-    Map.take(user, [:id, :user_name, :email, :full_name, :is_admin])
+    Map.take(user, [:id, :user_name, :email, :full_name, :role])
   end
 
   defp render_acls(user_map, %{acls: acls}) do
     Map.put(user_map, :acls, acls)
   end
+
   defp render_acls(user_map, _), do: user_map
 end

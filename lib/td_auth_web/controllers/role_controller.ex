@@ -21,9 +21,9 @@ defmodule TdAuthWeb.RoleController do
   end
 
   def index(conn, _params) do
-    current_resource = conn.assigns[:current_resource]
+    claims = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, can?(current_resource, list(Role))},
+    with {:can, true} <- {:can, can?(claims, list(Role))},
          roles <- Roles.list_roles() do
       render(conn, "index.json", roles: roles)
     end
@@ -42,9 +42,9 @@ defmodule TdAuthWeb.RoleController do
   end
 
   def create(conn, %{"role" => role_params}) do
-    current_resource = conn.assigns[:current_resource]
+    claims = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, can?(current_resource, create(Role))},
+    with {:can, true} <- {:can, can?(claims, create(Role))},
          {:ok, %{role: %Role{} = role}} <- Roles.create_role(role_params) do
       conn
       |> put_status(:created)
@@ -84,10 +84,10 @@ defmodule TdAuthWeb.RoleController do
   end
 
   def update(conn, %{"id" => id, "role" => role_params}) do
-    current_resource = conn.assigns[:current_resource]
+    claims = conn.assigns[:current_resource]
     role = Roles.get_role!(id)
 
-    with {:can, true} <- {:can, can?(current_resource, update(role))},
+    with {:can, true} <- {:can, can?(claims, update(role))},
          {:ok, %{role: %Role{} = role}} <- Roles.update_role(role, role_params) do
       render(conn, "show.json", role: role)
     end
@@ -106,10 +106,10 @@ defmodule TdAuthWeb.RoleController do
   end
 
   def delete(conn, %{"id" => id}) do
-    current_resource = conn.assigns[:current_resource]
+    claims = conn.assigns[:current_resource]
 
     with %Role{} = role <- Roles.get_role!(id),
-         {:can, true} <- {:can, can?(current_resource, delete(role))},
+         {:can, true} <- {:can, can?(claims, delete(role))},
          {:ok, %Role{}} <- Roles.delete_role(role) do
       send_resp(conn, :no_content, "")
     end

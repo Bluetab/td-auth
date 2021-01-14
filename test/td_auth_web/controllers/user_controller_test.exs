@@ -10,21 +10,18 @@ defmodule TdAuthWeb.UserControllerTest do
   @create_attrs %{
     password: "some password_hash",
     user_name: "some user_name",
-    is_admin: false,
     email: "some@email.com",
     groups: ["Group"]
   }
   @create_second_attrs %{
     password: "some password_hash",
-    user_name: "some user_name 2",
-    is_admin: false
+    user_name: "some user_name 2"
   }
   @update_attrs %{
     password: "some updated password_hash",
     user_name: "some updated user_name",
     groups: ["GroupNew"]
   }
-  @update_is_admin %{user_name: "some updated user_name", is_admin: true}
   @invalid_attrs %{password: nil, user_name: nil, email: nil}
   @valid_password "123456"
   @invalid_password ""
@@ -34,28 +31,40 @@ defmodule TdAuthWeb.UserControllerTest do
     :ok
   end
 
-  describe "index" do
+  describe "GET /api/users" do
     @tag :admin_authenticated
-    test "list all users", %{conn: conn, swagger_schema: schema, user: %{user_name: user_name}} do
-      conn = get(conn, Routes.user_path(conn, :index))
-      validate_resp_schema(conn, schema, "UsersResponseData")
+    test "lists all users with role", %{conn: conn, swagger_schema: schema, user: %{user_name: user_name}} do
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.user_path(conn, :index))
+               |> validate_resp_schema(schema, "UsersResponseData")
+               |> json_response(:ok)
 
-      assert data = [_ | _] = json_response(conn, 200)["data"]
-      user_names = Enum.map(data, & &1["user_name"])
+      assert [%{"user_name" => ^user_name, "role" => "admin"}] = data
+    end
 
-      assert Enum.member?(user_names, user_name)
+    @tag :admin_authenticated
+    test "includes role in response", %{conn: conn, swagger_schema: schema} do
+      insert(:user, role: "service")
+
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.user_path(conn, :index))
+               |> validate_resp_schema(schema, "UsersResponseData")
+               |> json_response(:ok)
+
+      assert [%{"role" => "admin"}, %{"role" => "service"}] = data
     end
   end
 
-  describe "try to create user by a non admin" do
+  describe "POST /api/users" do
     @tag :authenticated_user
-    test "create user with a non admin user renders error", %{conn: conn} do
-      conn = post(conn, Routes.user_path(conn, :create), user: @create_second_attrs)
-      assert response(conn, 403)
+    test "returns forbidden for a non-admin user", %{conn: conn} do
+      assert conn
+             |> post(Routes.user_path(conn, :create), user: @create_second_attrs)
+             |> response(:forbidden)
     end
-  end
 
-  describe "create user" do
     @tag :admin_authenticated
     test "renders user when data is valid", %{conn: conn, swagger_schema: schema} do
       conn = post(conn, Routes.user_path(conn, :create), user: @create_attrs)
@@ -147,15 +156,6 @@ defmodule TdAuthWeb.UserControllerTest do
                |> put(Routes.user_path(conn, :update, user), user: @invalid_attrs)
                |> json_response(422)
     end
-
-    @tag :admin_authenticated
-    test "update user is admin flag", %{conn: conn, swagger_schema: schema, user: user} do
-      assert %{"data" => %{"user_name" => _, "is_admin" => true}} =
-               conn
-               |> put(Routes.user_path(conn, :update, user), user: @update_is_admin)
-               |> validate_resp_schema(schema, "UserResponse")
-               |> json_response(200)
-    end
   end
 
   describe "update password" do
@@ -202,7 +202,7 @@ defmodule TdAuthWeb.UserControllerTest do
       conn: conn,
       swagger_schema: schema
     } do
-      admin = insert(:user, is_protected: true, is_admin: true)
+      admin = insert(:user, is_protected: true, role: :admin)
 
       assert %{"data" => data} =
                conn
@@ -226,7 +226,7 @@ defmodule TdAuthWeb.UserControllerTest do
       conn: conn,
       swagger_schema: schema
     } do
-      admin = insert(:user, is_protected: true, is_admin: true)
+      admin = insert(:user, is_protected: true, role: :admin)
 
       params = %{user: Map.put(@create_attrs, :is_protected, true)}
 

@@ -84,8 +84,8 @@ defmodule TdAuth.Permissions.AclLoader do
     {:ok, _} = AclCache.delete_acl_roles(resource_type, resource_id)
   end
 
-  defp schedule_work(action, seconds) do
-    Process.send_after(self(), action, seconds)
+  defp schedule_work(action, millis) do
+    Process.send_after(self(), action, millis)
   end
 
   defp put_cache(%{} = user_ids_by_resource_and_role) do

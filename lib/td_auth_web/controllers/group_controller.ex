@@ -5,6 +5,7 @@ defmodule TdAuthWeb.GroupController do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
+  alias TdAuth.Auth.Claims
   alias TdAuthWeb.SwaggerDefinitions
 
   action_fallback TdAuthWeb.FallbackController
@@ -19,9 +20,9 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def index(conn, _params) do
-    current_resource = conn.assigns[:current_resource]
+    claims = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, can?(current_resource, list(Group))},
+    with {:can, true} <- {:can, can?(claims, list(Group))},
          groups <- Accounts.list_groups() do
       render(conn, "index.json", groups: groups)
     end
@@ -40,7 +41,7 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def create(conn, %{"group" => group_params}) do
-    with {:can, true} <- {:can, is_admin?(conn)},
+    with {:can, true} <- {:can, Claims.is_admin?(conn)},
          {:ok, %Group{} = group} <- Accounts.create_group(group_params) do
       conn
       |> put_status(:created)
@@ -62,7 +63,7 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:can, true} <- {:can, is_admin?(conn)},
+    with {:can, true} <- {:can, Claims.is_admin?(conn)},
          group <- Accounts.get_group!(id, preload: :users) do
       render(conn, "show.json", group: group)
     end
@@ -82,7 +83,7 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def update(conn, %{"id" => id, "group" => group_params}) do
-    with {:can, true} <- {:can, is_admin?(conn)},
+    with {:can, true} <- {:can, Claims.is_admin?(conn)},
          group <- Accounts.get_group!(id, preload: :users),
          {:ok, %Group{} = group} <- Accounts.update_group(group, group_params) do
       render(conn, "show.json", group: group)
@@ -102,15 +103,10 @@ defmodule TdAuthWeb.GroupController do
   end
 
   def delete(conn, %{"id" => id}) do
-    with {:can, true} <- {:can, is_admin?(conn)},
+    with {:can, true} <- {:can, Claims.is_admin?(conn)},
          group <- Accounts.get_group!(id),
          {:ok, %Group{}} <- Accounts.delete_group(group) do
       send_resp(conn, :no_content, "")
     end
-  end
-
-  defp is_admin?(conn) do
-    current_resource = conn.assigns[:current_resource]
-    current_resource.is_admin
   end
 end
