@@ -149,14 +149,14 @@ defmodule TdAuthWeb.SessionController do
     |> render("422.json")
   end
 
-  defp has_user_permissions?(%User{is_admin: true}, _acl_entries), do: true
+  defp has_user_permissions?(%User{role: :admin}, _acl_entries), do: true
 
   defp has_user_permissions?(%User{}, acl_entries) do
     acl_entries
     |> Enum.any?(&(Map.has_key?(&1, :permissions) && !Enum.empty?(&1.permissions)))
   end
 
-  defp retrieve_acl_with_permissions(%User{is_admin: true}), do: []
+  defp retrieve_acl_with_permissions(%User{role: :admin}), do: []
 
   defp retrieve_acl_with_permissions(%User{} = user) do
     acl_entries = Permissions.retrieve_acl_with_permissions(user.id)
@@ -291,7 +291,7 @@ defmodule TdAuthWeb.SessionController do
 
   defp with_access_method(claims, _), do: claims
 
-  defp permission_groups(%User{is_admin: true}, _acl_entries), do: []
+  defp permission_groups(%User{role: :admin}, _acl_entries), do: []
 
   defp permission_groups(_user, acl_entries) do
     acl_entries
