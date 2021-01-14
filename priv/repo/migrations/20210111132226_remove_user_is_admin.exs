@@ -1,7 +1,7 @@
 defmodule TdAuth.Repo.Migrations.RemoveUserIsAdmin do
   use Ecto.Migration
 
-  def change do
+  def up do
     execute("update users set role='admin' where is_admin=TRUE", "")
 
     alter table("users") do
