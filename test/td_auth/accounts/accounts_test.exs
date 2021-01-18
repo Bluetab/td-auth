@@ -122,6 +122,12 @@ defmodule TdAuth.AccountsTest do
       assert Accounts.list_groups() == [group]
     end
 
+    test "list_groups/1 returns all groups with preloads" do
+      %{id: user_id} = user = insert(:user)
+      %{id: group_id} = insert(:group, users: [user])
+      assert [%{id: ^group_id, users: [%{id: ^user_id}]}] = Accounts.list_groups(preload: :users)
+    end
+
     test "get_group!/1 returns the group with given id" do
       group = group_fixture()
       assert Accounts.get_group!(group.id) == group

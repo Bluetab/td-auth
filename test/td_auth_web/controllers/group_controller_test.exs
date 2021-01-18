@@ -35,7 +35,29 @@ defmodule TdAuthWeb.GroupControllerTest do
   describe "index" do
     @tag :admin_authenticated
     test "lists all groups", %{conn: conn} do
-      assert %{"data" => []} =
+      %{id: user_id, email: email, full_name: full_name, user_name: user_name} =
+        user = insert(:user)
+
+      %{id: group_id, name: name, description: description} = insert(:group, users: [user])
+
+      assert %{
+               "data" => [
+                 %{
+                   "description" => ^description,
+                   "id" => ^group_id,
+                   "name" => ^name,
+                   "users" => [
+                     %{
+                       "email" => ^email,
+                       "full_name" => ^full_name,
+                       "id" => ^user_id,
+                       "role" => "user",
+                       "user_name" => ^user_name
+                     }
+                   ]
+                 }
+               ]
+             } =
                conn
                |> get(Routes.group_path(conn, :index))
                |> json_response(:ok)
