@@ -25,7 +25,7 @@ defmodule TdAuthWeb.UserController do
   def index(conn, _params) do
     current_resource = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, can?(current_resource, list(User))},
+    with {:can, true} <- {:can, can?(current_resource, view(User))},
          users <- Accounts.list_users(preload: :groups) do
       render(conn, "index.json", users: users)
     end

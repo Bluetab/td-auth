@@ -44,18 +44,13 @@ defmodule TdAuthWeb.ConnCase do
     end
 
     cond do
-      tags[:admin_authenticated] ->
+      auth_opts = tags[:authentication] ->
         :user
-        |> insert(role: :admin)
-        |> create_user_auth_conn()
-
-      tags[:authenticated_user] ->
-        :user
-        |> insert()
+        |> insert(auth_opts)
         |> create_user_auth_conn()
 
       true ->
-        {:ok, conn: ConnTest.build_conn()}
+        [conn: ConnTest.build_conn()]
     end
   end
 end

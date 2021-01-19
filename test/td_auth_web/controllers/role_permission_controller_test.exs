@@ -20,7 +20,7 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
   end
 
   describe "role permissions" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     @tag role: %{name: "test", permissions: ["permission1", "permission2"]}
     test "list role permissions", %{conn: conn, swagger_schema: schema, role: role} do
       assert %{"data" => data} =
@@ -33,7 +33,7 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
       assert_lists_equal(permission_names, ["permission1", "permission2"])
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     @tag role: %{name: "test", permissions: ["permission1", "permission2"]}
     test "modify role permissions", %{conn: conn, swagger_schema: schema, role: role} do
       assert %{id: role_id, permissions: [%{id: permission_id1}, %{id: permission_id2}]} = role

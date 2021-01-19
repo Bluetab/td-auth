@@ -18,11 +18,12 @@ defmodule TdAuthWeb.UserPermissionControllerTest do
       TaxonomyCache.delete_domain(domain.id)
       TaxonomyCache.delete_domain(domain2.id)
     end)
-    {:ok, domain: domain, domain2: domain2}
+
+    [domain: domain, domain2: domain2]
   end
 
   describe "permission domains" do
-    @tag :authenticated_user
+    @tag authentication: [role: :user]
     test "renders user permission domains", %{
       conn: conn,
       swagger_schema: schema,
@@ -49,10 +50,9 @@ defmodule TdAuthWeb.UserPermissionControllerTest do
       validate_resp_schema(conn, schema, "PermissionDomainsResponseData")
       permission_domains = json_response(conn, 200)["permission_domains"]
       assert length(permission_domains) == 2
-
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders all domains in permission domains for admin user", %{
       conn: conn,
       swagger_schema: schema

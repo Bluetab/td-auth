@@ -21,7 +21,7 @@ defmodule TdAuthWeb.PermissionController do
   def index(conn, _params) do
     claims = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, can?(claims, list(Permission))} do
+    with {:can, true} <- {:can, can?(claims, view(Permission))} do
       permissions = Permissions.list_permissions()
       render(conn, "index.json", permissions: permissions)
     end

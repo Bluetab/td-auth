@@ -12,7 +12,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
   end
 
   describe "index" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "lists all permission_groups", %{conn: conn} do
       expected =
         1..5
@@ -33,7 +33,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
   end
 
   describe "create permission_group" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders permission_group when data is valid", %{conn: conn} do
       assert %{"data" => data} =
                conn
@@ -45,7 +45,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
       assert %{"id" => _id} = data
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn} do
       assert %{"errors" => errors} =
                conn
@@ -61,7 +61,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
   describe "update permission_group" do
     setup [:create_permission_group]
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders permission_group when data is valid", %{
       conn: conn,
       permission_group: %PermissionGroup{id: id} = permission_group
@@ -76,7 +76,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
       assert %{"id" => ^id} = data
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn, permission_group: permission_group} do
       conn =
         put(conn, Routes.permission_group_path(conn, :update, permission_group),
@@ -90,7 +90,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
   describe "delete permission_group" do
     setup [:create_permission_group]
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "deletes chosen permission_group", %{conn: conn, permission_group: permission_group} do
       conn = delete(conn, Routes.permission_group_path(conn, :delete, permission_group))
       assert response(conn, 204)
