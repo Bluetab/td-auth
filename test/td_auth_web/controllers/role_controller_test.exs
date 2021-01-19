@@ -2,18 +2,11 @@ defmodule TdAuthWeb.RoleControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
-  alias TdAuth.Permissions.Roles
-
-  @create_attrs %{name: "some name", is_default: false}
-
-  def fixture(:role) do
-    {:ok, role} = Roles.create_role(@create_attrs)
-    role
+  setup do
+    [role: insert(:role)]
   end
 
   describe "GET /api/roles" do
-    setup [:create_role]
-
     @tag authentication: [role: :admin]
     test "admin can view roles", %{conn: conn, swagger_schema: schema} do
       assert %{"data" => [_role]} =
@@ -91,8 +84,6 @@ defmodule TdAuthWeb.RoleControllerTest do
   end
 
   describe "delete role" do
-    setup [:create_role]
-
     @tag authentication: [role: :admin]
     test "deletes chosen role", %{conn: conn, role: role} do
       assert conn
@@ -101,10 +92,5 @@ defmodule TdAuthWeb.RoleControllerTest do
 
       assert_error_sent :not_found, fn -> get(conn, Routes.role_path(conn, :show, role)) end
     end
-  end
-
-  defp create_role(_) do
-    role = insert(:role)
-    {:ok, role: role}
   end
 end
