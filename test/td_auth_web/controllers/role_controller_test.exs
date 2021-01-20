@@ -2,32 +2,39 @@ defmodule TdAuthWeb.RoleControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
-  alias TdAuth.Permissions.Roles
-
-  @create_attrs %{name: "some name", is_default: false}
-
-  def fixture(:role) do
-    {:ok, role} = Roles.create_role(@create_attrs)
-    role
+  setup do
+    [role: insert(:role)]
   end
 
-  setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
-  end
+  describe "GET /api/roles" do
+    @tag authentication: [role: :admin]
+    test "admin can view roles", %{conn: conn, swagger_schema: schema} do
+      assert %{"data" => [_role]} =
+               conn
+               |> get(Routes.role_path(conn, :index))
+               |> validate_resp_schema(schema, "RolesResponse")
+               |> json_response(:ok)
+    end
 
-  describe "index" do
-    setup [:create_role]
+    @tag authentication: [role: :service]
+    test "service account can view roles", %{conn: conn} do
+      assert %{"data" => [_role]} =
+               conn
+               |> get(Routes.role_path(conn, :index))
+               |> json_response(:ok)
+    end
 
-    @tag :admin_authenticated
-    test "lists all roles", %{conn: conn, swagger_schema: schema} do
-      conn = get(conn, Routes.role_path(conn, :index))
-      validate_resp_schema(conn, schema, "RolesResponse")
-      assert length(json_response(conn, 200)["data"]) == 1
+    @tag authentication: [role: :user]
+    test "user account cannot view roles", %{conn: conn} do
+      assert %{"errors" => _} =
+               conn
+               |> get(Routes.role_path(conn, :index))
+               |> json_response(:forbidden)
     end
   end
 
   describe "create role" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders role when data is valid", %{conn: conn, swagger_schema: schema} do
       assert %{"data" => data} =
                conn
@@ -38,7 +45,7 @@ defmodule TdAuthWeb.RoleControllerTest do
       assert %{"id" => _, "is_default" => false, "name" => "valid role"} = data
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn} do
       conn = post conn, Routes.role_path(conn, :create), role: %{}
       assert json_response(conn, 422)["errors"] != %{}
@@ -46,7 +53,7 @@ defmodule TdAuthWeb.RoleControllerTest do
   end
 
   describe "update role" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders role when data is valid", %{
       conn: conn,
       swagger_schema: schema
@@ -63,7 +70,7 @@ defmodule TdAuthWeb.RoleControllerTest do
       assert %{"id" => ^id, "is_default" => true, "name" => ^name} = data
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn} do
       role = insert(:role)
 
@@ -77,9 +84,7 @@ defmodule TdAuthWeb.RoleControllerTest do
   end
 
   describe "delete role" do
-    setup [:create_role]
-
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "deletes chosen role", %{conn: conn, role: role} do
       assert conn
              |> delete(Routes.role_path(conn, :delete, role))
@@ -87,10 +92,5 @@ defmodule TdAuthWeb.RoleControllerTest do
 
       assert_error_sent :not_found, fn -> get(conn, Routes.role_path(conn, :show, role)) end
     end
-  end
-
-  defp create_role(_) do
-    role = insert(:role)
-    {:ok, role: role}
   end
 end

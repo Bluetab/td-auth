@@ -5,6 +5,7 @@
 ### Added
 
 - [TD-3163] Initial support for service accounts
+- [TD-3164] Service accounts can view auth API resources
 
 ### Changed
 

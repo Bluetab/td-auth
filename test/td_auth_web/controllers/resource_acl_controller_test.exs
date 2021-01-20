@@ -17,7 +17,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
   end
 
   describe "GET /api/:resource_type/:resource_id/acl_entries" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "returns OK and body on success", %{
       conn: conn,
       acl_entry: acl_entry,
@@ -36,7 +36,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       assert %{"acl_entries" => [_acl_entry]} = embedded
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "excludes user email field", %{conn: conn, acl_entry: acl_entry} do
       %{resource_type: resource_type, resource_id: resource_id} = acl_entry
 
@@ -54,7 +54,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
   end
 
   describe "POST /api/:resource_type/:resource_id/acl_entries" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "adds an entry to a resource acl", %{
       conn: conn,
       acl_entry: acl_entry,
@@ -100,7 +100,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       assert %{"acl_entries" => [_acl_entry1, _acl_entry2]} = embedded
     end
 
-    @tag :authenticated_user
+    @tag authentication: [role: :user]
     test "returns forbidden when user is not authorized", %{conn: conn} do
       user = insert(:user)
       role = insert(:role)
