@@ -10,14 +10,39 @@ defmodule TdAuthWeb.AclEntryControllerTest do
     :ok
   end
 
-  setup %{conn: conn} do
-    conn = put_req_header(conn, "accept", "application/json")
-    acl_entry = insert(:acl_entry, principal_type: :user)
-    {:ok, conn: conn, acl_entry: acl_entry}
+  setup do
+    [acl_entry: insert(:acl_entry, principal_type: :user)]
+  end
+
+  describe "GET /api/acl_entries" do
+    @tag authentication: [role: :admin]
+    test "admin can view acl entries", %{conn: conn, swagger_schema: schema} do
+      assert %{"data" => [_acl_entry]} =
+               conn
+               |> get(acl_entry_path(conn, :index))
+               |> validate_resp_schema(schema, "AclEntriesResponse")
+               |> json_response(:ok)
+    end
+
+    @tag authentication: [role: :service]
+    test "service account can view acl entries", %{conn: conn} do
+      assert %{"data" => [_acl_entry]} =
+               conn
+               |> get(acl_entry_path(conn, :index))
+               |> json_response(:ok)
+    end
+
+    @tag authentication: [role: :user]
+    test "user account cannot list acl entries", %{conn: conn} do
+      assert %{"errors" => _errors} =
+               conn
+               |> get(acl_entry_path(conn, :index))
+               |> json_response(:forbidden)
+    end
   end
 
   describe "GET /api/acl_entries/:id" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "returns an acl entry", %{conn: conn, acl_entry: acl_entry, swagger_schema: schema} do
       %{id: id} = acl_entry
 
@@ -29,19 +54,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
     end
   end
 
-  describe "GET /api/acl_entries" do
-    @tag :admin_authenticated
-    test "lists all acl_entries", %{conn: conn, swagger_schema: schema} do
-      assert %{"data" => [_acl_entry]} =
-               conn
-               |> get(acl_entry_path(conn, :index))
-               |> validate_resp_schema(schema, "AclEntriesResponse")
-               |> json_response(:ok)
-    end
-  end
-
   describe "POST /api/acl_entries" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders acl_entry when data is valid", %{conn: conn, swagger_schema: schema} do
       %{id: user_id} = insert(:user)
       %{id: role_id} = insert(:role)
@@ -73,7 +87,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
              } = data
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders error for duplicated acl_entry", %{conn: conn, acl_entry: acl_entry} do
       params = Map.take(acl_entry, [:user_id, :group_id, :resource_type, :resource_id, :role_id])
 
@@ -85,7 +99,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       assert errors == %{"user_id" => ["taken"]}
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn} do
       params = %{"acl_entry" => %{"foo" => "bar"}}
 
@@ -103,7 +117,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   end
 
   describe "DELETE /api/acl_entries/:id" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "deletes chosen acl_entry", %{conn: conn, acl_entry: acl_entry} do
       assert conn
              |> delete(acl_entry_path(conn, :delete, acl_entry))

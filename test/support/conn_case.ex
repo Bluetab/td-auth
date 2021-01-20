@@ -43,19 +43,14 @@ defmodule TdAuthWeb.ConnCase do
       Sandbox.mode(TdAuth.Repo, {:shared, self()})
     end
 
-    cond do
-      tags[:admin_authenticated] ->
-        :user
-        |> insert(role: :admin)
-        |> create_user_auth_conn()
+    case tags[:authentication] do
+      nil ->
+        [conn: ConnTest.build_conn()]
 
-      tags[:authenticated_user] ->
+      auth_opts ->
         :user
-        |> insert()
+        |> insert(auth_opts)
         |> create_user_auth_conn()
-
-      true ->
-        {:ok, conn: ConnTest.build_conn()}
     end
   end
 end
