@@ -12,7 +12,7 @@ defmodule TdAuth.Auth.Guardian do
   def resource_from_claims(%{"sub" => sub} = claims) do
     %{"id" => id, "user_name" => user_name} = Jason.decode!(sub)
     role = Map.get(claims, "role")
-    groups = Map.get(claims, "groups")
+    groups = Map.get(claims, "groups", [])
 
     resource = %Claims{
       user_id: id,

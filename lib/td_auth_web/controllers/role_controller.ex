@@ -23,7 +23,7 @@ defmodule TdAuthWeb.RoleController do
   def index(conn, _params) do
     claims = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, can?(claims, list(Role))},
+    with {:can, true} <- {:can, can?(claims, view(Role))},
          roles <- Roles.list_roles() do
       render(conn, "index.json", roles: roles)
     end

@@ -13,6 +13,9 @@ defmodule TdBg.Canada.Abilities do
     # administrator is superpowerful
     def can?(%Claims{is_admin: true}, _action, _resource), do: true
 
+    # Metrics connector can view all resources
+    def can?(%Claims{role: "service"}, :view, _resource), do: true
+
     def can?(claims, :create, %{resource_type: "domain", resource_id: domain_id}) do
       authorized?(claims, :create_acl_entry, domain_id)
     end
@@ -29,17 +32,17 @@ defmodule TdBg.Canada.Abilities do
       authorized?(claims, :delete_acl_entry, domain_id)
     end
 
-    def can?(%Claims{jti: jti, groups: groups}, :list, Group) do
+    def can?(%Claims{jti: jti, groups: groups}, :view, Group) do
       Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain") or
         Enum.any?(@notification_groups, &(&1 in groups))
     end
 
-    def can?(%Claims{jti: jti, groups: groups}, :list, User) do
+    def can?(%Claims{jti: jti, groups: groups}, :view, User) do
       Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain") or
         Enum.any?(@notification_groups, &(&1 in groups))
     end
 
-    def can?(%Claims{jti: jti}, :list, Role) do
+    def can?(%Claims{jti: jti}, :view, Role) do
       Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain")
     end
 

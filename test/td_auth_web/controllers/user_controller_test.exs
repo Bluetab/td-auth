@@ -34,7 +34,7 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "GET /api/users" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "lists all users with role", %{
       conn: conn,
       swagger_schema: schema,
@@ -49,7 +49,7 @@ defmodule TdAuthWeb.UserControllerTest do
       assert [%{"user_name" => ^user_name, "role" => "admin"}] = data
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "includes role in response", %{conn: conn, swagger_schema: schema} do
       insert(:user, role: "service")
 
@@ -62,7 +62,23 @@ defmodule TdAuthWeb.UserControllerTest do
       assert [%{"role" => "admin"}, %{"role" => "service"}] = data
     end
 
-    test "non admin user lists all users if he has any permission in bg", %{conn: conn} do
+    @tag authentication: [role: :service]
+    test "service account can view users", %{conn: conn} do
+      assert %{"data" => [_]} =
+               conn
+               |> get(Routes.user_path(conn, :index))
+               |> json_response(:ok)
+    end
+
+    @tag authentication: [role: :user]
+    test "user account cannot view users", %{conn: conn} do
+      assert %{"errors" => _} =
+               conn
+               |> get(Routes.user_path(conn, :index))
+               |> json_response(:forbidden)
+    end
+
+    test "user account can list all users if he has any permission in bg", %{conn: conn} do
       {:ok, %{id: user_id, email: email, full_name: full_name, user_name: user_name} = user} =
         :user
         |> build(password: "pass000")
@@ -112,14 +128,14 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "POST /api/users" do
-    @tag :authenticated_user
+    @tag authentication: [role: :user]
     test "returns forbidden for a non-admin user", %{conn: conn} do
       assert conn
              |> post(Routes.user_path(conn, :create), user: @create_second_attrs)
              |> response(:forbidden)
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders user when data is valid", %{conn: conn, swagger_schema: schema} do
       conn = post(conn, Routes.user_path(conn, :create), user: @create_attrs)
       validate_resp_schema(conn, schema, "UserResponse")
@@ -130,7 +146,7 @@ defmodule TdAuthWeb.UserControllerTest do
       assert %{"id" => ^id, "user_name" => "some user_name"} = json_response(conn, 200)["data"]
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn, swagger_schema: schema} do
       conn = post(conn, Routes.user_path(conn, :create), user: @invalid_attrs)
       validate_resp_schema(conn, schema, "UserResponse")
@@ -139,7 +155,7 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "get user" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders user with configured acls", %{conn: conn, swagger_schema: schema} do
       domain = build(:domain)
       role = insert(:role)
@@ -187,7 +203,7 @@ defmodule TdAuthWeb.UserControllerTest do
       [user: insert(:user)]
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders user when data is valid", %{
       conn: conn,
       swagger_schema: schema,
@@ -203,7 +219,7 @@ defmodule TdAuthWeb.UserControllerTest do
       assert user_data["id"] == id && user_data["user_name"] == "some updated user_name"
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn, user: user} do
       assert %{"errors" => %{"email" => _, "user_name" => _}} =
                conn
@@ -213,14 +229,14 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "update password" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "ok when data is valid", %{conn: conn} do
       assert conn
              |> post(Routes.user_path(conn, :update_password), new_password: @valid_password)
              |> response(:no_content)
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "error when data is invalid", %{conn: conn} do
       assert conn
              |> post(Routes.user_path(conn, :update_password), new_password: @invalid_password)
@@ -233,7 +249,7 @@ defmodule TdAuthWeb.UserControllerTest do
       [user: insert(:user)]
     end
 
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "deletes chosen user", %{conn: conn, user: user} do
       assert conn
              |> delete(Routes.user_path(conn, :delete, user))

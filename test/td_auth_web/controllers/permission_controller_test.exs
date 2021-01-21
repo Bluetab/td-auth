@@ -16,7 +16,7 @@ defmodule TdAuthWeb.PermissionControllerTest do
   end
 
   describe "index" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "lists all permissions", %{conn: conn, swagger_schema: schema} do
       expected =
         1..5
@@ -41,7 +41,7 @@ defmodule TdAuthWeb.PermissionControllerTest do
   end
 
   describe "show" do
-    @tag :admin_authenticated
+    @tag authentication: [role: :admin]
     test "show permission", %{conn: conn, swagger_schema: schema} do
       %{id: id, name: name, permission_group: %{id: group_id, name: group_name}} =
         insert(:permission)
