@@ -2,10 +2,12 @@ defmodule TdAuthWeb.UserControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  alias TdAuth.Accounts
   alias TdAuth.Accounts.User
+  alias TdAuth.Auth.Guardian
   alias TdCache.TaxonomyCache
 
-  import TdAuthWeb.Authentication, only: [authenticate: 2]
+  import TdAuthWeb.Authentication, only: :functions
 
   @create_attrs %{
     password: "some password_hash",
@@ -33,7 +35,11 @@ defmodule TdAuthWeb.UserControllerTest do
 
   describe "GET /api/users" do
     @tag :admin_authenticated
-    test "lists all users with role", %{conn: conn, swagger_schema: schema, user: %{user_name: user_name}} do
+    test "lists all users with role", %{
+      conn: conn,
+      swagger_schema: schema,
+      user: %{user_name: user_name}
+    } do
       assert %{"data" => data} =
                conn
                |> get(Routes.user_path(conn, :index))
@@ -54,6 +60,54 @@ defmodule TdAuthWeb.UserControllerTest do
                |> json_response(:ok)
 
       assert [%{"role" => "admin"}, %{"role" => "service"}] = data
+    end
+
+    test "non admin user lists all users if he has any permission in bg", %{conn: conn} do
+      {:ok, %{id: user_id, email: email, full_name: full_name, user_name: user_name} = user} =
+        :user
+        |> build(password: "pass000")
+        |> Map.take([:user_name, :password, :email])
+        |> Accounts.create_user()
+
+      group = insert(:permission_group, name: "business_glossary_view")
+      permission = insert(:permission, permission_group: group)
+      role = insert(:role, permissions: [permission])
+
+      insert(:acl_entry,
+        user: user,
+        role: role,
+        principal_type: "user",
+        resource_type: "domain",
+        group: nil,
+        group_id: nil
+      )
+
+      assert %{"token" => token} =
+               conn
+               |> post(Routes.session_path(conn, :create),
+                 access_method: "access_method",
+                 user: Map.take(user, [:user_name, :password])
+               )
+               |> json_response(:created)
+
+      assert {:ok, %{"groups" => ["business_glossary_view"]}} =
+               Guardian.decode_and_verify(token, %{"typ" => "access"})
+
+      assert %{
+               "data" => [
+                 %{
+                   "email" => ^email,
+                   "full_name" => ^full_name,
+                   "id" => ^user_id,
+                   "role" => "user",
+                   "user_name" => ^user_name
+                 }
+               ]
+             } =
+               conn
+               |> put_auth_headers(token)
+               |> get(Routes.user_path(conn, :index))
+               |> json_response(:ok)
     end
   end
 
