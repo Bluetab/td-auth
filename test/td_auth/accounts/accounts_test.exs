@@ -90,13 +90,13 @@ defmodule TdAuth.AccountsTest do
       assert user.user_name == downcase_name
     end
 
-    test "user_exists? verifies if exists any unprotected user" do
-      assert not Accounts.user_exists?()
+    test "user_exists? verifies if exists any user without user role" do
+      refute Accounts.user_exists?()
 
-      insert(:user, is_protected: true)
-      assert not Accounts.user_exists?()
+      insert(:user, role: :service)
+      refute Accounts.user_exists?()
 
-      insert(:user, is_protected: false)
+      insert(:user, role: "user")
       assert Accounts.user_exists?()
     end
   end

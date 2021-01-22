@@ -218,19 +218,19 @@ defmodule TdAuthWeb.UserControllerTest do
              |> response(:forbidden)
     end
 
-    test "creates unprotected admin user if no protected users exist", %{
+    test "creates admin user if neither admin nor user role users exist", %{
       conn: conn,
       swagger_schema: schema
     } do
-      admin = insert(:user, is_protected: true, role: :admin)
+      %{id: admin_id} = admin = insert(:user, role: :service)
 
-      assert %{"data" => data} =
+      assert %{"data" => user} =
                conn
                |> post(Routes.user_path(conn, :init), user: @create_attrs)
                |> validate_resp_schema(schema, "UserResponse")
                |> json_response(:created)
 
-      assert %{"id" => id} = data
+      assert %{"id" => id} = user
 
       assert %{"data" => data} =
                conn
@@ -239,28 +239,8 @@ defmodule TdAuthWeb.UserControllerTest do
                |> validate_resp_schema(schema, "UsersResponseData")
                |> json_response(:ok)
 
-      assert [%{"id" => ^id}] = data
-    end
-
-    test "creates protected admin user if is_protected is specified", %{
-      conn: conn,
-      swagger_schema: schema
-    } do
-      admin = insert(:user, is_protected: true, role: :admin)
-
-      params = %{user: Map.put(@create_attrs, :is_protected, true)}
-
-      assert %{"data" => _} =
-               conn
-               |> post(Routes.user_path(conn, :init), params)
-               |> validate_resp_schema(schema, "UserResponse")
-               |> json_response(:created)
-
-      assert %{"data" => []} =
-               conn
-               |> authenticate(admin)
-               |> get(Routes.user_path(conn, :index))
-               |> json_response(:ok)
+      ids = Enum.map(data, &Map.get(&1, "id"))
+      assert Enum.all?([id, admin_id], &(&1 in ids))
     end
   end
 

@@ -83,11 +83,7 @@ defmodule TdAuthWeb.UserController do
       |> put_view(ErrorView)
       |> render("403.json")
     else
-      user_params =
-        user_params
-        |> Map.put("is_admin", true)
-        |> Map.put_new("is_protected", false)
-
+      user_params = Map.put(user_params, "is_admin", true)
       do_create(conn, user_params)
     end
   end

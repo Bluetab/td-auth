@@ -14,7 +14,7 @@ defmodule TdAuth.Accounts do
 
   def user_exists? do
     User
-    |> where([_u], is_protected: false)
+    |> where([u], u.role in [:user, :admin])
     |> Repo.exists?()
   end
 
@@ -28,16 +28,14 @@ defmodule TdAuth.Accounts do
 
   """
   def list_users(opts \\ []) do
-    filter_clauses = Keyword.put_new(opts, :is_protected, false)
-
     User
-    |> do_where(filter_clauses)
+    |> do_where(opts)
     |> Repo.all()
   end
 
   defp do_where(queryable, filter_clauses) do
     Enum.reduce(filter_clauses, queryable, fn
-      {:is_protected, is_protected}, q -> where(q, is_protected: ^is_protected)
+      {:role, role}, q -> where(q, role: ^role)
       {:id, {:in, ids}}, q -> where(q, [u], u.id in ^ids)
       {:preload, preloads}, q -> preload(q, ^preloads)
       _, q -> q
