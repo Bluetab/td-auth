@@ -28,6 +28,12 @@ defmodule TdAuth.AccountsTest do
       assert length(Accounts.list_users()) == 1
     end
 
+    test "list_users/1 filter users by parametes" do
+      insert(:user)
+      %{id: id} = insert(:user, role: "service")
+      assert [%{id: ^id}] = Accounts.list_users(role: "service")
+    end
+
     test "get_user!/1 returns the user with given id" do
       %{id: user_id} = insert(:user)
       assert %{id: ^user_id} = Accounts.get_user!(user_id)
