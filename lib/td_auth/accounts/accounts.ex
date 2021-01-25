@@ -163,8 +163,11 @@ defmodule TdAuth.Accounts do
   """
   def get_user_acls(user_id, preloads) do
     user = get_user!(user_id, preload: :groups)
-    group_ids = Enum.map(user.groups, &(&1.id))
-    AclEntries.list_acl_entries([resource_type: "domain", user_groups: {user_id, group_ids}], [preload: preloads])
+    group_ids = Enum.map(user.groups, & &1.id)
+
+    AclEntries.list_acl_entries([resource_type: "domain", user_groups: {user_id, group_ids}],
+      preload: preloads
+    )
   end
 
   @doc """
@@ -176,8 +179,12 @@ defmodule TdAuth.Accounts do
       [%Group{}, ...]
 
   """
-  def list_groups do
-    Repo.all(Group)
+  def list_groups(opts \\ []) do
+    preloads = Keyword.get(opts, :preload, [])
+
+    Group
+    |> preload(^preloads)
+    |> Repo.all()
   end
 
   @doc """

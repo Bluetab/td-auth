@@ -21,9 +21,8 @@ defmodule TdAuthWeb.GroupController do
 
   def index(conn, _params) do
     claims = conn.assigns[:current_resource]
-
     with {:can, true} <- {:can, can?(claims, view(Group))},
-         groups <- Accounts.list_groups() do
+         groups <- Accounts.list_groups(preload: :users) do
       render(conn, "index.json", groups: groups)
     end
   end
