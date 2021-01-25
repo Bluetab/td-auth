@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.12.0] 2021-01-25
+
 ### Added
 
 - [TD-3163] Initial support for service accounts
