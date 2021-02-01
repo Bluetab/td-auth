@@ -28,6 +28,12 @@ defmodule TdAuth.AccountsTest do
       assert length(Accounts.list_users()) == 1
     end
 
+    test "list_users/1 filter users by parametes" do
+      insert(:user)
+      %{id: id} = insert(:user, role: "service")
+      assert [%{id: ^id}] = Accounts.list_users(role: "service")
+    end
+
     test "get_user!/1 returns the user with given id" do
       %{id: user_id} = insert(:user)
       assert %{id: ^user_id} = Accounts.get_user!(user_id)
@@ -90,13 +96,16 @@ defmodule TdAuth.AccountsTest do
       assert user.user_name == downcase_name
     end
 
-    test "user_exists? verifies if exists any unprotected user" do
-      assert not Accounts.user_exists?()
+    test "user_exists? verifies if exists any user without user role" do
+      refute Accounts.user_exists?()
 
-      insert(:user, is_protected: true)
-      assert not Accounts.user_exists?()
+      insert(:user, role: :service)
+      refute Accounts.user_exists?()
 
-      insert(:user, is_protected: false)
+      insert(:user, role: :user)
+      refute Accounts.user_exists?()
+
+      insert(:user, role: :admin)
       assert Accounts.user_exists?()
     end
   end

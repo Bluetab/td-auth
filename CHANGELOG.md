@@ -15,6 +15,10 @@
 - [TD-3182] Allow to use redis with password
 - [TD-3074] Allow to query `users` and `groups` for users having permissions in bg
 
+### Deleted
+
+- [TD-3162] users `is_protected` field 
+
 ## [4.11.0] 2021-01-11
 
 ### Changed
