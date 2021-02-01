@@ -8,6 +8,8 @@ defmodule TdBg.Canada.Abilities do
   alias TdCache.Permissions
 
   defimpl Canada.Can, for: Claims do
+    @notification_groups ["business_glossary_view", "business_glossary_management"]
+
     # administrator is superpowerful
     def can?(%Claims{is_admin: true}, _action, _resource), do: true
 
@@ -30,12 +32,14 @@ defmodule TdBg.Canada.Abilities do
       authorized?(claims, :delete_acl_entry, domain_id)
     end
 
-    def can?(%Claims{jti: jti}, :view, Group) do
-      Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain")
+    def can?(%Claims{jti: jti, groups: groups}, :view, Group) do
+      Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain") or
+        Enum.any?(@notification_groups, &(&1 in groups))
     end
 
-    def can?(%Claims{jti: jti}, :view, User) do
-      Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain")
+    def can?(%Claims{jti: jti, groups: groups}, :view, User) do
+      Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain") or
+        Enum.any?(@notification_groups, &(&1 in groups))
     end
 
     def can?(%Claims{jti: jti}, :view, Role) do
