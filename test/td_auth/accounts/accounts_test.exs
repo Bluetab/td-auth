@@ -102,7 +102,10 @@ defmodule TdAuth.AccountsTest do
       insert(:user, role: :service)
       refute Accounts.user_exists?()
 
-      insert(:user, role: "user")
+      insert(:user, role: :user)
+      refute Accounts.user_exists?()
+
+      insert(:user, role: :admin)
       assert Accounts.user_exists?()
     end
   end

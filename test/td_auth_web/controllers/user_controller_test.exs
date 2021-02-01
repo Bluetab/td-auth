@@ -260,8 +260,8 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "init credential" do
-    test "returns forbidden if exist users", %{conn: conn} do
-      insert(:user)
+    test "returns forbidden if exist admin users", %{conn: conn} do
+      insert(:user, role: :admin)
 
       assert conn
              |> post(Routes.user_path(conn, :init), user: @create_attrs)
@@ -295,8 +295,8 @@ defmodule TdAuthWeb.UserControllerTest do
   end
 
   describe "can init" do
-    test "can init will return false if exist users", %{conn: conn} do
-      insert(:user)
+    test "can init will return false if exist admin users", %{conn: conn} do
+      insert(:user, role: :admin)
 
       assert conn
              |> get(Routes.user_path(conn, :can_init))

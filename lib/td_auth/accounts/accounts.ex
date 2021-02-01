@@ -14,8 +14,8 @@ defmodule TdAuth.Accounts do
 
   def user_exists? do
     User
-    |> where([u], u.role in [:user, :admin])
-    |> Repo.exists?()
+    |> where([u], u.role == :admin)
+    |> Repo.exists?(role: :admin)
   end
 
   @doc """
