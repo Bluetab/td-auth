@@ -94,6 +94,15 @@ config :td_auth, :phoenix_swagger,
     "priv/static/swagger.json" => [router: TdAuthWeb.Router]
   }
 
+config :td_auth, TdAuth.Scheduler,
+  jobs: [
+    [
+      schedule: "@hourly",
+      task: {TdAuth.Permissions.AclRemover, :dispatch, []},
+      run_strategy: Quantum.RunStrategy.Local
+    ]
+  ]
+  
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

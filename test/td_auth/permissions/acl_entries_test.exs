@@ -157,13 +157,19 @@ defmodule TdAuth.Permissions.AclEntriesTest do
 
     test "delete_acl_entries/1 applies filters" do
       e1 = insert(:acl_entry, resource_type: "foo", resource_id: 12)
-      _e2 = insert(:acl_entry, resource_type: "foo", resource_id: 99)
+      e2 = insert(:acl_entry, resource_type: "foo", resource_id: 99)
       e3 = insert(:acl_entry, resource_type: "foo", resource_id: 12)
+      e4 = insert(:acl_entry, resource_type: "foo", resource_id: 20)
 
       assert {2, entries} =
-               AclEntries.delete_acl_entries(resource_type: "foo", resource_id: {:not_in, [99]})
+               AclEntries.delete_acl_entries(resource_type: "foo", resource_id: {:not_in, [99, 20]})
 
       assert_lists_equal(entries, [e1, e3], &assert_structs_equal(&1, &2, @acl_entry_keys))
+
+      assert {2, entries} =
+               AclEntries.delete_acl_entries(resource_type: "foo", resource_id: {:in, [99, 20]})
+
+      assert_lists_equal(entries, [e2, e4], &assert_structs_equal(&1, &2, @acl_entry_keys))
     end
 
     test "get_user_ids_by_resource_and_role/0 returns user_ids grouped by resource and role" do

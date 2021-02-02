@@ -39,7 +39,8 @@ defmodule TdAuth.Application do
       TdAuth.Permissions.Seeds,
       TdAuth.Accounts.UserLoader,
       TdAuth.Permissions.AclLoader,
-      TdAuth.Permissions.AclRemover
+      TdAuth.Permissions.AclRemover,
+      TdAuth.Scheduler
     ] ++ oidc_workers() ++ saml_workers() ++ ldap_workers()
   end
 

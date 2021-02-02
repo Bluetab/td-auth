@@ -130,6 +130,7 @@ defmodule TdAuth.Permissions.AclEntries do
     Enum.reduce(filter_clauses, queryable, fn
       {:resource_type, resource_type}, q -> where(q, resource_type: ^resource_type)
       {:resource_id, {:not_in, ids}}, q -> where(q, [e], e.resource_id not in ^ids)
+      {:resource_id, {:in, ids}}, q -> where(q, [e], e.resource_id in ^ids)
       {:resource_id, resource_id}, q -> where(q, resource_id: ^resource_id)
       {:user_groups, {uid, gids}}, q -> where(q, [e], e.user_id == ^uid or e.group_id in ^gids)
       {:user_id, user_id}, q -> where(q, user_id: ^user_id)

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- [TD-3146] Delete acl entries from deleted domain ids collection
+
 ## [4.12.0] 2021-01-25
 
 ### Added

@@ -10,31 +10,37 @@ defmodule TdAuth.Permissions.AclRemover do
 
   require Logger
 
-  @hourly 60 * 60 * 1000
-
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
   @impl GenServer
-  def init(state) do
-    if Application.get_env(:td_auth, :env) == :prod do
-      schedule_work()
-    end
+  def init(_init_arg) do
+    {:ok, :no_state}
+  end
 
-    {:ok, state}
+  def dispatch do
+    GenServer.cast(__MODULE__, :delete)
   end
 
   @impl GenServer
-  def handle_info(:work, state) do
-    domain_ids = TaxonomyCache.get_domain_ids()
-    AclEntries.delete_acl_entries(resource_type: "domain", resource_id: {:not_in, domain_ids})
+  def handle_cast(:delete, state) do
+    domain_ids = TaxonomyCache.get_deleted_domain_ids()
 
-    schedule_work()
+    count =
+      case domain_ids do
+        [_ | _] ->
+          {n, _members} =
+            AclEntries.delete_acl_entries(resource_type: "domain", resource_id: {:in, domain_ids})
+
+          n
+
+        _ ->
+          0
+      end
+
+    Logger.info("Deleted #{count} domains")
+
     {:noreply, state}
-  end
-
-  defp schedule_work(millis \\ @hourly) do
-    Process.send_after(self(), :work, millis)
   end
 end
