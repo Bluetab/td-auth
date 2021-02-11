@@ -11,14 +11,38 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   require Logger
 
   def authentication_url do
+    verifier = NonceCache.create_nonce("", 32, 1)
     nonce = NonceCache.create_nonce()
-    state = NonceCache.create_nonce()
+    state = NonceCache.create_nonce(verifier)
 
-    OpenIDConnect.authorization_uri(:oidc, %{
-      # "response_mode" => "fragment",
-      "nonce" => nonce,
-      "state" => state
-    })
+    params =
+      code_challenge_method()
+      |> auth_params(verifier)
+      |> Map.put("nonce", nonce)
+      |> Map.put("state", state)
+
+    OpenIDConnect.authorization_uri(:oidc, params)
+  end
+
+  defp auth_params("S256", verifier) do
+    challenge =
+      :sha256
+      |> :crypto.hash(verifier)
+      |> Base.url_encode64()
+      |> String.replace_suffix("=", "")
+
+    %{
+      "code_challenge" => challenge,
+      "code_challenge_method" => "S256"
+    }
+  end
+
+  defp auth_params(_, _), do: %{}
+
+  defp code_challenge_method do
+    :td_auth
+    |> Application.get_env(__MODULE__, [])
+    |> Keyword.get(:code_challenge_method)
   end
 
   @spec authenticate(Conn.t() | map()) :: {:ok, map()} | {:error, any()} | :error
@@ -33,22 +57,26 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   end
 
   def authenticate(%{"code" => _code, "state" => state} = params) do
-    with :ok <- validate_nonce(state),
+    with {:ok, verifier} <- validate_nonce(state),
+         params <- verification_params(params, verifier),
          {:ok, %{"id_token" => token}} <- OpenIDConnect.fetch_tokens(:oidc, params),
          {:ok, claims} <- OpenIDConnect.verify(:oidc, token),
-         :ok <- validate_nonce(claims),
+         {:ok, _} <- validate_nonce(claims),
          {:ok, profile} <- map_profile(claims) do
       {:ok, profile}
     end
   end
 
-  @spec validate_nonce(map() | binary() | nil) :: :ok | {:error, :invalid_nonce}
+  defp verification_params(params, ""), do: params
+  defp verification_params(params, verifier), do: Map.put(params, "code_verifier", verifier)
+
+  @spec validate_nonce(map() | binary() | nil) :: {:ok, binary()} | {:error, :invalid_nonce}
   defp validate_nonce(%{"nonce" => nonce} = _claims), do: validate_nonce(nonce)
 
   defp validate_nonce(nonce) when is_binary(nonce) do
     case NonceCache.pop(nonce) do
       nil -> {:error, :invalid_nonce}
-      _ -> :ok
+      value -> {:ok, value}
     end
   end
 
@@ -59,9 +87,14 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
     |> Application.get_env(__MODULE__, [])
     |> Keyword.get(:profile_mapping)
     |> case do
-      %{} = mapping -> CustomProfileMapping.map_profile(mapping, claims)
-      mapping when is_binary(mapping) -> mapping |> Jason.decode!() |> CustomProfileMapping.map_profile(claims)
-      nil -> DefaultProfileMapping.map_profile(claims)
+      %{} = mapping ->
+        CustomProfileMapping.map_profile(mapping, claims)
+
+      mapping when is_binary(mapping) ->
+        mapping |> Jason.decode!() |> CustomProfileMapping.map_profile(claims)
+
+      nil ->
+        DefaultProfileMapping.map_profile(claims)
     end
   end
 
