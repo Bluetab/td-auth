@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-3296] Support for PKCE in OAuth 2.0 authentication code flow. To enable
+  PKCE, set the environment varible `PKCE_CODE_CHALLENGE_METHOD` to `S256`.
+
 ## [4.13.0] 2021-02-08
 
 ### Changed
@@ -21,7 +28,7 @@
 
 ### Deleted
 
-- [TD-3162] users `is_protected` field 
+- [TD-3162] users `is_protected` field
 
 ## [4.11.0] 2021-01-11
 

@@ -89,4 +89,5 @@ config :td_cache,
   password: System.get_env("REDIS_PASSWORD")
 
 config :td_auth, TdAuthWeb.AuthProvider.OIDC,
-  profile_mapping: System.get_env("OIDC_PROFILE_MAPPING")
+  profile_mapping: System.get_env("OIDC_PROFILE_MAPPING"),
+  code_challenge_method: System.get_env("PKCE_CODE_CHALLENGE_METHOD")
