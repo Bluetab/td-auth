@@ -3,40 +3,39 @@ defmodule TdAuthWeb.User do
 
   import TdAuthWeb.Authentication, only: :functions
 
-  alias Jason, as: JSON
   alias TdAuth.Auth.Guardian
   alias TdAuthWeb.Router.Helpers, as: Routes
 
   @endpoint TdAuthWeb.Endpoint
 
   def user_init(user_params) do
-    body = JSON.encode!(%{user: user_params})
+    body = Jason.encode!(%{user: user_params})
     headers = get_default_headers()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.post!(Routes.user_url(@endpoint, :init), body, headers, [])
 
-    {:ok, status_code, JSON.decode!(resp)}
+    {:ok, status_code, Jason.decode!(resp)}
   end
 
   def user_create(token, user_params) do
     headers = get_jwt_headers(token)
-    body = JSON.encode!(%{user: user_params})
+    body = Jason.encode!(%{user: user_params})
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.post!(Routes.user_url(@endpoint, :create), body, headers, [])
 
-    {:ok, status_code, JSON.decode!(resp)}
+    {:ok, status_code, Jason.decode!(resp)}
   end
 
   def user_update(token, target_user_id, user_params) do
     headers = get_jwt_headers(token)
-    body = JSON.encode!(%{user: user_params})
+    body = Jason.encode!(%{user: user_params})
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.put!(Routes.user_url(@endpoint, :update, target_user_id), body, headers, [])
 
-    {:ok, status_code, JSON.decode!(resp)}
+    {:ok, status_code, Jason.decode!(resp)}
   end
 
   def user_delete(token, target_user_id) do
@@ -54,13 +53,13 @@ defmodule TdAuthWeb.User do
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.get!(Routes.user_url(@endpoint, :index), headers, [])
 
-    {:ok, status_code, JSON.decode!(resp)}
+    {:ok, status_code, Jason.decode!(resp)}
   end
 
   def get_subject(token) do
     with %{claims: claims} <- Guardian.peek(token),
          %{"sub" => sub} <- claims do
-      JSON.decode!(sub)
+      Jason.decode!(sub)
     end
   end
 
@@ -71,7 +70,7 @@ defmodule TdAuthWeb.User do
 
   def change_password(token, user_id, old_password, new_password) do
     headers = get_jwt_headers(token)
-    body = %{old_password: old_password, new_password: new_password} |> JSON.encode!()
+    body = %{old_password: old_password, new_password: new_password} |> Jason.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: _resp} =
       HTTPoison.patch!(

@@ -6,7 +6,6 @@ defmodule TdAuthWeb.Authentication do
 
   import Plug.Conn
 
-  alias Jason, as: JSON
   alias Phoenix.ConnTest
   alias TdAuth.Auth.Guardian
   alias TdAuthWeb.Router.Helpers, as: Routes
@@ -47,12 +46,12 @@ defmodule TdAuthWeb.Authentication do
   def session_create(user_name, user_password) do
     body =
       %{user: %{user_name: user_name, password: user_password}}
-      |> JSON.encode!()
+      |> Jason.encode!()
 
     %HTTPoison.Response{status_code: status_code, body: resp} =
       HTTPoison.post!(Routes.session_url(@endpoint, :create), body, [@headers], [])
 
-    {:ok, status_code, JSON.decode!(resp)}
+    {:ok, status_code, Jason.decode!(resp)}
   end
 
   def session_destroy(token) do
