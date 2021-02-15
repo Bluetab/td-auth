@@ -2,7 +2,6 @@ defmodule TdAuth.Ldap.Ldap do
   @moduledoc false
 
   alias Gettext.Interpolation
-  alias Jason, as: JSON
   alias TdAuth.Ldap.LdapValidation
 
   require Logger
@@ -139,7 +138,7 @@ defmodule TdAuth.Ldap.Ldap do
 
   defp get_ldap_profile_mapping do
     ldap_config = Application.get_env(:td_auth, :ldap)
-    JSON.decode!(ldap_config[:profile_mapping])
+    Jason.decode!(ldap_config[:profile_mapping])
   end
 
   defp get_ldap_bind_pattern do

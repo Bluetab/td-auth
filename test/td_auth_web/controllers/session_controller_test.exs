@@ -4,7 +4,6 @@ defmodule TdAuthWeb.SessionControllerTest do
 
   import TdAuthWeb.Authentication, only: :functions
 
-  alias Jason, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Auth.Guardian
   alias TdAuthWeb.ApiServices.MockAuth0Service
@@ -79,7 +78,7 @@ defmodule TdAuthWeb.SessionControllerTest do
         email: "email@xyz.com"
       }
 
-      MockAuth0Service.set_user_info(200, JSON.encode!(profile))
+      MockAuth0Service.set_user_info(200, Jason.encode!(profile))
 
       assert conn
              |> post(Routes.session_path(conn, :create), %{auth_realm: "auth0"})
@@ -103,7 +102,7 @@ defmodule TdAuthWeb.SessionControllerTest do
         email: "email@especial.com"
       }
 
-      MockAuth0Service.set_user_info(200, JSON.encode!(profile))
+      MockAuth0Service.set_user_info(200, Jason.encode!(profile))
 
       assert conn
              |> post(Routes.session_path(conn, :create), %{auth_realm: "auth0"})
@@ -119,7 +118,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     test "create invalid user session with access token", %{conn: conn} do
       {:ok, jwt, _full_claims} = Guardian.encode_and_sign(nil)
       profile = %{nickname: "user_name", name: "name", email: "email@xyz.com"}
-      MockAuth0Service.set_user_info(401, JSON.encode!(profile))
+      MockAuth0Service.set_user_info(401, Jason.encode!(profile))
 
       assert conn
              |> put_auth_headers(jwt)

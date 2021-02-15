@@ -1,7 +1,6 @@
 defmodule TdAuthWeb.SessionController do
   use TdAuthWeb, :controller
 
-  alias Jason, as: JSON
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
   alias TdAuth.Auth.Guardian
@@ -25,7 +24,7 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp handle_sign_in(conn, user, custom_claims) do
-    resource = user |> JSON.encode!() |> JSON.decode!()
+    resource = user |> Jason.encode!() |> Jason.decode!()
     GuardianPlug.sign_in(conn, resource, custom_claims)
   end
 
@@ -44,7 +43,7 @@ defmodule TdAuthWeb.SessionController do
   def create(conn, %{"SAMLResponse" => _} = params) do
     nonce =
       params
-      |> JSON.encode!()
+      |> Jason.encode!()
       |> NonceCache.create_nonce()
 
     redirect(conn, to: "/saml#nonce=#{nonce}")
@@ -133,7 +132,7 @@ defmodule TdAuthWeb.SessionController do
   end
 
   def create_nonce_session(conn, "saml", json) do
-    params = JSON.decode!(json)
+    params = Jason.decode!(json)
 
     [saml_response, saml_encoding] =
       ["SAMLResponse", "SAMLEncoding"]
