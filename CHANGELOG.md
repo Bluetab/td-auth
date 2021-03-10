@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] 
+
+### Added
+
+- [TD-2951] Permission `profile_structures`.
+
 ## [4.15.0] 2021-03-08
 
 ### Changed
@@ -17,7 +23,6 @@
 
 - [TD-3296] Support for PKCE in OAuth 2.0 authentication code flow. To enable
   PKCE, set the environment varible `PKCE_CODE_CHALLENGE_METHOD` to `S256`.
-- [TD-2951] New permission `profile_structures`.
 
 ## [4.13.0] 2021-02-08
 
