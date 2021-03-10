@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-3326] Configure JWT token TTL using environment variables
+
 ## [4.15.0] 2021-03-08
 
 ### Changed

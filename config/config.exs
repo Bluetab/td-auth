@@ -25,15 +25,16 @@ config :td_auth, TdAuthWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: TdAuthWeb.ErrorView, accepts: ~w(json)]
 
-config :td_auth, TdAuth.Repo,
-  pool_size: 10
+config :td_auth, TdAuth.Repo, pool_size: 10
 
 # Configures Elixir's Logger
 # set EX_LOGGER_FORMAT environment variable to override Elixir's Logger format
 # (without the 'end of line' character)
 # EX_LOGGER_FORMAT='$date $time [$level] $message'
 config :logger, :console,
-  format: (System.get_env("EX_LOGGER_FORMAT") || "$date\T$time\Z [$level]$levelpad $metadata$message") <> "\n",
+  format:
+    (System.get_env("EX_LOGGER_FORMAT") || "$date\T$time\Z [$level]$levelpad $metadata$message") <>
+      "\n",
   level: :info,
   metadata: [:pid, :module],
   utc_log: true
@@ -46,7 +47,20 @@ config :td_auth, TdAuth.Auth.Guardian,
   # optional
   allowed_algos: ["HS512"],
   issuer: "tdauth",
-  token_ttl: %{"access" => {12, :hours}, "refresh" => {24, :hours}},
+  token_ttl: %{
+    "access" => {
+      System.get_env("JWT_TTL_TIME", "12") |> String.to_integer(),
+      System.get_env("JWT_TTL_UNIT", "HOURS")
+      |> String.downcase()
+      |> String.to_atom()
+    },
+    "refresh" => {
+      System.get_env("JWT_REFRESH_TIME", "24") |> String.to_integer(),
+      System.get_env("JWT_REFRESH_UNIT", "HOURS")
+      |> String.downcase()
+      |> String.to_atom()
+    }
+  },
   secret_key: "SuperSecretTruedat"
 
 config :td_auth, TdAuth.Auth.Auth0,
@@ -102,7 +116,7 @@ config :td_auth, TdAuth.Scheduler,
       run_strategy: Quantum.RunStrategy.Local
     ]
   ]
-  
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
