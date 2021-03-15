@@ -4,8 +4,6 @@ defmodule TdAuth.AuditAuth do
   """
   alias TdAuth.AuditAuth.Audit
 
-  require Logger
-
   @doc """
   Publishes the corresponding audit attemp event
   """
