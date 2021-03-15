@@ -21,14 +21,14 @@ config :td_auth, TdAuth.Repo,
 config :td_auth, TdAuth.Auth.Guardian,
   token_ttl: %{
     "access" => {
-      System.fetch_env!("JWT_TTL_TIME", "12") |> String.to_integer(),
-      System.fetch_env!("JWT_TTL_UNIT", "HOURS")
+      System.get_env("JWT_TTL_TIME", "12") |> String.to_integer(),
+      System.get_env("JWT_TTL_UNIT", "HOURS")
       |> String.downcase()
       |> String.to_atom()
     },
     "refresh" => {
-      System.fetch_env!("JWT_REFRESH_TIME", "24") |> String.to_integer(),
-      System.fetch_env!("JWT_REFRESH_UNIT", "HOURS")
+      System.get_env("JWT_REFRESH_TIME", "24") |> String.to_integer(),
+      System.get_env("JWT_REFRESH_UNIT", "HOURS")
       |> String.downcase()
       |> String.to_atom()
     }
