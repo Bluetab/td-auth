@@ -1,10 +1,16 @@
 # Changelog
 
+
 ## [Unreleased] 
+
+### Changed
+
+- [TD-3326] Configure JWT token TTL using environment variables
 
 ### Added
 
 - [TD-2951] Permission `profile_structures`.
+
 
 ## [4.15.0] 2021-03-08
 
