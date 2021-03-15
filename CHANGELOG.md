@@ -3,6 +3,10 @@
 ## [Unreleased] 
 
 ### Added
+- [TD-1389] Auth needs to create an event with each login attempt and created sessions. 
+- Enable filter in audit by timestamp range and event type
+
+### Added
 
 - [TD-2951] Permission `profile_structures`.
 
