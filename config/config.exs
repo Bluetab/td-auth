@@ -48,18 +48,8 @@ config :td_auth, TdAuth.Auth.Guardian,
   allowed_algos: ["HS512"],
   issuer: "tdauth",
   token_ttl: %{
-    "access" => {
-      System.get_env("JWT_TTL_TIME", "12") |> String.to_integer(),
-      System.get_env("JWT_TTL_UNIT", "HOURS")
-      |> String.downcase()
-      |> String.to_atom()
-    },
-    "refresh" => {
-      System.get_env("JWT_REFRESH_TIME", "24") |> String.to_integer(),
-      System.get_env("JWT_REFRESH_UNIT", "HOURS")
-      |> String.downcase()
-      |> String.to_atom()
-    }
+    "access" => {12, :hours},
+    "refresh" => {24, :hours}
   },
   secret_key: "SuperSecretTruedat"
 
