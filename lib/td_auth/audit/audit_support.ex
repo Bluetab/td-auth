@@ -7,7 +7,6 @@ defmodule TdAuth.Audit.AuditSupport do
 
   def publish(event, resource_type, resource_id, user_id, payload \\ %{})
 
- 
   def publish(event, resource_type, resource_id, user_id, payload) do
     Audit.publish(
       event: event,

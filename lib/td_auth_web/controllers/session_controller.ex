@@ -3,6 +3,7 @@ defmodule TdAuthWeb.SessionController do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
+  alias TdAuth.AuditAuth
   alias TdAuth.Auth.Guardian
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuth.Ldap.Ldap
@@ -16,7 +17,6 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuthWeb.SwaggerDefinitions
   alias TdCache.NonceCache
   alias TdCache.TaxonomyCache
-  alias TdAuth.AuditAuth
 
   require Logger
 
