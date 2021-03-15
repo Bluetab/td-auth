@@ -18,7 +18,22 @@ config :td_auth, TdAuth.Repo,
   database: System.fetch_env!("DB_NAME"),
   hostname: System.fetch_env!("DB_HOST")
 
-config :td_auth, TdAuth.Auth.Guardian, secret_key: System.fetch_env!("GUARDIAN_SECRET_KEY")
+config :td_auth, TdAuth.Auth.Guardian,
+  token_ttl: %{
+    "access" => {
+      System.fetch_env!("JWT_TTL_TIME", "12") |> String.to_integer(),
+      System.fetch_env!("JWT_TTL_UNIT", "HOURS")
+      |> String.downcase()
+      |> String.to_atom()
+    },
+    "refresh" => {
+      System.fetch_env!("JWT_REFRESH_TIME", "24") |> String.to_integer(),
+      System.fetch_env!("JWT_REFRESH_UNIT", "HOURS")
+      |> String.downcase()
+      |> String.to_atom()
+    }
+  },
+  secret_key: System.fetch_env!("GUARDIAN_SECRET_KEY")
 
 config :td_auth, :auth0,
   protocol: System.get_env("AUTH0_PROTOCOL"),
