@@ -43,6 +43,10 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 config :phoenix_swagger, :json_library, Jason
 
+config :td_cache, :audit,
+  service: "td_auth",
+  stream: "audit:events"
+
 config :td_auth, TdAuth.Auth.Guardian,
   # optional
   allowed_algos: ["HS512"],

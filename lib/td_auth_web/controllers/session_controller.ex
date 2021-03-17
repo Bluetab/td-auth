@@ -3,6 +3,7 @@ defmodule TdAuthWeb.SessionController do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
+  alias TdAuth.AuditAuth
   alias TdAuth.Auth.Guardian
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuth.Ldap.Ldap
@@ -52,14 +53,16 @@ defmodule TdAuthWeb.SessionController do
   def create(conn, %{
         "auth_realm" => "active_directory",
         "user" => %{"user_name" => user_name, "password" => password}
-      }) do
+      } = params) do
+    {:ok, _ } = AuditAuth.attempt_event("active_directory", params)
     authenticate_using_active_directory_and_create_session(conn, user_name, password)
   end
 
   def create(conn, %{
         "auth_realm" => "ldap",
         "user" => %{"user_name" => user_name, "password" => password}
-      }) do
+      } = params) do
+    {:ok, _ } = AuditAuth.attempt_event("ldap", params)
     authenticate_using_ldap_and_create_session(conn, user_name, password)
   end
 
@@ -82,7 +85,8 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}}) do
+  def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}} = params) do
+    {:ok, _ } = AuditAuth.attempt_event("alternative_login", params)
     authenticate_and_create_session(conn, user_name, password, "alternative_login")
   end
 
@@ -108,6 +112,7 @@ defmodule TdAuthWeb.SessionController do
 
   defp create_session(conn, user, access_method) do
     tokens = create_tokens(conn, user, access_method)
+    {:ok, _ } = AuditAuth.session_event(access_method, user)
     create_session_with_tokens(conn, tokens)
   end
 

@@ -9,6 +9,10 @@
 
 ### Added
 
+- [TD-1389] Generates events for login attempts and successes
+
+### Added
+
 - [TD-2951] Permission `profile_structures`.
 
 
