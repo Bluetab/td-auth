@@ -3,8 +3,8 @@
 ## [Unreleased] 
 
 ### Added
-- [TD-1389] Auth needs to create an event with each login attempt and created sessions. 
-- Enable filter in audit by timestamp range and event type
+
+- [TD-1389] Generates events for login attempts and successes
 
 ### Added
 
