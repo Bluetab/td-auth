@@ -28,8 +28,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
     challenge =
       :sha256
       |> :crypto.hash(verifier)
-      |> Base.url_encode64()
-      |> String.replace_suffix("=", "")
+      |> Base.url_encode64(padding: false)
 
     %{
       "code_challenge" => challenge,
