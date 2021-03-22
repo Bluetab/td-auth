@@ -11,7 +11,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   require Logger
 
   def authentication_url do
-    verifier = NonceCache.create_nonce("", 32, 1)
+    verifier = create_code_verifier()
     nonce = NonceCache.create_nonce()
     state = NonceCache.create_nonce(verifier)
 
@@ -28,8 +28,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
     challenge =
       :sha256
       |> :crypto.hash(verifier)
-      |> Base.url_encode64()
-      |> String.replace_suffix("=", "")
+      |> Base.url_encode64(padding: false)
 
     %{
       "code_challenge" => challenge,
@@ -106,5 +105,15 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
     |> Enum.filter(&String.starts_with?(&1, "Bearer "))
     |> Enum.map(&String.replace_leading(&1, "Bearer ", ""))
     |> Enum.fetch(0)
+  end
+
+  # Creates a PKCE code verifier
+  defp create_code_verifier do
+    length =
+      :td_auth
+      |> Application.get_env(__MODULE__, [])
+      |> Keyword.get(:code_verifier_length, 128)
+
+    NonceCache.create_nonce("", length, 1)
   end
 end

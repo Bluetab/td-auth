@@ -6,6 +6,8 @@
 ### Changed
 
 - [TD-3326] Configure JWT token TTL using environment variables
+- [TD-3297] PKCE code verifier length is now configurable using environment
+  variable `PKCE_CODE_VERIFIER_LENGTH` (defaults to 128)
 
 ### Added
 

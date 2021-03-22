@@ -105,4 +105,5 @@ config :td_cache,
 
 config :td_auth, TdAuthWeb.AuthProvider.OIDC,
   profile_mapping: System.get_env("OIDC_PROFILE_MAPPING"),
-  code_challenge_method: System.get_env("PKCE_CODE_CHALLENGE_METHOD")
+  code_challenge_method: System.get_env("PKCE_CODE_CHALLENGE_METHOD"),
+  code_verifier_length: System.get_env("PKCE_CODE_VERIFIER_LENGTH", "128") |> String.to_integer()

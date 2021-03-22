@@ -31,6 +31,7 @@ defmodule TdAuthWeb.AuthProvider.OIDCTest do
       assert {:ok, hash} = Base.url_decode64(challenge, padding: false)
       assert verifier = NonceCache.pop(state)
       assert hash == :crypto.hash(:sha256, verifier)
+      assert String.length(verifier) == 128
     end
   end
 end
