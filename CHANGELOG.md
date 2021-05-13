@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-3503]
+  - Created APIs `api/users/search` and `api/groups/search` 
+  - Removed permissions for non-admin users to `:index` users and groups
+
 ## [4.19.0] 2021-05-04
 
 ### Added

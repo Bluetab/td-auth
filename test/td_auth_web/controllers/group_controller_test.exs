@@ -71,8 +71,8 @@ defmodule TdAuthWeb.GroupControllerTest do
                |> json_response(:forbidden)
     end
 
-    test "user account can list all groups if he has any permission in bg", %{conn: conn} do
-      {:ok, %{id: user_id, email: email, full_name: full_name, user_name: user_name} = user} =
+    test "user account cannot list all groups even having any permission in bg", %{conn: conn} do
+      {:ok, user} =
         :user
         |> build(password: "pass000")
         |> Map.take([:user_name, :password, :email])
@@ -91,7 +91,7 @@ defmodule TdAuthWeb.GroupControllerTest do
         group_id: nil
       )
 
-      %{id: group_id, name: name, description: description} = insert(:group, users: [user])
+      insert(:group, users: [user])
 
       assert %{"token" => token} =
                conn
@@ -104,28 +104,10 @@ defmodule TdAuthWeb.GroupControllerTest do
       assert {:ok, %{"groups" => ["business_glossary_view"]}} =
                Guardian.decode_and_verify(token, %{"typ" => "access"})
 
-      assert %{
-               "data" => [
-                 %{
-                   "description" => ^description,
-                   "id" => ^group_id,
-                   "name" => ^name,
-                   "users" => [
-                     %{
-                       "email" => ^email,
-                       "full_name" => ^full_name,
-                       "id" => ^user_id,
-                       "role" => "user",
-                       "user_name" => ^user_name
-                     }
-                   ]
-                 }
-               ]
-             } =
-               conn
+      assert conn
                |> put_auth_headers(token)
                |> get(Routes.group_path(conn, :index))
-               |> json_response(:ok)
+               |> json_response(:forbidden)
     end
   end
 

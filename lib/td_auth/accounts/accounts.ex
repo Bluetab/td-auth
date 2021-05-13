@@ -29,15 +29,18 @@ defmodule TdAuth.Accounts do
   """
   def list_users(opts \\ []) do
     User
-    |> do_where(opts)
+    |> apply_list_users_opts(opts)
     |> Repo.all()
   end
 
-  defp do_where(queryable, filter_clauses) do
+  defp apply_list_users_opts(queryable, filter_clauses) do
     Enum.reduce(filter_clauses, queryable, fn
       {:role, role}, q -> where(q, role: ^role)
       {:id, {:in, ids}}, q -> where(q, [u], u.id in ^ids)
       {:preload, preloads}, q -> preload(q, ^preloads)
+      {:limit, max_results}, q -> limit(q, ^max_results)
+      {:query, query}, q -> where(q, [u],
+        like(u.full_name, ^query) or like(u.email, ^query))
       _, q -> q
     end)
   end
@@ -178,11 +181,19 @@ defmodule TdAuth.Accounts do
 
   """
   def list_groups(opts \\ []) do
-    preloads = Keyword.get(opts, :preload, [])
-
     Group
-    |> preload(^preloads)
+    |> apply_list_groups_opts(opts)
     |> Repo.all()
+  end
+
+  defp apply_list_groups_opts(queryable, filter_clauses) do
+    Enum.reduce(filter_clauses, queryable, fn
+      {:preload, preloads}, q -> preload(q, ^preloads)
+      {:limit, max_results}, q -> limit(q, ^max_results)
+      {:query, query}, q -> where(q, [u],
+        like(u.name, ^query) or like(u.description, ^query))
+      _, q -> q
+    end)
   end
 
   @doc """
