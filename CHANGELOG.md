@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-3526] `link_data_structure_tag` permission to link a structure to a tag
+
 ## [4.19.0] 2021-05-04
 
 ### Added
