@@ -30,7 +30,7 @@ defmodule TdAuth.Factory do
 
     %TdAuth.Permissions.AclEntry{
       resource_type: "domain",
-      resource_id: :random.uniform(1_000),
+      resource_id: System.unique_integer([:positive]),
       role: build(:role)
     }
     |> merge_attributes(attrs)
