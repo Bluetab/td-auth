@@ -66,6 +66,39 @@ defmodule TdAuthWeb.SwaggerDefinitions do
     }
   end
 
+  def password_swagger_definitions do
+    %{
+      UpdatePassword:
+        swagger_schema do
+          title("Password")
+          description("Password updating")
+          properties do
+            id(:integer, "unique identifier", required: true)
+            old_password(:string, "current password", required: true)
+            new_password(:string, "new password", required: true)
+          end
+        end,
+
+      UserResponseAttrs:
+        swagger_schema do
+          properties do
+            id(:integer, "unique identifier", required: true)
+            user_name(:string, "user name", required: true)
+            email(:string, "email", required: true)
+            role(:string, "role", required: true)
+            full_name([:string, :null], "full name")
+            groups(Schema.array(:string))
+          end
+        end,
+      UserResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:UserResponseAttrs))
+          end
+        end
+    }
+  end
+
   def user_swagger_definitions do
     %{
       UserAclResource:
@@ -182,19 +215,6 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             user(Schema.ref(:UserUpdateProps))
-          end
-        end,
-      UserChangePassword:
-        swagger_schema do
-          properties do
-            old_password(:string, "current password", required: true)
-            new_password(:string, "new password", required: true)
-          end
-        end,
-      UserUpdatePassword:
-        swagger_schema do
-          properties do
-            new_password(:string, "new password", required: true)
           end
         end,
       Users:

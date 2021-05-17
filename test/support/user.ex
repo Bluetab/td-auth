@@ -67,19 +67,4 @@ defmodule TdAuthWeb.User do
     {:ok, _status_code, json_resp} = user_list(token)
     Enum.find(json_resp["data"], fn user -> user["user_name"] == user_name end)
   end
-
-  def change_password(token, user_id, old_password, new_password) do
-    headers = get_jwt_headers(token)
-    body = %{old_password: old_password, new_password: new_password} |> Jason.encode!()
-
-    %HTTPoison.Response{status_code: status_code, body: _resp} =
-      HTTPoison.patch!(
-        Routes.user_user_url(@endpoint, :change_password, user_id),
-        body,
-        headers,
-        []
-      )
-
-    {:ok, status_code}
-  end
 end
