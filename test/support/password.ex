@@ -9,7 +9,7 @@ defmodule TdAuthWeb.Password do
 
   def update_password(token, %{new_password: _new_password, old_password: _old_password} = user_params) do
     headers = get_jwt_headers(token)
-    body = Jason.encode!(user_params)
+    body = Jason.encode!(%{"user" => user_params})
     %HTTPoison.Response{status_code: status_code} =
       HTTPoison.put!(Routes.password_url(@endpoint, :update), body, headers, [])
     {:ok, status_code}

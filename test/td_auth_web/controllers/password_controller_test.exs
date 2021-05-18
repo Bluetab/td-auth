@@ -21,8 +21,7 @@ defmodule TdAuthWeb.PasswordControllerTest do
     @tag authentication: [role: :admin]
     test "when admin update user password when data is valid", %{conn: conn, user: %User{id: id}} do
 
-      params = %{
-        "user" => %{
+      params = %{"user" => %{
           "id" => id,
           "new_password" => @valid_password
       }}
@@ -34,8 +33,7 @@ defmodule TdAuthWeb.PasswordControllerTest do
     @tag authentication: [role: :user]
     test "when user try to update  other user password", %{conn: conn, user: %User{id: id}} do
 
-      params = %{
-        "user" => %{
+      params = %{"user" => %{
           "id" => id,
           "new_password" => @valid_password
       }}
@@ -46,8 +44,7 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
     @tag authentication: [role: :admin]
     test "when admin update user password when password is not valid", %{conn: conn, user: %User{id: id} } do
-     params = %{
-        "user" => %{
+     params = %{"user" => %{
           "id" => id,
           "new_password" => @invalid_password
       }}
@@ -58,10 +55,10 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
     @tag authentication: [role: :admin]
     test "update onws admin password when password is valid", %{conn: conn} do
-      params = %{
+      params = %{"user" => %{
         "new_password" => @valid_password,
         "old_password" => @old_password
-      }
+      }}
 
       assert "" =  conn
              |> patch(Routes.password_path(conn, :update), params)
@@ -70,10 +67,10 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
   @tag authentication: [role: :admin]
     test "update onws admins password when old_password is incorrect", %{conn: conn} do
-     params = %{
+     params = %{"user" => %{
         "new_password" => @valid_password,
         "old_password" => "wrong_password"
-      }
+      }}
 
       assert %{"error" => true} =
             conn
@@ -83,10 +80,10 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
   @tag authentication: [role: :user]
     test "update onws user password when is valid", %{conn: conn} do
-     params = %{
+     params = %{"user" => %{
         "new_password" => @valid_password,
         "old_password" => @old_password
-      }
+      }}
 
       assert "" =
             conn

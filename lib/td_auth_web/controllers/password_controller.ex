@@ -19,14 +19,14 @@ defmodule TdAuthWeb.PasswordController do
     produces("application/json")
 
     parameters do
-      user(:body, Schema.ref(:UpdatePassword), "User change password attrs")
-      id(:path, :integer, "User ID")
+      id(:path, :integer, "unique identifier", required: true)
+      new_password(:path, :string, "new password", required: true)
     end
     response(200, "OK", Schema.ref(:UserResponse))
     response(400, "Client Error")
   end
 
-  def update(conn, %{"user" =>  %{"id" => id, "new_password" => new_password}}) do
+  def update(conn, %{"user" => %{"id" => id, "new_password" => new_password}}) do
     with {:can, true} <- {:can, Claims.is_admin?(conn)},
          user <- Accounts.get_user!(id),
          {:ok, %User{} = user} <- Accounts.update_user(user, %{password: new_password}) do
@@ -35,9 +35,9 @@ defmodule TdAuthWeb.PasswordController do
     end
   end
 
-  def update(conn, %{
+  def update(conn, %{"user" => %{
       "new_password" => new_password,
-      "old_password" => old_password}) do
+      "old_password" => old_password}}) do
 
     with %{user_id: user_id} <- conn.assigns[:current_resource],
          user <- Accounts.get_user!(user_id, preload: :groups),

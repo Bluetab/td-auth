@@ -68,13 +68,12 @@ defmodule TdAuthWeb.SwaggerDefinitions do
 
   def password_swagger_definitions do
     %{
-      UpdatePassword:
+      Password:
         swagger_schema do
           title("Password")
           description("Password updating")
           properties do
             id(:integer, "unique identifier", required: true)
-            old_password(:string, "current password", required: true)
             new_password(:string, "new password", required: true)
           end
         end,
