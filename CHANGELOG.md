@@ -7,6 +7,12 @@
 - [TD-3503]
   - Created APIs `api/users/search` and `api/groups/search` 
   - Removed permissions for non-admin users to `:index` users and groups
+  
+## [4.20.0] 2021-05-17
+
+### Added
+
+- [TD-3526] `link_data_structure_tag` permission to link a structure to a tag
 
 ## [4.19.0] 2021-05-04
 

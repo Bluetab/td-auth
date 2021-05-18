@@ -6,7 +6,7 @@ defmodule TdAuth.Mixfile do
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "4.19.0-local"
+          nil -> "4.20.0-local"
           v -> v
         end,
       elixir: "~> 1.10",
@@ -75,7 +75,7 @@ defmodule TdAuth.Mixfile do
       # See https://github.com/handnot2/esaml/issues/29
       {:cowboy, "~> 2.7", override: true},
       {:quantum, "~> 3.0"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.16.0"}
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.20.1"}
     ]
   end
 
