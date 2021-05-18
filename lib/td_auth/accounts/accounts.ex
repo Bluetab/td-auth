@@ -40,7 +40,7 @@ defmodule TdAuth.Accounts do
       {:preload, preloads}, q -> preload(q, ^preloads)
       {:limit, max_results}, q -> limit(q, ^max_results)
       {:query, query}, q -> where(q, [u],
-        like(u.full_name, ^query) or like(u.email, ^query))
+        ilike(u.full_name, ^query) or ilike(u.email, ^query) or ilike(u.user_name, ^query))
       _, q -> q
     end)
   end
@@ -191,7 +191,7 @@ defmodule TdAuth.Accounts do
       {:preload, preloads}, q -> preload(q, ^preloads)
       {:limit, max_results}, q -> limit(q, ^max_results)
       {:query, query}, q -> where(q, [u],
-        like(u.name, ^query) or like(u.description, ^query))
+        ilike(u.name, ^query) or ilike(u.description, ^query))
       _, q -> q
     end)
   end
