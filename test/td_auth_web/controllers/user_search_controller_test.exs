@@ -17,7 +17,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
 
       assert %{"full_name" => ^full_name} = user
       refute Map.has_key?(user, "role")
-      refute Map.has_key?(user, "user_name")
     end
 
     @tag authentication: [role: :admin]
@@ -43,16 +42,32 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       conn: conn,
       swagger_schema: schema
     } do
-      1..2 |> Enum.each(fn _ -> insert(:user, full_name: "aaaa", email: "cccc@xxx.yy") end)
-      1..2 |> Enum.each(fn _ -> insert(:user, full_name: "bbbb", email: "dddd@xxx.yy") end)
+      insert(:user, user_name: "user.1", full_name: "aaaa Ff", email: "cccc@xxx.yy")
+      insert(:user, user_name: "user.2", full_name: "bbbb", email: "dddd@xxx.yy")
 
       assert %{"data" => data} =
                conn
-               |> post(Routes.user_search_path(conn, :create, %{query: "aa"}))
+               |> post(Routes.user_search_path(conn, :create, %{query: "aa f"}))
                |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
-      assert Enum.count(data) == 2
+      assert Enum.count(data) == 1
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :create, %{query: "r.1"}))
+               |> validate_resp_schema(schema, "UsersSearchResponseData")
+               |> json_response(:ok)
+
+      assert Enum.count(data) == 1
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :create, %{query: ".2"}))
+               |> validate_resp_schema(schema, "UsersSearchResponseData")
+               |> json_response(:ok)
+
+      assert Enum.count(data) == 1
 
       assert %{"data" => data} =
                conn
@@ -60,7 +75,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
-      assert Enum.count(data) == 2
+      assert Enum.count(data) == 1
 
       assert %{"data" => data} =
                conn
