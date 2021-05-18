@@ -35,13 +35,27 @@ defmodule TdAuth.Accounts do
 
   defp apply_list_users_opts(queryable, filter_clauses) do
     Enum.reduce(filter_clauses, queryable, fn
-      {:role, role}, q -> where(q, role: ^role)
-      {:id, {:in, ids}}, q -> where(q, [u], u.id in ^ids)
-      {:preload, preloads}, q -> preload(q, ^preloads)
-      {:limit, max_results}, q -> limit(q, ^max_results)
-      {:query, query}, q -> where(q, [u],
-        ilike(u.full_name, ^query) or ilike(u.email, ^query) or ilike(u.user_name, ^query))
-      _, q -> q
+      {:role, role}, q ->
+        where(q, role: ^role)
+
+      {:id, {:in, ids}}, q ->
+        where(q, [u], u.id in ^ids)
+
+      {:preload, preloads}, q ->
+        preload(q, ^preloads)
+
+      {:limit, max_results}, q ->
+        limit(q, ^max_results)
+
+      {:query, query}, q ->
+        where(
+          q,
+          [u],
+          ilike(u.full_name, ^query) or ilike(u.email, ^query) or ilike(u.user_name, ^query)
+        )
+
+      _, q ->
+        q
     end)
   end
 
@@ -190,8 +204,7 @@ defmodule TdAuth.Accounts do
     Enum.reduce(filter_clauses, queryable, fn
       {:preload, preloads}, q -> preload(q, ^preloads)
       {:limit, max_results}, q -> limit(q, ^max_results)
-      {:query, query}, q -> where(q, [u],
-        ilike(u.name, ^query) or ilike(u.description, ^query))
+      {:query, query}, q -> where(q, [u], ilike(u.name, ^query) or ilike(u.description, ^query))
       _, q -> q
     end)
   end
