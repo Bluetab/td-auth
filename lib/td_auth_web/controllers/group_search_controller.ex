@@ -21,10 +21,10 @@ defmodule TdAuthWeb.GroupSearchController do
 
   def create(conn, params) do
     query = "%" <> Map.get(params, "query", "") <> "%"
-    groups = Accounts.list_groups(limit: @max_results, query: query)
+    groups = Accounts.list_groups(limit: @max_results, query: query, preload: :users)
 
     conn
     |> put_view(TdAuthWeb.GroupView)
-    |> render("index.json", groups: groups)
+    |> render("search.json", groups: groups)
   end
 end

@@ -219,7 +219,6 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             id(:integer, "unique identifier", required: true)
-            email(:string, "email", required: true)
             full_name([:string, :null], "full name")
           end
         end,

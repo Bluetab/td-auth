@@ -17,6 +17,8 @@ defmodule TdAuthWeb.UserSearchControllerTest do
 
       assert %{"full_name" => ^full_name} = user
       refute Map.has_key?(user, "role")
+      refute Map.has_key?(user, "user_name")
+      refute Map.has_key?(user, "email")
     end
 
     @tag authentication: [role: :admin]
