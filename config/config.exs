@@ -111,6 +111,12 @@ config :td_auth, TdAuth.Scheduler,
     ]
   ]
 
+config :td_auth, TdAuthWeb.UserSearchController,
+  max_results: 5
+
+config :td_auth, TdAuthWeb.GroupSearchController,
+  max_results: 5
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
