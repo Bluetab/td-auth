@@ -11,6 +11,10 @@ defmodule TdAuthWeb.GroupView do
     %{data: render_many(users, UserView, "user_embedded.json")}
   end
 
+  def render("search.json", %{groups: groups}) do
+    %{data: render_many(groups, GroupView, "group_basic.json")}
+  end
+
   def render("show.json", %{group: group}) do
     %{data: render_one(group, GroupView, "group.json")}
   end
@@ -28,4 +32,11 @@ defmodule TdAuthWeb.GroupView do
     group.name
   end
 
+  def render("group_basic.json", %{group: group}) do
+    users = render_many(group.users, UserView, "user_id.json")
+
+    group
+    |> Map.take([:id, :name, :description])
+    |> Map.put(:users, users)
+  end
 end
