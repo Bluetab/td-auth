@@ -172,13 +172,4 @@ defmodule TdAuthWeb.UserController do
       |> render("show.json", user: user)
     end
   end
-
-  defp check_user_conn(conn, user_id) do
-    %{user_id: id} = conn.assigns[:current_resource]
-
-    case id == String.to_integer(user_id) do
-      true -> {:ok, Accounts.get_user!(id)}
-      false -> {:error, "You are not the user conn"}
-    end
-  end
 end

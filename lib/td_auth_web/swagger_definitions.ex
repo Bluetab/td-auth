@@ -78,6 +78,20 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           end
         end,
 
+      UpdatePasswordProps:
+        swagger_schema do
+          properties do
+            id(:integer, "unique identifier", required: true)
+            new_password(:string, "new password", required: true)
+          end
+        end,
+      UpdatePassword:
+        swagger_schema do
+          properties do
+            user(Schema.ref(:UpdatePasswordProps))
+          end
+        end,
+
       UserResponseAttrs:
         swagger_schema do
           properties do
