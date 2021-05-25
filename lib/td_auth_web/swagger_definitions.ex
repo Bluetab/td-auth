@@ -71,18 +71,20 @@ defmodule TdAuthWeb.SwaggerDefinitions do
       Password:
         swagger_schema do
           title("Password")
-          description("Password updating")
+          description("Password update")
           properties do
-            id(:integer, "unique identifier", required: true)
+            id(:integer, "unique identifier")
             new_password(:string, "new password", required: true)
+            old_password(:string, "old password")
           end
         end,
 
       UpdatePasswordProps:
         swagger_schema do
           properties do
-            id(:integer, "unique identifier", required: true)
+            id(:integer, "unique identifier")
             new_password(:string, "new password", required: true)
+            old_password(:string, "old password")
           end
         end,
       UpdatePassword:

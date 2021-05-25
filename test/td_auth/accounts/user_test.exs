@@ -38,6 +38,34 @@ defmodule TdAuth.Accounts.UserTest do
       assert Map.has_key?(changes, :password_hash)
     end
 
+    test "update password when password is valid" do
+      user = insert(:user)
+
+      assert {:ok, %TdAuth.Accounts.User{}} =
+               user
+               |> User.changeset(%{password: "new_secret", old_password: "secret hash"})
+               |> Repo.update()
+    end
+
+    test "validate update password when password is invalid" do
+      user = insert(:user)
+
+      assert {:error, changeset} =
+               user
+               |> User.changeset(%{password: "new", old_password: "invalid_password"})
+               |> Repo.update()
+
+      assert %{
+               old_password: ["Invalid old password"],
+               password: ["should be at least 6 character(s)"]
+             } ==
+               traverse_errors(changeset, fn {msg, opts} ->
+                 Enum.reduce(opts, msg, fn {key, value}, acc ->
+                   String.replace(acc, "%{#{key}}", to_string(value))
+                 end)
+               end)
+    end
+
     test "changes user_name to lower case" do
       assert %Changeset{changes: changes} =
                changeset =
