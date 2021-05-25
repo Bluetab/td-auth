@@ -17,7 +17,6 @@ defmodule TdAuthWeb.PasswordControllerTest do
     [user: insert(:user)]
   end
 
-
   describe "update password for admins" do
     @tag authentication: [role: :admin]
     test "updates user password when data is valid", %{conn: conn, user: %User{id: id}, swagger_schema: schema} do
