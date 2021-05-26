@@ -3,6 +3,7 @@ defmodule TdAuthWeb.PasswordController do
 
   import Canada, only: [can?: 2]
 
+  alias Ecto.Changeset
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
   alias TdAuthWeb.SwaggerDefinitions
@@ -51,8 +52,11 @@ defmodule TdAuthWeb.PasswordController do
            Accounts.update_user(user, %{password: new_password, old_password: old_password}) do
       render(conn, "show.json", user: user)
     else
-      {:error, _error} ->
-        send_resp(conn, :unauthorized, "")
+      {:error, %Changeset{errors: [old_password: _]}} ->
+        send_resp(conn, :forbidden, "")
+
+      error ->
+        error
     end
   end
 end

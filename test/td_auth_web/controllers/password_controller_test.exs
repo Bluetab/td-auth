@@ -19,7 +19,11 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
   describe "update password for admins" do
     @tag authentication: [role: :admin]
-    test "updates user password when data is valid", %{conn: conn, user: %User{id: id}, swagger_schema: schema} do
+    test "updates user password when data is valid", %{
+      conn: conn,
+      user: %User{id: id},
+      swagger_schema: schema
+    } do
       params = %{
         "user" => %{
           "id" => id,
@@ -109,12 +113,12 @@ defmodule TdAuthWeb.PasswordControllerTest do
       }
 
       assert conn
-               |> patch(Routes.password_path(conn, :update), params)
-               |> response(:unauthorized)
+             |> patch(Routes.password_path(conn, :update), params)
+             |> response(:forbidden)
     end
 
     @tag authentication: [role: :user]
-    test "update onws user password when is valid", %{conn: conn, swagger_schema: schema} do
+    test "update user's own password when is valid", %{conn: conn, swagger_schema: schema} do
       params = %{
         "user" => %{
           "new_password" => @valid_password,
@@ -126,6 +130,20 @@ defmodule TdAuthWeb.PasswordControllerTest do
              |> patch(Routes.password_path(conn, :update), params)
              |> validate_resp_schema(schema, "UserResponse")
              |> response(:ok)
+    end
+
+    @tag authentication: [role: :user]
+    test "doesn't update user's own password when is invalid", %{conn: conn} do
+      params = %{
+        "user" => %{
+          "new_password" => "Short",
+          "old_password" => @old_password
+        }
+      }
+
+      assert conn
+             |> patch(Routes.password_path(conn, :update), params)
+             |> response(:unprocessable_entity)
     end
   end
 end
