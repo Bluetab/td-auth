@@ -19,7 +19,8 @@ defmodule TdAuth.Factory do
 
   def group_factory do
     %TdAuth.Accounts.Group{
-      name: sequence(:group, ["Europe", "Asia", "USA", "UK"])
+      name: sequence(:group, ["Europe", "Asia", "USA", "UK"]),
+      description: "group_description"
     }
   end
 

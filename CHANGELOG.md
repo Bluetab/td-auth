@@ -5,6 +5,12 @@
 ### Changed
 - [TD-3102] Improve change password functionality
 
+### Added
+
+- [TD-3503]
+  - Created APIs `api/users/search` and `api/groups/search` 
+  - Removed permissions for non-admin users to `:index` users and groups
+  
 ## [4.20.0] 2021-05-17
 
 ### Added

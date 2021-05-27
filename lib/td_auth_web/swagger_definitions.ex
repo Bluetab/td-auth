@@ -248,10 +248,23 @@ defmodule TdAuthWeb.SwaggerDefinitions do
             groups(Schema.array(:string))
           end
         end,
+      UserSearchResponseAttrs:
+        swagger_schema do
+          properties do
+            id(:integer, "unique identifier", required: true)
+            full_name([:string, :null], "full name")
+          end
+        end,
       UserResponse:
         swagger_schema do
           properties do
             data(Schema.ref(:UserResponseAttrs))
+          end
+        end,
+      UserSearchResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:UserSearchResponseAttrs))
           end
         end,
       UsersResponse:
@@ -259,10 +272,21 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           type(:array)
           items(Schema.ref(:UserResponseAttrs))
         end,
+      UsersSearchResponse:
+        swagger_schema do
+          type(:array)
+          items(Schema.ref(:UserSearchResponseAttrs))
+        end,
       UsersResponseData:
         swagger_schema do
           properties do
             data(Schema.ref(:UsersResponse))
+          end
+        end,
+      UsersSearchResponseData:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:UsersSearchResponse))
           end
         end,
       PermissionDomainsResponseData:
