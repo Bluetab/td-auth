@@ -90,7 +90,7 @@ Feature: User Authentication
     When "johndoe" tries to modify his password with following data:
       | old_password | new_password |
       | dontknow     | newsecret    |
-    Then the system returns a result with code "Ok"
+    Then the system returns a result with code "Forbidden"
     And user "johndoe" can not be authenticated with password "newsecret"
     And user "johndoe" can be authenticated with password "secret"
 
