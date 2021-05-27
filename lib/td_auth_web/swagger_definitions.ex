@@ -66,6 +66,54 @@ defmodule TdAuthWeb.SwaggerDefinitions do
     }
   end
 
+  def password_swagger_definitions do
+    %{
+      Password:
+        swagger_schema do
+          title("Password")
+          description("Password update")
+          properties do
+            id(:integer, "unique identifier")
+            new_password(:string, "new password", required: true)
+            old_password(:string, "old password")
+          end
+        end,
+
+      UpdatePasswordProps:
+        swagger_schema do
+          properties do
+            id(:integer, "unique identifier")
+            new_password(:string, "new password", required: true)
+            old_password(:string, "old password")
+          end
+        end,
+      UpdatePassword:
+        swagger_schema do
+          properties do
+            user(Schema.ref(:UpdatePasswordProps))
+          end
+        end,
+
+      UserResponseAttrs:
+        swagger_schema do
+          properties do
+            id(:integer, "unique identifier", required: true)
+            user_name(:string, "user name", required: true)
+            email(:string, "email", required: true)
+            role(:string, "role", required: true)
+            full_name([:string, :null], "full name")
+            groups(Schema.array(:string))
+          end
+        end,
+      UserResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:UserResponseAttrs))
+          end
+        end
+    }
+  end
+
   def user_swagger_definitions do
     %{
       UserAclResource:
@@ -182,19 +230,6 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             user(Schema.ref(:UserUpdateProps))
-          end
-        end,
-      UserChangePassword:
-        swagger_schema do
-          properties do
-            old_password(:string, "current password", required: true)
-            new_password(:string, "new password", required: true)
-          end
-        end,
-      UserUpdatePassword:
-        swagger_schema do
-          properties do
-            new_password(:string, "new password", required: true)
           end
         end,
       Users:

@@ -20,13 +20,11 @@ defmodule TdAuthWeb.UserControllerTest do
     user_name: "some user_name 2"
   }
   @update_attrs %{
-    password: "some updated password_hash",
     user_name: "some updated user_name",
     groups: ["GroupNew"]
   }
-  @invalid_attrs %{password: nil, user_name: nil, email: nil}
-  @valid_password "123456"
-  @invalid_password ""
+  @invalid_attrs %{user_name: nil, email: nil}
+  @attrs_with_passw %{password: "123456"}
 
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
@@ -215,21 +213,13 @@ defmodule TdAuthWeb.UserControllerTest do
                |> put(Routes.user_path(conn, :update, user), user: @invalid_attrs)
                |> json_response(422)
     end
-  end
 
-  describe "update password" do
-    @tag authentication: [role: :admin]
-    test "ok when data is valid", %{conn: conn} do
-      assert conn
-             |> post(Routes.user_path(conn, :update_password), new_password: @valid_password)
-             |> response(:no_content)
-    end
-
-    @tag authentication: [role: :admin]
-    test "error when data is invalid", %{conn: conn} do
-      assert conn
-             |> post(Routes.user_path(conn, :update_password), new_password: @invalid_password)
-             |> response(:unprocessable_entity)
+     @tag authentication: [role: :admin]
+    test "renders errors when try to update password on users update", %{conn: conn, user: user} do
+      assert %{"errors" => %{"detail" => "Forbidden"}} =
+               conn
+               |> put(Routes.user_path(conn, :update, user), user: @attrs_with_passw)
+               |> json_response(403)
     end
   end
 

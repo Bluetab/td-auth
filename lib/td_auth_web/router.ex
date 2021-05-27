@@ -36,15 +36,15 @@ defmodule TdAuthWeb.Router do
     get("/sessions", SessionController, :ping)
     delete("/sessions", SessionController, :destroy)
 
-    post("/update_password", UserController, :update_password)
-
     resources("/users/search", UserSearchController, only: [:create], singleton: true)
+
     resources "/users", UserController, except: [:new, :edit] do
-      patch("/change_password", UserController, :change_password)
       resources("/permissions", UserPermissionController, singleton: true, only: [:show], name: "permissions")
     end
 
+    resources "/password", PasswordController, only: [:update], singleton: true
     resources("/groups/search", GroupSearchController, only: [:create], singleton: true)
+
     resources("/groups", GroupController, except: [:new, :edit])
 
     resources("/acl_entries", AclEntryController, except: [:new, :edit])

@@ -5,6 +5,7 @@ defmodule TdAuth.AuthenticationTest do
   import TdAuthWeb.ResponseCode
   import TdAuthWeb.Authentication, only: :functions
   import TdAuthWeb.User, only: :functions
+  import TdAuthWeb.Password, only: :functions
 
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
@@ -57,18 +58,17 @@ defmodule TdAuth.AuthenticationTest do
 
   defwhen ~r/^"(?<user_name>[^"]+)" tries to modify his password with following data:$/,
           %{
-            user_name: user_name,
+            user_name: _user_name,
             table: [%{old_password: old_password, new_password: new_password}]
           },
           state do
-    user = state[:users][user_name]
 
     {_, status_code} =
-      change_password(
-        state[:token],
-        user["id"],
-        old_password,
-        new_password
+      update_password(
+        state[:token], %{
+          old_password: old_password,
+          new_password: new_password
+        }
       )
 
     {:ok, Map.merge(state, %{status_code: status_code})}
@@ -78,16 +78,15 @@ defmodule TdAuth.AuthenticationTest do
           %{
             user_name: _user_name,
             other_user_name: other_user_name,
-            table: [%{old_password: old_password, new_password: new_password}]
+            table: [%{new_password: new_password}]
           },
           state do
     other_user = state[:users][other_user_name]
 
-    {_, status_code} =
-      change_password(
+    {_, status_code, _} =
+      update_password(
         state[:token],
         other_user["id"],
-        old_password,
         new_password
       )
 

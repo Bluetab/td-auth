@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## Unrelease
+
+### Changed
+- [TD-3102] Improve change password functionality
 
 ### Added
 

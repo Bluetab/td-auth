@@ -16,6 +16,7 @@ defmodule TdAuth.Accounts.User do
     field(:password_hash, :string)
     field(:user_name, :string)
     field(:password, :string, virtual: true)
+    field(:old_password, :string, virtual: true)
     field(:is_admin, :boolean, default: false, virtual: true)
     field(:email, :string)
     field(:full_name, :string, default: "")
@@ -31,15 +32,30 @@ defmodule TdAuth.Accounts.User do
   def changeset(%__MODULE__{} = user, params) do
     user
     |> cast(params, [:user_name, :role, :is_admin, :email, :full_name])
-    |> cast(params, [:password], empty_values: [])
+    |> cast(params, [:password, :old_password], empty_values: [])
     |> validate_required([:user_name, :email])
     |> validate_length(:password, min: 6)
+    |> validate_old_password()
     |> put_pass_hash()
     |> update_change(:user_name, &String.downcase/1)
     |> put_groups(params)
     |> put_role()
     |> unique_constraint(:user_name)
   end
+
+  defp validate_old_password(
+         %{changes: %{password: _password, old_password: old_password}} = changeset
+       ) do
+    stored_hash = get_field(changeset, :password_hash)
+
+    if Bcrypt.verify_pass(old_password, stored_hash) do
+      changeset
+    else
+      add_error(changeset, :old_password, "Invalid old password")
+    end
+  end
+
+  defp validate_old_password(changeset), do: changeset
 
   defp put_role(%Changeset{valid?: true} = changeset) do
     case Changeset.fetch_change(changeset, :is_admin) do
@@ -63,10 +79,7 @@ defmodule TdAuth.Accounts.User do
 
   defp put_pass_hash(changeset), do: changeset
 
-  def check_password(user, password) do
-    case user do
-      nil -> Bcrypt.no_user_verify()
-      _ -> Bcrypt.check_pass(user, password)
-    end
-  end
+  def check_password(nil, _password), do: Bcrypt.no_user_verify()
+
+  def check_password(user, password), do: Bcrypt.check_pass(user, password)
 end

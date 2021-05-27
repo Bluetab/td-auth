@@ -127,20 +127,17 @@ defmodule TdAuthWeb.UserController do
     response(400, "Client Error")
   end
 
-  def update(conn, %{"id" => id, "user" => %{"password" => _password} = user_params}) do
-    %{is_admin: is_admin} = conn.assigns[:current_resource]
-
-    with {:can, true} <- {:can, is_admin},
-         user <- Accounts.get_user!(id),
-         {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
-      render(conn, "show.json", user: user)
-    end
+  def update(conn, %{"user" => %{"password" => _password}}) do
+   conn
+      |> put_status(:forbidden)
+      |> put_view(ErrorView)
+      |> render("403.json")
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
-    %{is_admin: is_admin, user_id: user_id} = conn.assigns[:current_resource]
+    %{user_id: user_id} = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, is_admin || id == "#{user_id}"},
+    with {:can, true} <- {:can, Claims.is_admin?(conn) || id == "#{user_id}" },
          user <- Accounts.get_user!(id),
          {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user)
@@ -167,70 +164,12 @@ defmodule TdAuthWeb.UserController do
     end
   end
 
-  swagger_path :change_password do
-    description("Updates User password")
-    produces("application/json")
-
-    parameters do
-      id(:path, :integer, "User ID", required: true)
-      user(:body, Schema.ref(:UserChangePassword), "User change password attrs")
-    end
-
-    response(200, "OK")
-    response(400, "Client Error")
-  end
-
-  def change_password(conn, %{
-        "user_id" => id,
-        "new_password" => new_password,
-        "old_password" => old_password
-      }) do
-    with {:ok, user} <- check_user_conn(conn, id),
-         {:ok, user} <- User.check_password(user, old_password),
-         {:ok, %User{}} <- Accounts.update_user(user, %{password: new_password}) do
-      send_resp(conn, :ok, "")
-    else
-      _error -> send_resp(conn, :unprocessable_entity, "")
-    end
-  end
-
-  swagger_path :update_password do
-    description("Updates User password without the old password")
-    produces("application/json")
-
-    parameters do
-      new_password(:body, Schema.ref(:UserUpdatePassword), "User change password attrs")
-    end
-
-    response(200, "OK")
-    response(400, "Client Error")
-  end
-
-  def update_password(conn, %{"new_password" => new_password}) do
-    %{user_id: user_id} = conn.assigns[:current_resource]
-
-    user = Accounts.get_user!(user_id, preload: :groups)
-
-    with {:ok, %User{}} <- Accounts.update_user(user, %{password: new_password}) do
-      send_resp(conn, :no_content, "")
-    end
-  end
-
   defp do_create(conn, user_params) do
     with {:ok, %User{} = user} <- Accounts.create_user(user_params) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.user_path(conn, :show, user))
       |> render("show.json", user: user)
-    end
-  end
-
-  defp check_user_conn(conn, user_id) do
-    %{user_id: id} = conn.assigns[:current_resource]
-
-    case id == String.to_integer(user_id) do
-      true -> {:ok, Accounts.get_user!(id)}
-      false -> {:error, "You are not the user conn"}
     end
   end
 end

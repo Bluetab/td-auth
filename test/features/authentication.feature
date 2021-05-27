@@ -90,7 +90,7 @@ Feature: User Authentication
     When "johndoe" tries to modify his password with following data:
       | old_password | new_password |
       | dontknow     | newsecret    |
-    Then the system returns a result with code "Unprocessable Entity"
+    Then the system returns a result with code "Forbidden"
     And user "johndoe" can not be authenticated with password "newsecret"
     And user "johndoe" can be authenticated with password "secret"
 
@@ -101,7 +101,7 @@ Feature: User Authentication
     When "johndoe" tries to modify "dashelle" password with following data:
       | old_password | new_password |
       | secret       | newsecret    |
-    Then the system returns a result with code "Unprocessable Entity"
+    Then the system returns a result with code "Forbidden"
     And user "dashelle" can not be authenticated with password "newsecret"
     And user "dashelle" can be authenticated with password "secret"
 
@@ -125,12 +125,12 @@ Feature: User Authentication
     And user "<user>" is logged in the application with password "secret"
     When "<user>" tries to reset "johndoe" password with new_password "newsecret"
     Then the system returns a result with code "<result>"
-    And if result "<result>" is not "Ok" user "johndoe" can be authenticated with password "secret"
     And if result "<result>" is not "Forbidden" user "johndoe" can be authenticated with password "newsecret"
-
+    ##  It is no longer to change the password with /api/users now  it is necessary
+    ## to do it by /api/password
     Examples:
       | user     | role  | result    |
-      | superad  | admin | Ok        |
+      | superad  | admin | Forbidden |
       | dashelle | user  | Forbidden |
 
   Scenario Outline: User updates own properties
@@ -142,7 +142,7 @@ Feature: User Authentication
     Examples:
       | user     | role  | property  | new_value      | result    |
       | superad  | admin | full_name | New Super Ad   | Ok        |
-      | superad  | admin | password  | newsecret      | Ok        |
+      | superad  | admin | password  | newsecret      | Forbidden |
       | dashelle | user  | full_name | New John Doe   | Ok        |
       | dashelle | user  | email     | john@email.com | Ok        |
       | dashelle | user  | password  | newsecret      | Forbidden |
