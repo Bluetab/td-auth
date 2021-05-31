@@ -1,6 +1,6 @@
 # Changelog
 
-## Unrelease
+## [4.21.0] 2021-05-31
 
 ### Changed
 - [TD-3102] Improve change password functionality
