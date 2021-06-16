@@ -44,6 +44,7 @@ defmodule TdAuth.Permissions.Seeds do
       "delete_data_structure",
       "link_data_structure",
       "manage_confidential_structures",
+      "manage_structures_domain",
       "manage_structures_metadata",
       "update_data_structure",
       "view_data_structure",
