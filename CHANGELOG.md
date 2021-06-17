@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-3522] Added permissions to StructureNotes management
+
 ## [4.21.1] 2021-06-03
 
 ### Changed
