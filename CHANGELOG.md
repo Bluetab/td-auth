@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- [TD-3720] New permission `manage_structures_domain`
+
+## [Unreleased]
+
 ### Changed
 
 - [TD-3522] Added permissions to StructureNotes management
