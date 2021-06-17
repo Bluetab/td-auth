@@ -1,12 +1,16 @@
 # Changelog
 
+## [4.21.1] 2021-06-03
+
+### Changed
+
+- [TD-3816] Build using Elixir 1.12 and Erlang/OTP 23
+
 ## [4.21.0] 2021-05-31
 
 ### Changed
+
 - [TD-3102] Improve change password functionality
-
-### Changed
-
 - [TD-3753] Build using Elixir 1.12 and Erlang/OTP 24
 
 ### Added
