@@ -108,3 +108,7 @@ config :td_auth, TdAuthWeb.AuthProvider.OIDC,
   profile_mapping: System.get_env("OIDC_PROFILE_MAPPING"),
   code_challenge_method: System.get_env("PKCE_CODE_CHALLENGE_METHOD"),
   code_verifier_length: System.get_env("PKCE_CODE_VERIFIER_LENGTH", "128") |> String.to_integer()
+
+config :td_auth, TdAuth.HttpClient,
+  proxy: {System.get_env("PROXY_HOST"), System.get_env("PROXY_PORT", "80") |> String.to_integer()},
+  proxy_auth: {System.get_env("PROXY_USER"), System.get_env("PROXY_PASSWORD")}
