@@ -111,11 +111,11 @@ config :td_auth, TdAuth.Scheduler,
     ]
   ]
 
-config :td_auth, TdAuthWeb.UserSearchController,
-  max_results: 5
+config :td_auth, TdAuthWeb.UserSearchController, max_results: 5
 
-config :td_auth, TdAuthWeb.GroupSearchController,
-  max_results: 5
+config :td_auth, TdAuthWeb.GroupSearchController, max_results: 5
+
+config :openid_connect, :http_client, TdAuth.HttpClient
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
