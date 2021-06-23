@@ -5,8 +5,7 @@
 ### Added
 
 - [TD-3720] New permission `manage_structures_domain`
-
-## [Unreleased]
+- [TD-3900] Allow proxy authentication in `OpenIdConnect`
 
 ### Changed
 
