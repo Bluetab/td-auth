@@ -13,7 +13,11 @@ defmodule TdAuthWeb.AuthProvider.CustomProfileMapping do
   end
 
   def map_profile(mapping, %{} = claims) do
-    profile = Map.new(mapping, fn {k, v} -> {k, profile_mapping_value(claims, v)} end)
+    profile =
+      mapping
+      |> Enum.map(fn {k, v} -> {k, profile_mapping_value(claims, v)} end)
+      |> Enum.reject(fn {_, v} -> is_nil(v) end)
+      |> Map.new()
 
     {:ok, profile}
   end

@@ -1,6 +1,7 @@
 defmodule TdAuthWeb.PermissionGroupController do
   use TdAuthWeb, :controller
 
+  alias TdAuth.Auth.Claims
   alias TdAuth.Permissions
   alias TdAuth.Permissions.PermissionGroup
   alias TdAuthWeb.SwaggerDefinitions
@@ -85,9 +86,7 @@ defmodule TdAuthWeb.PermissionGroupController do
   end
 
   def update(conn, %{"id" => id, "permission_group" => permission_group_params}) do
-    claims = conn.assigns[:current_resource]
-
-    with {:can, true} <- {:can, claims.is_admin},
+    with {:can, true} <- {:can, Claims.is_admin?(conn)},
          permission_group <- Permissions.get_permission_group!(id),
          {:ok, %PermissionGroup{} = permission_group} <-
            Permissions.update_permission_group(permission_group, permission_group_params) do
@@ -109,9 +108,7 @@ defmodule TdAuthWeb.PermissionGroupController do
   end
 
   def delete(conn, %{"id" => id}) do
-    claims = conn.assigns[:current_resource]
-
-    with {:can, true} <- {:can, claims.is_admin},
+    with {:can, true} <- {:can, Claims.is_admin?(conn)},
          permission_group <- Permissions.get_permission_group!(id),
          {:ok, %PermissionGroup{}} <- Permissions.delete_permission_group(permission_group) do
       send_resp(conn, :no_content, "")

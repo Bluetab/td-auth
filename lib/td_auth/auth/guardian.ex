@@ -16,7 +16,6 @@ defmodule TdAuth.Auth.Guardian do
 
     resource = %Claims{
       user_id: id,
-      is_admin: role == "admin",
       user_name: user_name,
       role: role,
       groups: groups,

@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-3894] User email is now optional
+- Removed deprecated `is_admin` field in user requests and responses
+
 ## [4.23.0] 2021-06-28
 
 ### Added
