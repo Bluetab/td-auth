@@ -13,7 +13,7 @@ defmodule TdAuthWeb.AuthProvider.OIDCTest do
   describe "authentication_url/0" do
     test "does not include PKCE parameters if code_challenge_method is unset" do
       Application.put_env(:td_auth, TdAuthWeb.AuthProvider.OIDC, [])
-      assert %{query: query} = OIDC.authentication_url() |> URI.parse()
+      assert %{query: query} = OIDC.authentication_url("pre_login_url") |> URI.parse()
       assert %{} = params = URI.decode_query(query)
       refute Map.has_key?(params, "code_challenge")
       refute Map.has_key?(params, "code_challenge_method")
@@ -21,15 +21,17 @@ defmodule TdAuthWeb.AuthProvider.OIDCTest do
 
     test "includes a valid, verifiable PKCE code_challenge if code_challenge_method is S256" do
       Application.put_env(:td_auth, TdAuthWeb.AuthProvider.OIDC, code_challenge_method: "S256")
-      assert %{query: query} = OIDC.authentication_url() |> URI.parse()
+      assert %{query: query} = OIDC.authentication_url("pre_login_url") |> URI.parse()
 
       assert %{"code_challenge" => challenge, "code_challenge_method" => "S256", "state" => state} =
                URI.decode_query(query)
 
+      assert %{"security_token" => security_token, "url" => "pre_login_url"} = URI.decode_query(state)
+
       assert String.length(challenge) == 43
 
       assert {:ok, hash} = Base.url_decode64(challenge, padding: false)
-      assert verifier = NonceCache.pop(state)
+      assert verifier = NonceCache.pop(security_token)
       assert hash == :crypto.hash(:sha256, verifier)
       assert String.length(verifier) == 128
     end

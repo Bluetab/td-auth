@@ -10,19 +10,26 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
 
   require Logger
 
-  def authentication_url do
+  def authentication_url(pre_login_url) do
     verifier = create_code_verifier()
     nonce = NonceCache.create_nonce()
-    state = NonceCache.create_nonce(verifier)
+    security_token = NonceCache.create_nonce(verifier)
+    state = %{security_token: security_token}
 
     params =
       code_challenge_method()
       |> auth_params(verifier)
       |> Map.put("nonce", nonce)
-      |> Map.put("state", state)
+      |> Map.put(
+        "state",
+        URI.encode_query(put_url(state, pre_login_url))
+      )
 
     OpenIDConnect.authorization_uri(:oidc, params)
   end
+
+  defp put_url(map, nil), do: map
+  defp put_url(map, value), do: Map.put(map, :url, value)
 
   defp auth_params("S256", verifier) do
     challenge =
@@ -56,7 +63,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
   end
 
   def authenticate(%{"code" => _code, "state" => state} = params) do
-    with {:ok, verifier} <- validate_nonce(state),
+    with {:ok, verifier} <- validate_nonce(URI.decode_query(state)),
          params <- verification_params(params, verifier),
          {:ok, %{"id_token" => token}} <- OpenIDConnect.fetch_tokens(:oidc, params),
          {:ok, claims} <- OpenIDConnect.verify(:oidc, token),
@@ -71,6 +78,10 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
 
   @spec validate_nonce(map() | binary() | nil) :: {:ok, binary()} | {:error, :invalid_nonce}
   defp validate_nonce(%{"nonce" => nonce} = _claims), do: validate_nonce(nonce)
+
+  defp validate_nonce(%{"security_token" => security_token}) do
+    validate_nonce(security_token)
+  end
 
   defp validate_nonce(nonce) when is_binary(nonce) do
     case NonceCache.pop(nonce) do
