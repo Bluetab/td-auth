@@ -15,10 +15,15 @@ defmodule TdAuthWeb.AuthController do
   swagger_path :index do
     description("List Authentication Methods")
     produces("application/json")
+
+    parameters do
+      url(:path, :string, "Accessed pre-login URL to redirect after login")
+    end
+
     response(200, "OK", Schema.ref(:AuthenticationMethodsResponse))
   end
 
-  def index(conn, _params) do
+  def index(conn, params) do
     oidc_config =
       :td_auth
       |> Application.get_env(:openid_connect_providers)
@@ -26,11 +31,12 @@ defmodule TdAuthWeb.AuthController do
       |> Map.get(:oidc, [])
 
     auth0_config = Application.get_env(:td_auth, :auth0)
+    url = Map.get(params, "url")
 
     auth_methods =
       %{}
-      |> add_oidc_auth(oidc_config)
-      |> add_auth0_auth(auth0_config)
+      |> add_oidc_auth(oidc_config, url)
+      |> add_auth0_auth(auth0_config, url)
       |> add_saml_auth()
 
     render(conn, "index.json", auth_methods: auth_methods)
@@ -43,24 +49,24 @@ defmodule TdAuthWeb.AuthController do
     end
   end
 
-  defp add_oidc_auth(auth_methods, config) do
+  defp add_oidc_auth(auth_methods, config, pre_login_url) do
     case empty_config?(config, :client_id) do
       true ->
         auth_methods
 
       _ ->
-        oidc_url = OIDC.authentication_url()
+        oidc_url = OIDC.authentication_url(pre_login_url)
         Map.put(auth_methods, :oidc, oidc_url)
     end
   end
 
-  defp add_auth0_auth(auth_methods, config) do
+  defp add_auth0_auth(auth_methods, config, pre_login_url) do
     case empty_config?(config, :domain) do
       true ->
         auth_methods
 
       _ ->
-        auth0 = Auth0.auth0_config(config)
+        auth0 = Auth0.auth0_config(config, pre_login_url)
         Map.put(auth_methods, :auth0, auth0)
     end
   end
