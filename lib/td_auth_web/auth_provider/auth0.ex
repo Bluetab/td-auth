@@ -15,7 +15,10 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
     end
   end
 
-  def auth0_config(config) do
+  def auth0_config(config, pre_login_url) do
+    security_token = NonceCache.create_nonce()
+    state = %{security_token: security_token}
+
     %{
       domain: config[:domain],
       clientID: config[:client_id],
@@ -24,10 +27,13 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
       responseType: config[:response_type],
       scope: config[:scope],
       connection: config[:connection],
-      state: NonceCache.create_nonce(),
+      state: URI.encode_query(put_url(state, pre_login_url)),
       nonce: NonceCache.create_nonce()
     }
   end
+
+  defp put_url(map, nil), do: map
+  defp put_url(map, value), do: Map.put(map, :url, value)
 
   defp get_auth0_profile_path do
     auth = Application.get_env(:td_auth, :auth0)
