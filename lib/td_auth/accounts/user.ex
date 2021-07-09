@@ -17,7 +17,6 @@ defmodule TdAuth.Accounts.User do
     field(:user_name, :string)
     field(:password, :string, virtual: true)
     field(:old_password, :string, virtual: true)
-    field(:is_admin, :boolean, default: false, virtual: true)
     field(:email, :string)
     field(:full_name, :string, default: "")
     field(:role, Ecto.Enum, values: [:admin, :user, :service], default: :user)
@@ -31,15 +30,14 @@ defmodule TdAuth.Accounts.User do
 
   def changeset(%__MODULE__{} = user, params) do
     user
-    |> cast(params, [:user_name, :role, :is_admin, :email, :full_name])
+    |> cast(params, [:user_name, :role, :email, :full_name])
     |> cast(params, [:password, :old_password], empty_values: [])
-    |> validate_required([:user_name, :email])
+    |> validate_required(:user_name)
     |> validate_length(:password, min: 6)
     |> validate_old_password()
     |> put_pass_hash()
     |> update_change(:user_name, &String.downcase/1)
     |> put_groups(params)
-    |> put_role()
     |> unique_constraint(:user_name)
   end
 
@@ -56,15 +54,6 @@ defmodule TdAuth.Accounts.User do
   end
 
   defp validate_old_password(changeset), do: changeset
-
-  defp put_role(%Changeset{valid?: true} = changeset) do
-    case Changeset.fetch_change(changeset, :is_admin) do
-      {:ok, true} -> Changeset.put_change(changeset, :role, :admin)
-      _ -> changeset
-    end
-  end
-
-  defp put_role(%Changeset{} = changeset), do: changeset
 
   defp put_groups(%Changeset{valid?: true} = changeset, %{"groups" => groups}) do
     put_assoc(changeset, :groups, groups)

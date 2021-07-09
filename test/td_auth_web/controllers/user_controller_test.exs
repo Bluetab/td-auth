@@ -108,9 +108,9 @@ defmodule TdAuthWeb.UserControllerTest do
                Guardian.decode_and_verify(token, %{"typ" => "access"})
 
       assert conn
-               |> put_auth_headers(token)
-               |> get(Routes.user_path(conn, :index))
-               |> json_response(:forbidden)
+             |> put_auth_headers(token)
+             |> get(Routes.user_path(conn, :index))
+             |> json_response(:forbidden)
     end
   end
 
@@ -130,14 +130,14 @@ defmodule TdAuthWeb.UserControllerTest do
 
       conn = get(conn, Routes.user_path(conn, :show, id))
       validate_resp_schema(conn, schema, "UserResponse")
-      assert %{"id" => ^id, "user_name" => "some user_name"} = json_response(conn, 200)["data"]
+      assert %{"id" => ^id, "user_name" => "some user_name"} = json_response(conn, :ok)["data"]
     end
 
     @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn, swagger_schema: schema} do
       conn = post(conn, Routes.user_path(conn, :create), user: @invalid_attrs)
       validate_resp_schema(conn, schema, "UserResponse")
-      assert json_response(conn, 422)["errors"] != %{}
+      assert json_response(conn, :unprocessable_entity)["errors"] != %{}
     end
   end
 
@@ -169,7 +169,7 @@ defmodule TdAuthWeb.UserControllerTest do
 
       conn = get(conn, Routes.user_path(conn, :show, user.id))
       validate_resp_schema(conn, schema, "UserResponse")
-      user_data = json_response(conn, 200)["data"]
+      user_data = json_response(conn, :ok)["data"]
       assert Map.has_key?(user_data, "acls")
       acls = Map.get(user_data, "acls")
       assert length(acls) == 2
@@ -198,28 +198,28 @@ defmodule TdAuthWeb.UserControllerTest do
     } do
       conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
       validate_resp_schema(conn, schema, "UserResponse")
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert %{"id" => ^id} = json_response(conn, :ok)["data"]
 
       conn = get(conn, Routes.user_path(conn, :show, id))
       validate_resp_schema(conn, schema, "UserResponse")
-      user_data = json_response(conn, 200)["data"]
+      user_data = json_response(conn, :ok)["data"]
       assert user_data["id"] == id && user_data["user_name"] == "some updated user_name"
     end
 
     @tag authentication: [role: :admin]
     test "renders errors when data is invalid", %{conn: conn, user: user} do
-      assert %{"errors" => %{"email" => _, "user_name" => _}} =
+      assert %{"errors" => %{"user_name" => _}} =
                conn
                |> put(Routes.user_path(conn, :update, user), user: @invalid_attrs)
-               |> json_response(422)
+               |> json_response(:unprocessable_entity)
     end
 
-     @tag authentication: [role: :admin]
+    @tag authentication: [role: :admin]
     test "renders errors when try to update password on users update", %{conn: conn, user: user} do
       assert %{"errors" => %{"detail" => "Forbidden"}} =
                conn
                |> put(Routes.user_path(conn, :update, user), user: @attrs_with_passw)
-               |> json_response(403)
+               |> json_response(:forbidden)
     end
   end
 
@@ -232,9 +232,9 @@ defmodule TdAuthWeb.UserControllerTest do
     test "deletes chosen user", %{conn: conn, user: user} do
       assert conn
              |> delete(Routes.user_path(conn, :delete, user))
-             |> response(204)
+             |> response(:no_content)
 
-      assert_error_sent 404, fn -> get(conn, Routes.user_path(conn, :show, user)) end
+      assert_error_sent :not_found, fn -> get(conn, Routes.user_path(conn, :show, user)) end
     end
   end
 

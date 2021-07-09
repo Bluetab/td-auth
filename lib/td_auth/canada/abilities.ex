@@ -7,7 +7,7 @@ defmodule TdBg.Canada.Abilities do
 
   defimpl Canada.Can, for: Claims do
     # administrator is superpowerful
-    def can?(%Claims{is_admin: true}, _action, _resource), do: true
+    def can?(%Claims{role: "admin"}, _action, _resource), do: true
 
     # Metrics connector can view all resources
     def can?(%Claims{role: "service"}, :view, _resource), do: true
