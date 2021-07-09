@@ -21,6 +21,7 @@ defmodule TdAuth.Ldap.Ldap do
         after
           ldap_close(conn)
         end
+
       error ->
         Logger.info("Error while opening ldap connection... #{inspect(error)}")
         error
@@ -52,6 +53,7 @@ defmodule TdAuth.Ldap.Ldap do
         after
           ldap_close(conn)
         end
+
       error ->
         Logger.info("Error while connecting to ldap... #{inspect(error)}")
         error
@@ -60,11 +62,14 @@ defmodule TdAuth.Ldap.Ldap do
 
   defp verify_user_credentials(conn, user_name, password, entry) do
     object_name = Map.get(entry, :object_name)
+
     case verify_credentials(conn, user_name, password, object_name) do
       :ok ->
         profile = build_profile(entry)
         {:ok, profile}
-      {:error, error} -> {:ldap_error, %{type: error}}
+
+      {:error, error} ->
+        {:ldap_error, %{type: error}}
     end
   end
 
@@ -124,8 +129,7 @@ defmodule TdAuth.Ldap.Ldap do
   end
 
   defp get_ldap_ssl do
-    ssl = Application.get_env(:td_auth, :ldap)[:ssl]
-    if ssl == "true", do: true, else: false
+    Application.get_env(:td_auth, :ldap)[:ssl] == "true"
   end
 
   def get_ldap_user_dn do
@@ -137,8 +141,7 @@ defmodule TdAuth.Ldap.Ldap do
   end
 
   defp get_ldap_profile_mapping do
-    ldap_config = Application.get_env(:td_auth, :ldap)
-    Jason.decode!(ldap_config[:profile_mapping])
+    Application.get_env(:td_auth, :ldap)[:profile_mapping]
   end
 
   defp get_ldap_bind_pattern do

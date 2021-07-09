@@ -72,13 +72,13 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           title("Password")
           description("Password update")
+
           properties do
             id(:integer, "unique identifier")
             new_password(:string, "new password", required: true)
             old_password(:string, "old password")
           end
         end,
-
       UpdatePasswordProps:
         swagger_schema do
           properties do
@@ -93,13 +93,12 @@ defmodule TdAuthWeb.SwaggerDefinitions do
             user(Schema.ref(:UpdatePasswordProps))
           end
         end,
-
       UserResponseAttrs:
         swagger_schema do
           properties do
             id(:integer, "unique identifier", required: true)
             user_name(:string, "user name", required: true)
-            email(:string, "email", required: true)
+            email([:string, :null], "email")
             role(:string, "role", required: true)
             full_name([:string, :null], "full name")
             groups(Schema.array(:string))
@@ -173,10 +172,9 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             id(:integer, "unique identifier", required: true)
             user_name(:string, "user name", required: true)
-            is_admin(:boolean, "is admin flag (deprecated)")
             role(:string, "user role (admin, user or service)")
             password(:string, "user password")
-            email(:string, "email", required: true)
+            email([:string, :null], "email")
             full_name(:string, "full name")
             groups(Schema.array(:string))
             acls(Schema.ref(:UserAcls))
@@ -202,9 +200,8 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             user_name(:string, "user name", required: true)
-            is_admin(:boolean, "is admin flag (deprecated)")
             password(:string, "user password", required: true)
-            email(:string, "some@email.com", required: true)
+            email([:string, :null], "some@email.com")
             role(:string, "user role")
             groups(Schema.array(:string))
           end
@@ -219,9 +216,8 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             user_name(:string, "user name", required: true)
-            is_admin(:boolean, "is admin flag (deprecated)")
             password(:string, "user password", required: true)
-            email(:string, "some@email.com", required: true)
+            email([:string, :null], "some@email.com")
             role(:string, "user role")
             groups(Schema.array(:string))
           end
@@ -244,7 +240,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             id(:integer, "unique identifier", required: true)
             user_name(:string, "user name", required: true)
-            email(:string, "email", required: true)
+            email([:string, :null], "email")
             role(:string, "role", required: true)
             full_name([:string, :null], "full name")
             groups(Schema.array(:string))

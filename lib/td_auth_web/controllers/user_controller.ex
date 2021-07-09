@@ -83,7 +83,7 @@ defmodule TdAuthWeb.UserController do
       |> put_view(ErrorView)
       |> render("403.json")
     else
-      user_params = Map.put(user_params, "is_admin", true)
+      user_params = Map.put(user_params, "role", "admin")
       do_create(conn, user_params)
     end
   end
@@ -128,16 +128,16 @@ defmodule TdAuthWeb.UserController do
   end
 
   def update(conn, %{"user" => %{"password" => _password}}) do
-   conn
-      |> put_status(:forbidden)
-      |> put_view(ErrorView)
-      |> render("403.json")
+    conn
+    |> put_status(:forbidden)
+    |> put_view(ErrorView)
+    |> render("403.json")
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
     %{user_id: user_id} = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, Claims.is_admin?(conn) || id == "#{user_id}" },
+    with {:can, true} <- {:can, Claims.is_admin?(conn) || id == "#{user_id}"},
          user <- Accounts.get_user!(id),
          {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user)

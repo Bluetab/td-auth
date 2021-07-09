@@ -74,7 +74,7 @@ config :td_auth, :ldap,
   user_dn: "cn=admin,dc=bluetab,dc=net",
   password: "temporal",
   connection_timeout: "5000",
-  profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"givenName\",\"email\":\"mail\"}",
+  profile_mapping: %{user_name: "cn", full_name: "givenName", email: "mail"},
   bind_pattern: "cn=%{user_name},ou=people,dc=bluetab,dc=net",
   search_path: "ou=people,dc=bluetab,dc=net",
   search_field: "cn"
@@ -83,7 +83,9 @@ config :td_auth, :ldap,
 config :td_auth, :openid_connect_providers, oidc: []
 
 # --------- Auht0 default --------------
-config :td_auth, :auth0, auth0_service: TdAuthWeb.ApiServices.HttpAuth0Service
+config :td_auth, :auth0,
+  auth0_service: TdAuthWeb.ApiServices.HttpAuth0Service,
+  profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"}
 
 # ------------ ad ----------
 

@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- [TD-3894] User email is now optional
+- Removed deprecated `is_admin` field in user requests and responses
+
 ### Added 
 
 - [TD-3617] url in state for auth0 and idc
