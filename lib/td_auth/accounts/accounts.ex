@@ -114,12 +114,11 @@ defmodule TdAuth.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_user(%User{} = user, params) do
+  def update_user(%User{} = user, params, keep_groups \\ false) do
     params = put_groups(params)
-
     user
     |> Repo.preload(:groups)
-    |> User.changeset(params)
+    |> User.changeset(params, keep_groups)
     |> Repo.update()
     |> post_upsert()
   end
@@ -127,13 +126,36 @@ defmodule TdAuth.Accounts do
   @doc """
   Update a user from a profile. Creates the user if it doesn't exist
   """
-  def create_or_update_user(profile) do
+  def create_or_update_user(profile, keep_groups \\ false) do
     user_name = Map.get(profile, "user_name") || Map.get(profile, :user_name)
 
     case get_user_by_name(user_name) do
-      nil -> create_user(profile)
-      user -> update_user(user, profile)
+      nil ->
+        create_user(stringify_keys(profile))
+      user ->
+        update_user(user, stringify_keys(profile), keep_groups)
     end
+  end
+
+  @doc """
+  Convert map atom keys to strings
+  """
+  def stringify_keys(nil), do: nil
+
+  def stringify_keys(%{} = map) do
+    map
+    |> Enum.map(fn {k, v} -> {Atom.to_string(k), stringify_keys(v)} end)
+    |> Enum.into(%{})
+  end
+
+  # Walk the list and stringify the keys of
+  # of any map members
+  def stringify_keys([head | rest]) do
+    [stringify_keys(head) | stringify_keys(rest)]
+  end
+
+  def stringify_keys(not_a_map) do
+    not_a_map
   end
 
   @doc """
@@ -238,6 +260,12 @@ defmodule TdAuth.Accounts do
 
   """
   def get_group(id), do: Repo.get(Group, id)
+
+  def get_group_by_name(group_name) do
+    Group
+    |> Repo.get_by(name: String.downcase(group_name))
+    |> Repo.preload(:users)
+  end
 
   @doc """
   Creates a group.
@@ -372,13 +400,16 @@ defmodule TdAuth.Accounts do
     groups_or_changesets =
       Enum.map(group_names, fn group_name ->
         case Repo.get_by(Group, name: group_name) do
-          %Group{} = group -> group
-          nil -> Group.changeset(%{name: group_name})
+          %Group{} = group ->
+            group
+          nil ->
+            Group.changeset(%{name: group_name})
         end
       end)
-
     Map.put(params, "groups", groups_or_changesets)
   end
 
-  defp put_groups(params), do: params
+  defp put_groups(params) do
+    params
+  end
 end

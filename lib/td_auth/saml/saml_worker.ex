@@ -52,9 +52,23 @@ defmodule TdAuth.Saml.SamlWorker do
   def handle_call(
         {:validate, saml_response, saml_encoding},
         _from,
-        %{sp: sp, reject_roles: reject_roles} = state
+        %{
+          sp: sp,
+          reject_roles: reject_roles,
+          allow_groups: allow_groups,
+          create_group: create_group
+        } = state
       ) do
-    reply = Saml.decode_and_validate_assertion(sp, saml_response, saml_encoding, reject_roles)
+    reply =
+      Saml.decode_and_validate_assertion(
+        sp,
+        saml_response,
+        saml_encoding,
+        reject_roles,
+        allow_groups,
+        create_group
+      )
+
     {:reply, reply, state}
   end
 
@@ -72,6 +86,7 @@ defmodule TdAuth.Saml.SamlWorker do
         :sp_cert,
         :sp_trusted_fingerprints,
         :reject_roles,
+        :allow_groups,
         :sp_idp_signs_envelopes
       ])
       |> Enum.map(fn {k, v} -> {k, to_charlist(v)} end)
@@ -95,7 +110,8 @@ defmodule TdAuth.Saml.SamlWorker do
       |> String.split(";")
       |> Enum.map(&to_charlist(&1))
 
-    key = :esaml_util.load_private_key(saml_config[:sp_key])
+    key = :esaml_util.load_private_key("/srv/key.pem")
+
     cert = :esaml_util.load_certificate(saml_config[:sp_cert])
 
     sp =
@@ -119,6 +135,20 @@ defmodule TdAuth.Saml.SamlWorker do
       |> String.split(";")
       |> Enum.map(&to_charlist(&1))
 
-    %{sp: :esaml_sp.setup(sp), idp: idp, reject_roles: reject_roles}
+    allow_groups =
+      saml_config
+      |> Keyword.get(:allow_groups, "")
+      |> String.split(";")
+      |> Enum.map(&to_charlist(&1))
+
+    create_group = saml_config[:create_group] |> to_string |> String.to_atom
+
+    %{
+      sp: :esaml_sp.setup(sp),
+      idp: idp,
+      reject_roles: reject_roles,
+      allow_groups: allow_groups,
+      create_group: create_group
+    }
   end
 end

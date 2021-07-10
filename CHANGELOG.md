@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-3833] Allow to setup user groups to be allowed to enter the application
+  for SAML integration
+
 ## [4.23.0] 2021-06-28
 
 ### Added

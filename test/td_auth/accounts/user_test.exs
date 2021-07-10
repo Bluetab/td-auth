@@ -104,6 +104,23 @@ defmodule TdAuth.Accounts.UserTest do
              ] = changes[:groups]
     end
 
+    test "keeps groups association" do
+      group = insert(:group)
+      user = insert(:user, groups: [build(:group), build(:group)])
+
+      assert %Changeset{changes: changes} =
+               changeset = User.changeset(user, %{"groups" => [group]}, true)
+
+      assert changeset.valid?
+
+      assert [
+               %Changeset{action: :update},
+               %Changeset{action: :update},
+               %Changeset{action: :update}
+             ] = changes[:groups]
+
+    end
+
     test "captures unique constraint on user_name" do
       %{user_name: user_name} = insert(:user)
 
