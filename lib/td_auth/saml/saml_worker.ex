@@ -110,7 +110,7 @@ defmodule TdAuth.Saml.SamlWorker do
       |> String.split(";")
       |> Enum.map(&to_charlist(&1))
 
-    key = :esaml_util.load_private_key("/srv/key.pem")
+    key = :esaml_util.load_private_key(saml_config[:sp_key])
 
     cert = :esaml_util.load_certificate(saml_config[:sp_cert])
 
