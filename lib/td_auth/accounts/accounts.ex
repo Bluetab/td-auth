@@ -8,6 +8,7 @@ defmodule TdAuth.Accounts do
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
   alias TdAuth.Accounts.UserLoader
+  alias TdAuth.Map.Helpers
   alias TdAuth.Permissions.AclEntries
   alias TdAuth.Permissions.AclLoader
   alias TdAuth.Repo
@@ -114,12 +115,11 @@ defmodule TdAuth.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_user(%User{} = user, params) do
+  def update_user(%User{} = user, params, keep_groups \\ false) do
     params = put_groups(params)
-
     user
     |> Repo.preload(:groups)
-    |> User.changeset(params)
+    |> User.changeset(params, keep_groups)
     |> Repo.update()
     |> post_upsert()
   end
@@ -127,12 +127,14 @@ defmodule TdAuth.Accounts do
   @doc """
   Update a user from a profile. Creates the user if it doesn't exist
   """
-  def create_or_update_user(profile) do
+  def create_or_update_user(profile, keep_groups \\ false) do
     user_name = Map.get(profile, "user_name") || Map.get(profile, :user_name)
 
     case get_user_by_name(user_name) do
-      nil -> create_user(profile)
-      user -> update_user(user, profile)
+      nil ->
+        create_user(Helpers.stringify_keys(profile))
+      user ->
+        update_user(user, Helpers.stringify_keys(profile), keep_groups)
     end
   end
 
@@ -376,7 +378,6 @@ defmodule TdAuth.Accounts do
           nil -> Group.changeset(%{name: group_name})
         end
       end)
-
     Map.put(params, "groups", groups_or_changesets)
   end
 

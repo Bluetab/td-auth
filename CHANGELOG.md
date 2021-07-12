@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- [TD-3833] Allow to setup user groups to be allowed to enter the application
+  for SAML integration
 ### Changed
 
 - [TD-3894] User email is now optional
