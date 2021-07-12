@@ -2,6 +2,7 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
   @moduledoc false
 
   alias Plug.Conn
+  alias TdAuthWeb.AuthProvider.CustomProfileMapping
   alias TdCache.NonceCache
 
   def authenticate(conn) do
@@ -14,7 +15,10 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
     end
   end
 
-  def auth0_config(config) do
+  def auth0_config(config, pre_login_url) do
+    security_token = NonceCache.create_nonce()
+    state = %{security_token: security_token}
+
     %{
       domain: config[:domain],
       clientID: config[:client_id],
@@ -23,10 +27,13 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
       responseType: config[:response_type],
       scope: config[:scope],
       connection: config[:connection],
-      state: NonceCache.create_nonce(),
+      state: URI.encode_query(put_url(state, pre_login_url)),
       nonce: NonceCache.create_nonce()
     }
   end
+
+  defp put_url(map, nil), do: map
+  defp put_url(map, value), do: Map.put(map, :url, value)
 
   defp get_auth0_profile_path do
     auth = Application.get_env(:td_auth, :auth0)
@@ -46,22 +53,12 @@ defmodule TdAuthWeb.AuthProvider.Auth0 do
     }
 
     with {200, user_info} <- auth0_service().get_user_info(get_auth0_profile_path(), headers),
-         {:ok, auth0_profile} <- Jason.decode(user_info),
+         {:ok, claims} <- Jason.decode(user_info),
          mapping <- get_auth0_profile_mapping() do
-      profile = Map.new(mapping, fn {k, v} -> {k, profile_mapping_value(auth0_profile, v)} end)
-
-      {:ok, profile}
+      CustomProfileMapping.map_profile(mapping, claims)
     else
       _ -> {:error, :unable_to_get_user_profile}
     end
-  end
-
-  defp profile_mapping_value(profile, key) when is_binary(key), do: Map.get(profile, key)
-
-  defp profile_mapping_value(profile, keys) when is_list(keys) do
-    keys
-    |> Enum.map(&Map.get(profile, &1, ""))
-    |> Enum.join(" ")
   end
 
   defp auth0_service do

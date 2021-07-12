@@ -20,7 +20,6 @@ defmodule TdAuth.Accounts.UserTest do
       assert %Changeset{errors: errors} = changeset = User.changeset(%{})
 
       refute changeset.valid?
-      assert {_, [validation: :required]} = errors[:email]
       assert {_, [validation: :required]} = errors[:user_name]
     end
 
@@ -29,6 +28,18 @@ defmodule TdAuth.Accounts.UserTest do
 
       refute changeset.valid?
       assert {_, [count: 6, validation: :length, kind: :min, type: :string]} = errors[:password]
+    end
+
+    test "permits missing email" do
+      %Changeset{} = changeset = User.changeset(%{user_name: "foo"})
+      assert changeset.valid?
+    end
+
+    test "permits nil email" do
+      user = insert(:user)
+      %Changeset{} = changeset = User.changeset(user, %{user_name: "foo", email: nil})
+      assert changeset.valid?
+      assert Changeset.fetch_change(changeset, :email) == {:ok, nil}
     end
 
     test "puts password_hash if password is valid" do
@@ -154,20 +165,6 @@ defmodule TdAuth.Accounts.UserTest do
                %{password: "secret", email: "email@example.com", user_name: "foo"}
                |> User.changeset()
                |> Repo.insert()
-    end
-
-    test "puts admin role if is_admin is specified" do
-      assert %Changeset{changes: changes} =
-               changeset =
-               User.changeset(%{
-                 password: "secret",
-                 email: "email@example.com",
-                 user_name: "foo",
-                 is_admin: true
-               })
-
-      assert changeset.valid?
-      assert changes[:role] == :admin
     end
   end
 end

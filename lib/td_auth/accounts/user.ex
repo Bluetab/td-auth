@@ -17,7 +17,6 @@ defmodule TdAuth.Accounts.User do
     field(:user_name, :string)
     field(:password, :string, virtual: true)
     field(:old_password, :string, virtual: true)
-    field(:is_admin, :boolean, default: false, virtual: true)
     field(:email, :string)
     field(:full_name, :string, default: "")
     field(:role, Ecto.Enum, values: [:admin, :user, :service], default: :user)
@@ -31,9 +30,9 @@ defmodule TdAuth.Accounts.User do
 
   def changeset(%__MODULE__{} = user, params, keep_groups \\ false) do
     user
-    |> cast(params, [:user_name, :role, :is_admin, :email, :full_name])
+    |> cast(params, [:user_name, :role, :email, :full_name])
     |> cast(params, [:password, :old_password], empty_values: [])
-    |> validate_required([:user_name, :email])
+    |> validate_required(:user_name)
     |> validate_length(:password, min: 6)
     |> validate_old_password()
     |> put_pass_hash()

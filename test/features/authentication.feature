@@ -75,8 +75,8 @@ Feature: User Authentication
     And an existing user "user" with password "userpass"
     And user "<user>" is logged in the application with password "secret"
     When user "<user>" tries to modify user "user" with following data:
-      | is_admin |
-      | false    |
+      | role  |
+      | admin |
     Then the system returns a result with code "<result>"
 
     Examples:

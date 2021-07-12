@@ -62,10 +62,10 @@ defmodule TdAuth.AuthenticationTest do
             table: [%{old_password: old_password, new_password: new_password}]
           },
           state do
-
     {_, status_code} =
       update_password(
-        state[:token], %{
+        state[:token],
+        %{
           old_password: old_password,
           new_password: new_password
         }
@@ -133,7 +133,7 @@ defmodule TdAuth.AuthenticationTest do
       user_create(token, %{
         user_name: user_name,
         password: password,
-        is_admin: true,
+        role: "admin",
         email: "some@email.com"
       })
 
@@ -166,13 +166,12 @@ defmodule TdAuth.AuthenticationTest do
           %{
             user_name: _user_name,
             target_user_name: target_user_name,
-            table: [%{is_admin: is_admin}]
+            table: [%{} = params]
           },
           state do
     target_user = state[:users][target_user_name]
 
-    {:ok, status_code, _json_resp} =
-      user_update(state[:token], target_user["id"], %{is_admin: is_admin != "false"})
+    {:ok, status_code, _json_resp} = user_update(state[:token], target_user["id"], params)
 
     {:ok, Map.merge(state, %{status_code: status_code})}
   end

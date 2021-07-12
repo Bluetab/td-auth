@@ -45,7 +45,6 @@ config :td_auth, :auth0,
   scope: System.get_env("AUTH0_SCOPE"),
   response_type: "token id_token",
   userinfo: "/userinfo",
-  profile_mapping: %{user_name: "nickname", full_name: ["name", "family_name"], email: "email"},
   connection: System.get_env("AUTH0_CONNECTION")
 
 config :td_auth, :ldap,
@@ -56,8 +55,6 @@ config :td_auth, :ldap,
   user_dn: System.get_env("LDAP_USER_DN"),
   password: System.get_env("LDAP_PASSWORD"),
   connection_timeout: System.get_env("LDAP_CONNECTION_TIMEOUT"),
-  profile_mapping: "{\"user_name\":\"cn\",\"full_name\":\"givenName\",\"email\":\"mail\"}",
-  # profile_mapping: System.get_env("LDAP_PROFILE_MAPPING"),
   bind_pattern: System.get_env("LDAP_BIND_PATTERN"),
   search_path: System.get_env("LDAP_SEARCH_PATH"),
   search_field: System.get_env("LDAP_SEARCH_FIELD"),
@@ -110,5 +107,6 @@ config :td_auth, TdAuthWeb.AuthProvider.OIDC,
   code_verifier_length: System.get_env("PKCE_CODE_VERIFIER_LENGTH", "128") |> String.to_integer()
 
 config :td_auth, TdAuth.HttpClient,
-  proxy: {System.get_env("PROXY_HOST"), System.get_env("PROXY_PORT", "80") |> String.to_integer()},
+  proxy:
+    {System.get_env("PROXY_HOST"), System.get_env("PROXY_PORT", "80") |> String.to_integer()},
   proxy_auth: {System.get_env("PROXY_USER"), System.get_env("PROXY_PASSWORD")}

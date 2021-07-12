@@ -74,8 +74,8 @@ defmodule TdAuthWeb.SessionController do
     authenticate_using_oidc_and_create_session(conn)
   end
 
-  def create(conn, %{"auth_realm" => "auth0"} = _params) do
-    authenticate_using_auth0_and_create_session(conn)
+  def create(conn, %{"auth_realm" => "auth0"} = params) do
+    authenticate_using_auth0_and_create_session(conn, params)
   end
 
   def create(conn, %{"auth_realm" => auth_realm, "nonce" => nonce}) do
@@ -271,7 +271,7 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp authenticate_using_auth0_and_create_session(conn) do
+  defp authenticate_using_auth0_and_create_session(conn, _params) do
     with {:ok, profile} <- Auth0.authenticate(conn),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
       create_session(conn, user, nil)

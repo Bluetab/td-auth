@@ -10,7 +10,6 @@ defmodule TdAuth.Auth.Claims do
           user_id: non_neg_integer() | nil,
           user_name: binary() | nil,
           role: binary() | nil,
-          is_admin: boolean(),
           has_permissions: boolean(),
           groups: [binary()],
           jti: binary() | nil,
@@ -24,7 +23,6 @@ defmodule TdAuth.Auth.Claims do
     :role,
     :jti,
     :access_method,
-    is_admin: false,
     has_permissions: false,
     groups: []
   ]
@@ -32,7 +30,7 @@ defmodule TdAuth.Auth.Claims do
   @spec is_admin?(Plug.Conn.t()) :: boolean
   def is_admin?(conn) do
     case conn.assigns[:current_resource] do
-      %{is_admin: true} -> true
+      %{role: "admin"} -> true
       _ -> false
     end
   end
