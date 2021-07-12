@@ -190,7 +190,8 @@ defmodule TdAuthWeb.SessionController do
 
   defp authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding) do
     with {:ok, profile} <- SamlWorker.validate(saml_response, saml_encoding),
-         {:ok, user} <- Accounts.create_or_update_user(profile) do
+         {:ok, user} <- Accounts.create_or_update_user(profile, true)
+         do
       create_session(conn, user, nil)
     else
       error ->
