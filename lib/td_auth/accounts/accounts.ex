@@ -8,6 +8,7 @@ defmodule TdAuth.Accounts do
   alias TdAuth.Accounts.Group
   alias TdAuth.Accounts.User
   alias TdAuth.Accounts.UserLoader
+  alias TdAuth.Map.Helpers
   alias TdAuth.Permissions.AclEntries
   alias TdAuth.Permissions.AclLoader
   alias TdAuth.Repo
@@ -131,31 +132,10 @@ defmodule TdAuth.Accounts do
 
     case get_user_by_name(user_name) do
       nil ->
-        create_user(stringify_keys(profile))
+        create_user(Helpers.stringify_keys(profile))
       user ->
-        update_user(user, stringify_keys(profile), keep_groups)
+        update_user(user, Helpers.stringify_keys(profile), keep_groups)
     end
-  end
-
-  @doc """
-  Convert map atom keys to strings
-  """
-  def stringify_keys(nil), do: nil
-
-  def stringify_keys(%{} = map) do
-    map
-    |> Enum.map(fn {k, v} -> {Atom.to_string(k), stringify_keys(v)} end)
-    |> Enum.into(%{})
-  end
-
-  # Walk the list and stringify the keys of
-  # of any map members
-  def stringify_keys([head | rest]) do
-    [stringify_keys(head) | stringify_keys(rest)]
-  end
-
-  def stringify_keys(not_a_map) do
-    not_a_map
   end
 
   @doc """
@@ -260,12 +240,6 @@ defmodule TdAuth.Accounts do
 
   """
   def get_group(id), do: Repo.get(Group, id)
-
-  def get_group_by_name(group_name) do
-    Group
-    |> Repo.get_by(name: String.downcase(group_name))
-    |> Repo.preload(:users)
-  end
 
   @doc """
   Creates a group.
@@ -400,16 +374,12 @@ defmodule TdAuth.Accounts do
     groups_or_changesets =
       Enum.map(group_names, fn group_name ->
         case Repo.get_by(Group, name: group_name) do
-          %Group{} = group ->
-            group
-          nil ->
-            Group.changeset(%{name: group_name})
+          %Group{} = group -> group
+          nil -> Group.changeset(%{name: group_name})
         end
       end)
     Map.put(params, "groups", groups_or_changesets)
   end
 
-  defp put_groups(params) do
-    params
-  end
+  defp put_groups(params), do: params
 end

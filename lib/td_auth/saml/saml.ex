@@ -73,7 +73,7 @@ defmodule TdAuth.Saml do
     end
   end
 
-  def map_assertion_to_profile(_, _) do
+  def map_assertion_to_profile(_, _, _, _) do
     {:error, :invalid_assertion}
   end
 
@@ -123,9 +123,7 @@ defmodule TdAuth.Saml do
     Map.put(profile, :groups, Enum.map(filtered_groups, fn group -> to_string(group) end))
   end
 
-  defp maybe_put_groups(profile, _filtered_groups, _) do
-    profile
-  end
+  defp maybe_put_groups(profile, _filtered_groups, _), do: profile
 
   def generate_metadata(sp) do
     sp

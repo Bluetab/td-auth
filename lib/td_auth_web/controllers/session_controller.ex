@@ -138,7 +138,6 @@ defmodule TdAuthWeb.SessionController do
 
   def create_nonce_session(conn, "saml", json) do
     params = Jason.decode!(json)
-    Map.keys(params)
 
     [saml_response, saml_encoding] =
       ["SAMLResponse", "SAMLEncoding"]
