@@ -2,10 +2,22 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- [TD-3833] Allow to setup user groups to be allowed to enter the application
+  for SAML integration
+
+### Added
+
+- [TD-3945] New permissions to view and manage grants
+
+## [4.24.0] 2021-07-13
+
 ### Added
 
 - [TD-3833] Allow to setup user groups to be allowed to enter the application
   for SAML integration
+
 ### Changed
 
 - [TD-3894] User email is now optional
