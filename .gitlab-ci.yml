@@ -40,7 +40,6 @@ publish:
   only:
     - master
     - tags
-    - feature/td-3833
   tags:
     - docker
   script:
