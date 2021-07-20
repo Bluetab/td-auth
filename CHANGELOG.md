@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- [TD-3833] Allow to setup user groups to be allowed to enter the application
+  for SAML integration
+
 ### Added
 
 - [TD-3945] New permissions to view and manage grants
