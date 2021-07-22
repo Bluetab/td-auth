@@ -94,7 +94,9 @@ config :td_auth, :saml,
   sp_key: System.get_env("SAML_SP_KEY"),
   sp_metadata_uri: System.get_env("SAML_METADATA_URI"),
   sp_trusted_fingerprints: System.get_env("SAML_TRUSTED_FINGERPRINTS"),
-  reject_roles: System.get_env("SAML_REJECT_ROLES")
+  reject_roles: System.get_env("SAML_REJECT_ROLES"),
+  allow_groups: System.get_env("SAML_ALLOW_GROUPS"),
+  create_group: System.get_env("SAML_CREATE_GROUP", "false")
 
 config :td_cache,
   redis_host: System.fetch_env!("REDIS_HOST"),

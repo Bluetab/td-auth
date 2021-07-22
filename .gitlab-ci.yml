@@ -40,7 +40,6 @@ publish:
   only:
     - master
     - tags
-    - feature/td-3900
   tags:
     - docker
   script:

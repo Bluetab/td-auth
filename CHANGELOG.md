@@ -1,7 +1,14 @@
 # Changelog
 
 ## [Unreleased]
+### Fixed
 
+- [TD-3833] Allow to setup user groups to be allowed to enter the application
+  for SAML integration
+
+### Added
+
+- [TD-3945] New permissions to view and manage grants
 - [TD-3873] Include a specific permission to be able to share a concept with a domain
 
 ## [4.24.0] 2021-07-13
