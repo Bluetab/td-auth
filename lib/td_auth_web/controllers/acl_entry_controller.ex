@@ -91,4 +91,14 @@ defmodule TdAuthWeb.AclEntryController do
       send_resp(conn, :no_content, "")
     end
   end
+
+  def update(conn, %{"id" => id, "acl_entry" => acl_entry_params}) do
+    claims = conn.assigns[:current_resource]
+    acl_entry = AclEntries.get_acl_entry!(id)
+
+    with {:can, true} <- {:can, can?(claims, update(acl_entry))},
+         {:ok, %AclEntry{} = acl_entry} <- AclEntries.update_acl_entry(acl_entry, acl_entry_params) do
+          render(conn, "show.json", acl_entry: acl_entry)
+    end
+  end
 end

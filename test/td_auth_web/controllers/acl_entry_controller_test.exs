@@ -128,4 +128,38 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       end
     end
   end
+
+  describe "update acl_entry" do
+    @tag authentication: [role: :admin]
+    test "renders acl_entry when data is valid", %{
+      conn: conn,
+      acl_entry: acl_entry
+    } do
+      description = "updated description"
+      %{id: id} = acl_entry
+
+      assert %{"data" => data} =
+               conn
+               |> put(acl_entry_path(conn, :update, acl_entry), acl_entry: %{description: description})
+               |> json_response(:ok)
+
+      assert %{"id" => ^id, "description" => ^description} = data
+    end
+
+    @tag authentication: [role: :admin]
+    test "renders errors when data is invalid", %{
+      conn: conn,
+      acl_entry: acl_entry
+    } do
+      invalid_description = String.pad_leading("foo", 130, "bar")
+      %{id: id} = acl_entry
+
+      assert %{"errors" => errors} =
+               conn
+               |> put(acl_entry_path(conn, :update, acl_entry), acl_entry: %{description: invalid_description})
+               |> json_response(:unprocessable_entity)
+
+      assert errors == %{"description" => ["should be at most 120 character(s)"]}
+    end
+  end
 end
