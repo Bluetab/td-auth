@@ -9,6 +9,7 @@
 ### Added
 
 - [TD-3945] New permissions to view and manage grants
+- [TD-3947] Updated td-cache to write cache for user_name
 - [TD-3873] Include a specific permission to be able to share a concept with a domain
 
 ## [4.24.0] 2021-07-13
