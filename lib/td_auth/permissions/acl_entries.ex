@@ -61,7 +61,8 @@ defmodule TdAuth.Permissions.AclEntries do
   end
 
   def update_acl_entry(%AclEntry{} = acl_entry, params) do
-    AclEntry.changeset(acl_entry, params)
+    acl_entry
+    |> AclEntry.changeset(params)
     |> Repo.update()
     |> refresh_cache()
   end
