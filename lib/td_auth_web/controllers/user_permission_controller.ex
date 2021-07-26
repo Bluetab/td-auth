@@ -20,6 +20,7 @@ defmodule TdAuthWeb.UserPermissionController do
 
     parameters do
       user_id(:path, :string, "User ID: me", required: true)
+
       permissions(
         :query,
         :string,

@@ -3,7 +3,7 @@ defmodule TdAuth.Repo.Migrations.AddIsProtected do
 
   def change do
     alter table(:users) do
-      add :is_protected, :boolean, default: false
+      add(:is_protected, :boolean, default: false)
     end
   end
 end

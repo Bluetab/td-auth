@@ -129,7 +129,6 @@ defmodule TdAuth.Accounts.UserTest do
                %Changeset{action: :update},
                %Changeset{action: :update}
              ] = changes[:groups]
-
     end
 
     test "captures unique constraint on user_name" do

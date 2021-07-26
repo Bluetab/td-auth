@@ -140,7 +140,7 @@ defmodule TdAuth.Saml.SamlWorker do
       |> String.split(";")
       |> Enum.map(&to_charlist(&1))
 
-    create_group = saml_config[:create_group] |> to_string |> String.to_atom
+    create_group = saml_config[:create_group] |> to_string |> String.to_atom()
 
     %{
       sp: :esaml_sp.setup(sp),

@@ -117,6 +117,7 @@ defmodule TdAuth.Accounts do
   """
   def update_user(%User{} = user, params, keep_groups \\ false) do
     params = put_groups(params)
+
     user
     |> Repo.preload(:groups)
     |> User.changeset(params, keep_groups)
@@ -133,6 +134,7 @@ defmodule TdAuth.Accounts do
     case get_user_by_name(user_name) do
       nil ->
         create_user(Helpers.stringify_keys(profile))
+
       user ->
         update_user(user, Helpers.stringify_keys(profile), keep_groups)
     end
@@ -378,6 +380,7 @@ defmodule TdAuth.Accounts do
           nil -> Group.changeset(%{name: group_name})
         end
       end)
+
     Map.put(params, "groups", groups_or_changesets)
   end
 
