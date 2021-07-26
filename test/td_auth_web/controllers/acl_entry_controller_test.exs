@@ -140,10 +140,27 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
       assert %{"data" => data} =
                conn
-               |> put(acl_entry_path(conn, :update, acl_entry), acl_entry: %{description: description})
+               |> put(acl_entry_path(conn, :update, acl_entry),
+                 acl_entry: %{description: description}
+               )
                |> json_response(:ok)
 
       assert %{"id" => ^id, "description" => ^description} = data
+    end
+
+    @tag authentication: [role: :user]
+    test "forbidden when user has not permissions", %{
+      conn: conn,
+      acl_entry: acl_entry
+    } do
+      description = "updated description"
+
+      assert %{"errors" => %{"detail" => "Forbidden"}} =
+               conn
+               |> put(acl_entry_path(conn, :update, acl_entry),
+                 acl_entry: %{description: description}
+               )
+               |> json_response(:forbidden)
     end
 
     @tag authentication: [role: :admin]
@@ -152,14 +169,15 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       acl_entry: acl_entry
     } do
       invalid_description = String.pad_leading("foo", 130, "bar")
-      %{id: id} = acl_entry
 
       assert %{"errors" => errors} =
                conn
-               |> put(acl_entry_path(conn, :update, acl_entry), acl_entry: %{description: invalid_description})
+               |> put(acl_entry_path(conn, :update, acl_entry),
+                 acl_entry: %{description: invalid_description}
+               )
                |> json_response(:unprocessable_entity)
 
-      assert errors == %{"description" => ["should be at most 120 character(s)"]}
+      assert errors == %{"description" => ["max_length.120"]}
     end
   end
 end

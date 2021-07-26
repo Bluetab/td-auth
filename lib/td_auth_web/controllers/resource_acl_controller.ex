@@ -125,7 +125,10 @@ defmodule TdAuthWeb.ResourceAclController do
   end
 
   defp methods(claims, %AclEntry{} = acl_entry) do
-    ["GET"] ++ if can?(claims, delete(acl_entry)), do: ["DELETE"], else: []
+    actions = ["GET"]
+    actions = actions ++ if can?(claims, delete(acl_entry)), do: ["DELETE"], else: []
+    actions = actions ++ if can?(claims, update(acl_entry)), do: ["UPDATE"], else: []
+    actions
   end
 
   defp methods(claims, acl_resource) do
