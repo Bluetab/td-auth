@@ -3,7 +3,7 @@ defmodule TdAuth.Repo.Migrations.AddDescriptionFieldToAclEntry do
 
   def change do
     alter table(:acl_entries) do
-       add :description, :string
-     end
+      add(:description, :string)
+    end
   end
 end

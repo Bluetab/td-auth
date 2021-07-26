@@ -136,11 +136,10 @@ defmodule TdAuthWeb.AuthProvider.SamlTest do
       ]
 
       assert {:error, :rejected} =
-        Saml.map_assertion_to_profile(assertion, reject_roles, allow_groups_to_fail, true)
+               Saml.map_assertion_to_profile(assertion, reject_roles, allow_groups_to_fail, true)
 
       assert {:error, :rejected} =
-        Saml.map_assertion_to_profile(assertion, reject_roles, allow_groups_to_fail, false)
-
+               Saml.map_assertion_to_profile(assertion, reject_roles, allow_groups_to_fail, false)
     end
 
     test "accepts login; adds new groups to profile when create_groups is true", %{
@@ -165,6 +164,5 @@ defmodule TdAuthWeb.AuthProvider.SamlTest do
 
       refute Map.has_key?(profile, :groups)
     end
-
   end
 end

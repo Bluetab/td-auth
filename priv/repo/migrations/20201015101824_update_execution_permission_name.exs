@@ -8,7 +8,9 @@ defmodule TdAuth.Repo.Migrations.UpdateExecutionPermissionName do
   def up do
     from(p in "permissions")
     |> where([p], p.name == "execute_quality_rule")
-    |> update([_], set: [name: "execute_quality_rule_implementations", updated_at: ^DateTime.utc_now()])
+    |> update([_],
+      set: [name: "execute_quality_rule_implementations", updated_at: ^DateTime.utc_now()]
+    )
     |> Repo.update_all([])
   end
 

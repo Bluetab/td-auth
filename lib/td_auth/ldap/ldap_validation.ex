@@ -15,6 +15,7 @@ defmodule TdAuth.Ldap.LdapValidation do
   end
 
   defp validate_entry(_, _, []), do: {:ok, []}
+
   defp validate_entry(conn, entry, validations) do
     cn = @exldap_module.get_attribute!(entry, "cn")
     filter = :eldap.substrings('cn', any: cn)
@@ -22,6 +23,7 @@ defmodule TdAuth.Ldap.LdapValidation do
   end
 
   defp validate_entry(_, _, [], warnings), do: {:ok, warnings}
+
   defp validate_entry(conn, filter, [validation | remaining_validations], warnings) do
     case run_validation(conn, filter, validation) do
       {:ok, nil} -> validate_entry(conn, filter, remaining_validations, warnings)
@@ -38,14 +40,18 @@ defmodule TdAuth.Ldap.LdapValidation do
     has_value = attribute_has_value(conn, filter, attribute, value)
 
     case has_value do
-      true -> {:ok, nil}
-      _ -> %{
-        type: :missing_value_on_attribute,
-        attribute: attribute,
-        value: value
-      }
+      true ->
+        {:ok, nil}
+
+      _ ->
+        %{
+          type: :missing_value_on_attribute,
+          attribute: attribute,
+          value: value
+        }
     end
   end
+
   defp run_validation(conn, filter, %{
          "type" => "attribute_doesnt_have_value",
          "attribute" => attribute,
@@ -54,14 +60,18 @@ defmodule TdAuth.Ldap.LdapValidation do
     has_value = attribute_has_value(conn, filter, attribute, value)
 
     case has_value do
-      false -> {:ok, nil}
-      _ -> %{
-        type: :unwanted_value_on_attribute,
-        attribute: attribute,
-        value: value
-      }
+      false ->
+        {:ok, nil}
+
+      _ ->
+        %{
+          type: :unwanted_value_on_attribute,
+          attribute: attribute,
+          value: value
+        }
     end
   end
+
   defp run_validation(conn, filter, %{
          "type" => "expiration_date_attribute",
          "attribute" => attribute,
@@ -87,10 +97,12 @@ defmodule TdAuth.Ldap.LdapValidation do
         {:ok, nil}
     end
   end
+
   defp run_validation(_, _, _), do: {:ok, nil}
 
   defp attribute_has_value(conn, filter, attribute, value) do
     charlist_value = to_charlist(value)
+
     conn
     |> get_attribute_values(filter, attribute)
     |> Enum.member?(charlist_value)
@@ -122,5 +134,4 @@ defmodule TdAuth.Ldap.LdapValidation do
     |> get_attributes_from_search
     |> get_values_from_entry(charlist_attr)
   end
-
 end

@@ -26,7 +26,8 @@ defmodule TdAuthWeb.AuthProvider.OIDCTest do
       assert %{"code_challenge" => challenge, "code_challenge_method" => "S256", "state" => state} =
                URI.decode_query(query)
 
-      assert %{"security_token" => security_token, "url" => "pre_login_url"} = URI.decode_query(state)
+      assert %{"security_token" => security_token, "url" => "pre_login_url"} =
+               URI.decode_query(state)
 
       assert String.length(challenge) == 43
 

@@ -65,11 +65,15 @@ defmodule TdAuth.Accounts.User do
 
   defp put_role(%Changeset{} = changeset), do: changeset
 
-  defp put_groups(%Changeset{valid?: true} = changeset, _existing_groups, false, %{"groups" => groups}) do
+  defp put_groups(%Changeset{valid?: true} = changeset, _existing_groups, false, %{
+         "groups" => groups
+       }) do
     put_assoc(changeset, :groups, groups)
   end
 
-  defp put_groups(%Changeset{valid?: true} = changeset, existing_groups, true, %{"groups" => groups}) do
+  defp put_groups(%Changeset{valid?: true} = changeset, existing_groups, true, %{
+         "groups" => groups
+       }) do
     put_assoc(changeset, :groups, existing_groups ++ groups)
   end
 

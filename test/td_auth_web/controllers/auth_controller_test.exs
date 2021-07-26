@@ -15,7 +15,7 @@ defmodule TdAuthWeb.AuthControllerTest do
 
   describe "index" do
     test "lists all authentication methods", %{conn: conn, swagger_schema: schema} do
-      conn = get conn, Routes.auth_path(conn, :index, %{"url" => "pre_login_url"})
+      conn = get(conn, Routes.auth_path(conn, :index, %{"url" => "pre_login_url"}))
       validate_resp_schema(conn, schema, "AuthenticationMethodsResponse")
 
       %{"oidc" => url, "auth0" => auth0} = json_response(conn, 200)["data"]

@@ -39,7 +39,11 @@ defmodule TdAuthWeb.Router do
     resources("/users/search", UserSearchController, only: [:create], singleton: true)
 
     resources "/users", UserController, except: [:new, :edit] do
-      resources("/permissions", UserPermissionController, singleton: true, only: [:show], name: "permissions")
+      resources("/permissions", UserPermissionController,
+        singleton: true,
+        only: [:show],
+        name: "permissions"
+      )
     end
 
     resources "/password", PasswordController, only: [:update], singleton: true
@@ -56,11 +60,19 @@ defmodule TdAuthWeb.Router do
     resources "/permission_groups", PermissionGroupController, except: [:new, :edit]
 
     resources "/roles", RoleController, except: [:new, :edit] do
-      resources("/permissions", RolePermissionController, singleton: true, only: [:show, :update], name: "permission")
+      resources("/permissions", RolePermissionController,
+        singleton: true,
+        only: [:show, :update],
+        name: "permission"
+      )
     end
 
     resources("/:resource_type", ResourceController, only: [:show]) do
-      resources("/acl_entries", ResourceAclController, singleton: true, only: [:show, :create], name: "acl")
+      resources("/acl_entries", ResourceAclController,
+        singleton: true,
+        only: [:show, :create],
+        name: "acl"
+      )
     end
   end
 
