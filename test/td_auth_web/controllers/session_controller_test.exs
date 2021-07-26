@@ -21,6 +21,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     on_exit(fn ->
       Redix.del!(@stream)
     end)
+
     start_supervised!(TdAuth.Accounts.UserLoader)
     start_supervised!(MockAuth0Service)
     :ok
@@ -31,10 +32,11 @@ defmodule TdAuthWeb.SessionControllerTest do
   end
 
   describe "create session" do
-    setup [:create_user]
+    setup :create_user
 
     test "create valid user session", %{conn: conn, swagger_schema: schema} do
       Redix.del!(@stream)
+
       assert conn
              |> post(Routes.session_path(conn, :create),
                access_method: "access_method",
@@ -43,39 +45,39 @@ defmodule TdAuthWeb.SessionControllerTest do
              |> validate_resp_schema(schema, "Token")
              |> response(:created)
 
-      assert {:ok, [event_attempt, event_success]} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, [event_attempt, event_success]} = Stream.read(:redix, @stream, transform: true)
 
       assert %{
-        event: "login_attempt",
-        payload: payload_attempt,
-        resource_id: "",
-        resource_type: "auth",
-        service: "td_auth",
-        ts: _ts,
-        user_id: ""
-      } = event_attempt
+               event: "login_attempt",
+               payload: payload_attempt,
+               resource_id: "",
+               resource_type: "auth",
+               service: "td_auth",
+               ts: _ts,
+               user_id: ""
+             } = event_attempt
 
       assert %{
-        "access_method" => "alternative_login",
-        "user_name" => "usuariotemporal"
-      } = Jason.decode!(payload_attempt)
+               "access_method" => "alternative_login",
+               "user_name" => "usuariotemporal"
+             } = Jason.decode!(payload_attempt)
+
       user_id = event_success.user_id
 
       assert %{
-        event: "login_success",
-        payload: payload_success,
-        resource_id: ^user_id,
-        resource_type: "auth",
-        service: "td_auth",
-        ts: _ts,
-        user_id: ^user_id
-      } = event_success
+               event: "login_success",
+               payload: payload_success,
+               resource_id: ^user_id,
+               resource_type: "auth",
+               service: "td_auth",
+               ts: _ts,
+               user_id: ^user_id
+             } = event_success
 
       assert %{
-        "access_method" => "alternative_login",
-        "user_name" => "usuariotemporal",
-      } = Jason.decode!(payload_success)
+               "access_method" => "alternative_login",
+               "user_name" => "usuariotemporal"
+             } = Jason.decode!(payload_success)
     end
 
     test "create session with claims", %{conn: conn, swagger_schema: schema, user: user} do
@@ -96,43 +98,44 @@ defmodule TdAuthWeb.SessionControllerTest do
       assert %{"role" => "user"} = claims
       assert_lists_equal(claims["groups"], ["create_pg", "view_pg", "update_pg"])
 
-      assert {:ok, [event_attempt, event_success]} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, [event_attempt, event_success]} = Stream.read(:redix, @stream, transform: true)
 
       assert %{
-        event: "login_attempt",
-        payload: payload_attempt,
-        resource_id: "",
-        resource_type: "auth",
-        service: "td_auth",
-        ts: _ts,
-        user_id: ""
-      } = event_attempt
+               event: "login_attempt",
+               payload: payload_attempt,
+               resource_id: "",
+               resource_type: "auth",
+               service: "td_auth",
+               ts: _ts,
+               user_id: ""
+             } = event_attempt
 
       assert %{
-        "access_method" => "alternative_login",
-        "user_name" => "usuariotemporal",
-      } = Jason.decode!(payload_attempt)
+               "access_method" => "alternative_login",
+               "user_name" => "usuariotemporal"
+             } = Jason.decode!(payload_attempt)
+
       user_id = event_success.user_id
 
       assert %{
-        event: "login_success",
-        payload: payload_success,
-        resource_id: ^user_id,
-        resource_type: "auth",
-        service: "td_auth",
-        ts: _ts,
-        user_id: ^user_id
-      } = event_success
+               event: "login_success",
+               payload: payload_success,
+               resource_id: ^user_id,
+               resource_type: "auth",
+               service: "td_auth",
+               ts: _ts,
+               user_id: ^user_id
+             } = event_success
 
       assert %{
-        "access_method" => "alternative_login",
-        "user_name" => "usuariotemporal",
-      } = Jason.decode!(payload_success)
+               "access_method" => "alternative_login",
+               "user_name" => "usuariotemporal"
+             } = Jason.decode!(payload_success)
     end
 
     test "create invalid user session", %{conn: conn} do
       Redix.del!(@stream)
+
       assert conn
              |> post(Routes.session_path(conn, :create),
                access_method: "access_method",
@@ -140,28 +143,27 @@ defmodule TdAuthWeb.SessionControllerTest do
              )
              |> response(:unauthorized)
 
-      assert {:ok, [event]} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, [event]} = Stream.read(:redix, @stream, transform: true)
 
       assert %{
-        event: "login_attempt",
-        payload: payload,
-        resource_id: "",
-        resource_type: "auth",
-        service: "td_auth",
-        ts: _ts,
-        user_id: ""
-      } = event
+               event: "login_attempt",
+               payload: payload,
+               resource_id: "",
+               resource_type: "auth",
+               service: "td_auth",
+               ts: _ts,
+               user_id: ""
+             } = event
 
       assert %{
-        "access_method" => "alternative_login",
-        "user_name" => "usuariotemporal"
-      } = Jason.decode!(payload)
+               "access_method" => "alternative_login",
+               "user_name" => "usuariotemporal"
+             } = Jason.decode!(payload)
     end
   end
 
   describe "create session with Auth0 access token" do
-    setup [:create_user]
+    setup :create_user
 
     test "create valid non existing user session", %{conn: conn, swagger_schema: schema} do
       Redix.del!(@stream)
@@ -187,25 +189,24 @@ defmodule TdAuthWeb.SessionControllerTest do
       assert user.full_name == Enum.join([profile[:name], profile[:family_name]], " ")
       assert user.email == profile[:email]
 
-      assert {:ok, [event]} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, [event]} = Stream.read(:redix, @stream, transform: true)
 
       user_id = event.user_id
 
       assert %{
-        event: "login_success",
-        payload: payload,
-        resource_id: ^user_id,
-        resource_type: "auth",
-        service: "td_auth",
-        ts: _ts,
-        user_id: ^user_id
-      } = event
+               event: "login_success",
+               payload: payload,
+               resource_id: ^user_id,
+               resource_type: "auth",
+               service: "td_auth",
+               ts: _ts,
+               user_id: ^user_id
+             } = event
 
       assert %{
-        "access_method" => nil,
-        "user_name" => "user_name"
-      } = Jason.decode!(payload)
+               "access_method" => nil,
+               "user_name" => "user_name"
+             } = Jason.decode!(payload)
     end
 
     test "create valid existing user session", %{conn: conn, swagger_schema: schema} do
@@ -232,25 +233,24 @@ defmodule TdAuthWeb.SessionControllerTest do
       assert user.full_name == Enum.join([profile[:name], profile[:family_name]], " ")
       assert user.email == profile[:email]
 
-      assert {:ok, [event]} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, [event]} = Stream.read(:redix, @stream, transform: true)
       user_id = event.user_id
 
       assert %{
-        event: "login_success",
-        id: _id,
-        payload: payload,
-        resource_id: ^user_id,
-        resource_type: "auth",
-        service: "td_auth",
-        ts: _ts,
-        user_id: ^user_id
-      } = event
+               event: "login_success",
+               id: _id,
+               payload: payload,
+               resource_id: ^user_id,
+               resource_type: "auth",
+               service: "td_auth",
+               ts: _ts,
+               user_id: ^user_id
+             } = event
 
       assert %{
-        "access_method" => nil,
-        "user_name" => "usuariotemporal"
-      } = Jason.decode!(payload)
+               "access_method" => nil,
+               "user_name" => "usuariotemporal"
+             } = Jason.decode!(payload)
     end
 
     test "create invalid user session with access token", %{conn: conn} do
@@ -266,8 +266,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       refute Accounts.get_user_by_name(profile[:nickname])
 
-      assert {:ok, []} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, []} = Stream.read(:redix, @stream, transform: true)
     end
 
     test "create session proxy login when not allowed", %{conn: conn} do
@@ -282,8 +281,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       assert %{"code" => "proxy_login_disabled"} = errors
 
-      assert {:ok, []} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, []} = Stream.read(:redix, @stream, transform: true)
     end
 
     test "create session proxy login when is allowed and user is invalid", %{conn: conn} do
@@ -298,8 +296,7 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       assert %{"detail" => "Invalid credentials"} = errors
 
-      assert {:ok, []} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, []} = Stream.read(:redix, @stream, transform: true)
     end
 
     test "create session proxy login when is allowed and user is valid", %{conn: conn} do
@@ -311,31 +308,30 @@ defmodule TdAuthWeb.SessionControllerTest do
              |> post(Routes.session_path(conn, :create))
              |> json_response(:created)
 
-      assert {:ok, [event]} =
-               Stream.read(:redix, @stream, transform: true)
+      assert {:ok, [event]} = Stream.read(:redix, @stream, transform: true)
 
       user_id = event.user_id
 
       assert %{
-        event: "login_success",
-        id: _id,
-        payload: payload,
-        resource_id: ^user_id,
-        resource_type: "auth",
-        service: "td_auth",
-        ts: _ts,
-        user_id: ^user_id
-      } = event
+               event: "login_success",
+               id: _id,
+               payload: payload,
+               resource_id: ^user_id,
+               resource_type: "auth",
+               service: "td_auth",
+               ts: _ts,
+               user_id: ^user_id
+             } = event
 
       assert %{
-        "access_method" => "proxy_login",
-        "user_name" => "usuariotemporal"
-      } = Jason.decode!(payload)
+               "access_method" => "proxy_login",
+               "user_name" => "usuariotemporal"
+             } = Jason.decode!(payload)
     end
   end
 
   describe "refresh session" do
-    setup [:create_user]
+    setup :create_user
 
     test "refresh session with valid refresh token", %{conn: conn, swagger_schema: schema} do
       assert %{"token" => token, "refresh_token" => refresh_token} =

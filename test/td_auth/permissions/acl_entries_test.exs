@@ -50,7 +50,7 @@ defmodule TdAuth.Permissions.AclEntriesTest do
 
       %{resource_id: resource_id} =
         params = %{
-          resource_id: :rand.uniform(10_000),
+          resource_id: System.unique_integer([:positive]),
           resource_type: "domain",
           role_id: role_id,
           user_id: user_id
@@ -162,7 +162,10 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       e4 = insert(:acl_entry, resource_type: "foo", resource_id: 20)
 
       assert {2, entries} =
-               AclEntries.delete_acl_entries(resource_type: "foo", resource_id: {:not_in, [99, 20]})
+               AclEntries.delete_acl_entries(
+                 resource_type: "foo",
+                 resource_id: {:not_in, [99, 20]}
+               )
 
       assert_lists_equal(entries, [e1, e3], &assert_structs_equal(&1, &2, @acl_entry_keys))
 

@@ -28,7 +28,7 @@ defmodule TdAuth.LdapValidationTest do
   end
 
   describe "validation type attribute_doesnt_have_value" do
-    setup [:attribute_doesnt_have_value]
+    setup :attribute_doesnt_have_value
 
     test "returns error if attribute has value", %{
       attribute: attribute,
@@ -72,7 +72,7 @@ defmodule TdAuth.LdapValidationTest do
   end
 
   describe "validation type attribute_has_value" do
-    setup [:attribute_has_value]
+    setup :attribute_has_value
 
     test "returns error if attribute doesnt has value", %{
       attribute: attribute,
@@ -116,7 +116,7 @@ defmodule TdAuth.LdapValidationTest do
   end
 
   describe "validation type expiration_date_attribute" do
-    setup [:expiration_date_attribute]
+    setup :expiration_date_attribute
 
     test "will add warning indicating numbers of days until expires", %{
       attribute: attribute,
