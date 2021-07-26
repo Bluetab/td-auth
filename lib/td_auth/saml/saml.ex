@@ -6,8 +6,6 @@ defmodule TdAuth.Saml do
   require Logger
   require Record
 
-  alias TdAuth.Accounts
-
   @esaml_lib "esaml/include/esaml.hrl"
 
   Record.defrecord(:esaml_assertion, Record.extract(:esaml_assertion, from_lib: @esaml_lib))
@@ -59,7 +57,7 @@ defmodule TdAuth.Saml do
   end
 
   def map_assertion_to_profile(
-        esaml_assertion(subject: subject, attributes: attributes) = assertion,
+        esaml_assertion(subject: subject, attributes: attributes),
         reject_roles,
         allow_groups,
         create_group
