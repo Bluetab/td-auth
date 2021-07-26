@@ -28,5 +28,4 @@ defmodule TdAuthWeb.ResponseCode do
       _ -> "Unknown: #{http_status_code}"
     end
   end
-
 end

@@ -143,7 +143,8 @@ defmodule TdAuth.PermissionsTest do
       assert key == "group.delete.existing.permissions"
     end
 
-    test "get_domains_with_perms/2 returns permission and domains with that permission for user ", %{domains: domains} do
+    test "get_domains_with_perms/2 returns permission and domains with that permission for user ",
+         %{domains: domains} do
       %{id: user_id} = user = insert(:user, groups: [build(:group)])
       %{id: group_id} = hd(user.groups)
 

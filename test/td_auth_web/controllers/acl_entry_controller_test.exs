@@ -59,7 +59,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
     test "renders acl_entry when data is valid", %{conn: conn, swagger_schema: schema} do
       %{id: user_id} = insert(:user)
       %{id: role_id} = insert(:role)
-      resource_id = :rand.uniform(100_000)
+      resource_id = System.unique_integer([:positive])
       description = "a new ACL to be created"
 
       acl_entry_attrs = %{

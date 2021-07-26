@@ -49,8 +49,7 @@ defmodule TdAuth.Permissions.AclEntryTest do
     test "changeset/2 validates inclusion on resource_type" do
       acl_entry = insert(:acl_entry)
 
-      assert %Changeset{errors: errors} =
-               AclEntry.changeset(acl_entry, %{resource_type: "foo"})
+      assert %Changeset{errors: errors} = AclEntry.changeset(acl_entry, %{resource_type: "foo"})
 
       assert {_, [validation: :inclusion, enum: _]} = errors[:resource_type]
     end

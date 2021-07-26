@@ -3,11 +3,10 @@ defmodule TdAuth.Repo.Migrations.CreateRolesTable do
 
   def change do
     create_if_not_exists table(:roles) do
-      add :name, :string, null: false
+      add(:name, :string, null: false)
       timestamps()
     end
 
-    create_if_not_exists unique_index(:roles, [:name])
+    create_if_not_exists(unique_index(:roles, [:name]))
   end
-
 end

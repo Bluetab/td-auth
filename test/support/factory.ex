@@ -7,7 +7,8 @@ defmodule TdAuth.Factory do
   @password "secret hash"
 
   def user_factory do
-    secret =  Bcrypt.add_hash(@password)
+    secret = Bcrypt.add_hash(@password)
+
     %TdAuth.Accounts.User{
       user_name: sequence("username"),
       email: sequence(:email, &"username#{&1}@example.com"),

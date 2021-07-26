@@ -242,6 +242,7 @@ defmodule TdAuth.Permissions do
         %{permissions: permissions} ->
           names = Enum.map(permissions, &%{name: &1.name})
           domain_ids = TaxonomyCache.get_domain_ids()
+
           domain_ids
           |> Enum.map(
             &%{
