@@ -437,6 +437,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
               Schema.new do
                 properties do
                   group_id(:integer, "id of group")
+                  description(:string, "desctiption of acl", nullable: true)
                   user_id(:integer, "id of user")
                   resource_id(:integer, "id of resource", required: true)
                   resource_type(:string, "type of resource: domain", required: true)

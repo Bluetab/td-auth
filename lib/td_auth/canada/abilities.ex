@@ -16,6 +16,10 @@ defmodule TdBg.Canada.Abilities do
       authorized?(claims, :create_acl_entry, domain_id)
     end
 
+    def can?(claims, :update, %{resource_type: "domain", resource_id: domain_id}) do
+      authorized?(claims, :update_acl_entry, domain_id)
+    end
+
     def can?(claims, :view, AclEntry) do
       authorized?(claims, :view_domain, 1)
     end

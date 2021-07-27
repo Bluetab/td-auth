@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-3931] Update acl entry resource
+
 ## [4.25.0] 2021-07-26
 
 ### Fixed
