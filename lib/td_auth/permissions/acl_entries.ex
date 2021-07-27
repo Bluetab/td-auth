@@ -60,6 +60,13 @@ defmodule TdAuth.Permissions.AclEntries do
     |> refresh_cache()
   end
 
+  def update_acl_entry(%AclEntry{} = acl_entry, params) do
+    acl_entry
+    |> AclEntry.changeset(params)
+    |> Repo.update()
+    |> refresh_cache()
+  end
+
   @doc """
   Deletes a AclEntry.
 
