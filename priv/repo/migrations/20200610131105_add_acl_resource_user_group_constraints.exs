@@ -18,7 +18,16 @@ defmodule TdAuth.Repo.Migrations.AddAclResourceUserGroupConstraints do
   end
 
   def down do
-    drop(index(:acl_entries, [:user_id, :resource_type, :resource_id, :role_id], name: :unique_resource_user_role))
-    drop(index(:acl_entries, [:group_id, :resource_type, :resource_id, :role_id], name: :unique_resource_group_role))
+    drop(
+      index(:acl_entries, [:user_id, :resource_type, :resource_id, :role_id],
+        name: :unique_resource_user_role
+      )
+    )
+
+    drop(
+      index(:acl_entries, [:group_id, :resource_type, :resource_id, :role_id],
+        name: :unique_resource_group_role
+      )
+    )
   end
 end

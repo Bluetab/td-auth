@@ -59,7 +59,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
   end
 
   describe "update permission_group" do
-    setup [:create_permission_group]
+    setup :create_permission_group
 
     @tag authentication: [role: :admin]
     test "renders permission_group when data is valid", %{
@@ -88,7 +88,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
   end
 
   describe "delete permission_group" do
-    setup [:create_permission_group]
+    setup :create_permission_group
 
     @tag authentication: [role: :admin]
     test "deletes chosen permission_group", %{conn: conn, permission_group: permission_group} do

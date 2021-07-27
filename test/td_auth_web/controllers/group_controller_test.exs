@@ -105,9 +105,9 @@ defmodule TdAuthWeb.GroupControllerTest do
                Guardian.decode_and_verify(token, %{"typ" => "access"})
 
       assert conn
-               |> put_auth_headers(token)
-               |> get(Routes.group_path(conn, :index))
-               |> json_response(:forbidden)
+             |> put_auth_headers(token)
+             |> get(Routes.group_path(conn, :index))
+             |> json_response(:forbidden)
     end
   end
 

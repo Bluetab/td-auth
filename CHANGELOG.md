@@ -1,6 +1,7 @@
 # Changelog
 
-## [Unreleased]
+## [4.25.0] 2021-07-26
+
 ### Fixed
 
 - [TD-3833] Allow to setup user groups to be allowed to enter the application
@@ -10,7 +11,8 @@
 
 - [TD-3945] New permissions to view and manage grants
 - [TD-3947] Updated td-cache to write cache for user_name
-- [TD-3873] Include a specific permission to be able to share a concept with a domain
+- [TD-3873] Include a specific permission to be able to share a concept with a
+  domain
 
 ## [4.24.0] 2021-07-13
 
@@ -24,7 +26,7 @@
 - [TD-3894] User email is now optional
 - Removed deprecated `is_admin` field in user requests and responses
 
-### Added 
+### Added
 
 - [TD-3617] url in state for auth0 and idc
 
@@ -127,7 +129,8 @@
 
 - [TD-3163] Auth tokens now include rule claim instead of is_admin flag
 - [TD-3182] Allow to use redis with password
-- [TD-3074] Allow to query `users` and `groups` for users having permissions in bg
+- [TD-3074] Allow to query `users` and `groups` for users having permissions in
+  bg
 
 ### Deleted
 
@@ -150,7 +153,8 @@
 
 ### Changed
 
-- [TD-2461] Split `business_glossary` permission group into groups `business_glossary_view` and `business_glossary_management`
+- [TD-2461] Split `business_glossary` permission group into groups
+  `business_glossary_view` and `business_glossary_management`
 
 ## [4.9.0] 2020-11-30
 

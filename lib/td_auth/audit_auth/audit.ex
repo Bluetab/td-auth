@@ -10,8 +10,8 @@ defmodule TdAuth.AuditAuth.Audit do
       "user_name" => user_name,
       "access_method" => access_method
     }
-    publish("login_attempt", "auth", nil, nil, payload)
 
+    publish("login_attempt", "auth", nil, nil, payload)
   end
 
   def login_success(access_method, user) do
@@ -19,6 +19,7 @@ defmodule TdAuth.AuditAuth.Audit do
       "user_name" => user.user_name,
       "access_method" => access_method
     }
+
     publish("login_success", "auth", user.id, user.id, payload)
   end
 end

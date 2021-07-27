@@ -3,13 +3,13 @@ defmodule TdAuth.Repo.Migrations.DeleteUsersIsProtected do
 
   def up do
     alter table("users") do
-      remove :is_protected
+      remove(:is_protected)
     end
   end
 
   def down do
     alter table("users") do
-      add :is_protected, :boolean, default: false, null: false
+      add(:is_protected, :boolean, default: false, null: false)
     end
   end
 end

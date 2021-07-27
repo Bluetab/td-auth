@@ -16,5 +16,4 @@ defmodule TdAuth.Audit.AuditSupport do
       payload: payload
     )
   end
-
 end

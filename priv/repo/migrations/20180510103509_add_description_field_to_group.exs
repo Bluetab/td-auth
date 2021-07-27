@@ -3,7 +3,7 @@ defmodule TdAuth.Repo.Migrations.AddDescriptionFieldToGroup do
 
   def change do
     alter table(:groups) do
-      add :description, :string
+      add(:description, :string)
     end
   end
 end

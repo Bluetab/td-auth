@@ -10,11 +10,13 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   def authenticate(user_name, password) do
     case create_profile(user_name) do
       {:ok, profile} ->
-        case ldap_authenticate(profile, password)  do
+        case ldap_authenticate(profile, password) do
           {:ok} -> {:ok, profile}
           error -> error
         end
-      error -> error
+
+      error ->
+        error
     end
   end
 
@@ -27,6 +29,7 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
         after
           ldap_close(conn)
         end
+
       error ->
         Logger.info("Error while opening active directory connection... #{inspect(error)}")
         error
@@ -34,15 +37,19 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   end
 
   defp ldap_open do
-    Exldap.open(get_ad_server(), get_ad_port(),
-                get_ad_ssl(), get_ad_connection_timeout())
+    Exldap.open(get_ad_server(), get_ad_port(), get_ad_ssl(), get_ad_connection_timeout())
   end
 
   defp ldap_verify(conn, user_dn, password) do
     case Exldap.verify_credentials(conn, user_dn, password) do
-      :ok -> {:ok}
+      :ok ->
+        {:ok}
+
       error ->
-        Logger.info("Error while active directory user_name password verification... #{inspect(error)}")
+        Logger.info(
+          "Error while active directory user_name password verification... #{inspect(error)}"
+        )
+
         error
     end
   end
@@ -55,12 +62,16 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
             {:ok, []} ->
               Logger.info("User not found while searching user...")
               {:error, :user_not_found}
-            {:ok, [entry|_tail]} ->
-              profile = entry
-              |> build_profile
-              |> Map.put(@user_name, user_name)
-              |> Map.put(@user_dn, get_attribute!(entry, @distinguised_name))
+
+            {:ok, [entry | _tail]} ->
+              profile =
+                entry
+                |> build_profile
+                |> Map.put(@user_name, user_name)
+                |> Map.put(@user_dn, get_attribute!(entry, @distinguised_name))
+
               {:ok, profile}
+
             error ->
               Logger.info("Error while searching user... #{inspect(error)}")
               error
@@ -68,6 +79,7 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
         after
           ldap_close(conn)
         end
+
       error ->
         Logger.info("Error while connecting to active directory... #{inspect(error)}")
         error
@@ -75,9 +87,14 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   end
 
   defp ldap_connect do
-    Exldap.connect(get_ad_server(), get_ad_port(),
-                   get_ad_ssl(), get_ad_user_dn(),
-                   get_ad_password(), get_ad_connection_timeout())
+    Exldap.connect(
+      get_ad_server(),
+      get_ad_port(),
+      get_ad_ssl(),
+      get_ad_user_dn(),
+      get_ad_password(),
+      get_ad_connection_timeout()
+    )
   end
 
   defp ldap_close(conn) do
@@ -85,16 +102,16 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   end
 
   defp ldap_search(conn, user_name) do
-    Exldap.search_field(conn, get_ad_search_path(),
-                        @samaccountname, user_name)
+    Exldap.search_field(conn, get_ad_search_path(), @samaccountname, user_name)
   end
 
   defp build_profile(entry) do
-      mapping = %{"full_name" =>  "displayName", "email" => "mail"}
-      Enum.reduce(mapping, %{}, fn({k, v}, acc) ->
-        attr = get_attribute!(entry, v)
-        Map.put(acc, k, attr)
-      end)
+    mapping = %{"full_name" => "displayName", "email" => "mail"}
+
+    Enum.reduce(mapping, %{}, fn {k, v}, acc ->
+      attr = get_attribute!(entry, v)
+      Map.put(acc, k, attr)
+    end)
   end
 
   def get_attribute!(entry, attribute) do
@@ -135,5 +152,4 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
     timeout = Application.get_env(:td_auth, :ad)[:connection_timeout]
     String.to_integer(timeout)
   end
-
 end
