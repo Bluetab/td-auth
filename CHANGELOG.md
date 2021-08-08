@@ -5,6 +5,7 @@
 ### Added
 
 - [TD-3931] Update acl entry resource
+- [TD-3982] New permission `create_grant_request`
 
 ## [4.25.0] 2021-07-26
 
