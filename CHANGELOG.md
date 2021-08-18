@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.26.1] 2021-08-18
+
+### Fixed
+
+- [TD-4030] Conflict with permission `create_grant_request`
+
 ## [4.26.0] 2021-08-16
 
 ### Added
