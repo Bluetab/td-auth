@@ -5,6 +5,7 @@
 ### Added
 
 - New permission `approve_grant_request`
+- [TD-4076] store roles with permissions in cache
 
 ## [4.26.1] 2021-08-18
 

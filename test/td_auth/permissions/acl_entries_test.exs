@@ -38,8 +38,16 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       _e2 = insert(:acl_entry, resource_type: "foo", resource_id: 99)
       e3 = insert(:acl_entry, resource_type: "foo", resource_id: 12)
 
-      result = AclEntries.list_acl_entries(resource_type: "foo", resource_id: 12)
+      result = AclEntries.list_acl_entries(%{resource_type: "foo", resource_id: 12})
       assert_lists_equal(result, [e1, e3], &assert_structs_equal(&1, &2, @acl_entry_keys))
+    end
+
+    test "list_acl_entries/1 returns a list of acl entries updated since a given timestamp" do
+      %{updated_at: last_updated} = insert(:acl_entry)
+      %{id: id} = insert(:acl_entry)
+
+      assert [_, _] = AclEntries.list_acl_entries(%{updated_since: nil})
+      assert [%{id: ^id}] = AclEntries.list_acl_entries(%{updated_since: last_updated})
     end
 
     test "create_acl_entry/1 with valid params creates an ACL entry and refreshes cache" do

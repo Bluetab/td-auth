@@ -112,3 +112,17 @@ config :td_auth, TdAuth.HttpClient,
   proxy:
     {System.get_env("PROXY_HOST"), System.get_env("PROXY_PORT", "80") |> String.to_integer()},
   proxy_auth: {System.get_env("PROXY_USER"), System.get_env("PROXY_PASSWORD")}
+
+config :td_auth, TdAuth.Scheduler,
+  jobs: [
+    [
+      schedule: System.get_env("ACL_REMOVER_SCHEDULE", "@hourly"),
+      task: {TdAuth.Permissions.AclRemover, :delete_stale_acl_entries, []},
+      run_strategy: Quantum.RunStrategy.Local
+    ],
+    [
+      schedule: System.get_env("ROLE_LOADER_SCHEDULE", "@minutely"),
+      task: {TdAuth.Permissions.RoleLoader, :load_roles, []},
+      run_strategy: Quantum.RunStrategy.Local
+    ]
+  ]

@@ -108,7 +108,12 @@ config :td_auth, TdAuth.Scheduler,
   jobs: [
     [
       schedule: "@hourly",
-      task: {TdAuth.Permissions.AclRemover, :dispatch, []},
+      task: {TdAuth.Permissions.AclRemover, :delete_stale_acl_entries, []},
+      run_strategy: Quantum.RunStrategy.Local
+    ],
+    [
+      schedule: "@minutely",
+      task: {TdAuth.Permissions.RoleLoader, :load_roles, []},
       run_strategy: Quantum.RunStrategy.Local
     ]
   ]
