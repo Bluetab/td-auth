@@ -15,11 +15,6 @@ defmodule TdAuth.Permissions.AclEntriesTest do
     :user_id
   ]
 
-  setup_all do
-    start_supervised(TdAuth.Permissions.AclLoader)
-    :ok
-  end
-
   describe "TdAuth.Permissions.AclEntries" do
     test "get_acl_entry!/1 returns the acl_entry with given id" do
       %{id: id} = insert(:acl_entry, resource_type: "foo", resource_id: 1)

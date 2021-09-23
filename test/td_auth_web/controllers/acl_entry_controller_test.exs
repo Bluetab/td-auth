@@ -6,7 +6,6 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
-    start_supervised!(TdAuth.Permissions.AclLoader)
     :ok
   end
 

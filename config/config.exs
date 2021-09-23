@@ -107,6 +107,11 @@ config :td_auth, :phoenix_swagger,
 config :td_auth, TdAuth.Scheduler,
   jobs: [
     [
+      schedule: "@reboot",
+      task: {TdAuth.Permissions.AclLoader, :load_cache, []},
+      run_strategy: Quantum.RunStrategy.Local
+    ],
+    [
       schedule: "@hourly",
       task: {TdAuth.Permissions.AclRemover, :delete_stale_acl_entries, []},
       run_strategy: Quantum.RunStrategy.Local

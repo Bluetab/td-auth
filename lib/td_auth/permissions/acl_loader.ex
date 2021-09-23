@@ -1,44 +1,17 @@
 defmodule TdAuth.Permissions.AclLoader do
   @moduledoc """
-  GenServer to load ACL entries into distributed cache.
+  Loads ACL entries into distributed cache.
   """
-
-  use GenServer
 
   alias TdAuth.Permissions.AclEntries
   alias TdCache.AclCache
 
-  require Logger
-
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+  def load_cache do
+    AclEntries.get_user_ids_by_resource_and_role()
+    |> put_cache()
   end
 
   def refresh(resource_type, resource_id) do
-    GenServer.call(__MODULE__, {:refresh, resource_type, resource_id})
-  end
-
-  def delete(resource_type, resource_id) do
-    GenServer.call(__MODULE__, {:delete, resource_type, resource_id})
-  end
-
-  def delete_acl(resource_type, resource_id, role, user_id) do
-    GenServer.call(__MODULE__, {:delete_acl, resource_type, resource_id, role, user_id})
-  end
-
-  @impl GenServer
-  def init(state) do
-    unless Application.get_env(:td_auth, :env) == :test do
-      schedule_work(:load_cache, 0)
-    end
-
-    name = String.replace_prefix("#{__MODULE__}", "Elixir.", "")
-    Logger.info("Running #{name}")
-    {:ok, state}
-  end
-
-  @impl GenServer
-  def handle_call({:refresh, resource_type, resource_id}, _from, state) do
     acls =
       AclEntries.get_user_ids_by_resource_and_role(
         resource_type: resource_type,
@@ -50,28 +23,14 @@ defmodule TdAuth.Permissions.AclLoader do
     else
       put_cache(acls)
     end
-
-    {:reply, :ok, state}
   end
 
-  @impl GenServer
-  def handle_call({:delete, resource_type, resource_id}, _from, state) do
+  def delete(resource_type, resource_id) do
     delete_resource(resource_type, resource_id)
-    {:reply, :ok, state}
   end
 
-  @impl GenServer
-  def handle_call({:delete_acl, resource_type, resource_id, role, user_id}, _from, state) do
+  def delete_acl(resource_type, resource_id, role, user_id) do
     AclCache.delete_acl_role_user(resource_type, resource_id, role, user_id)
-    {:reply, :ok, state}
-  end
-
-  @impl GenServer
-  def handle_info(:load_cache, state) do
-    AclEntries.get_user_ids_by_resource_and_role()
-    |> put_cache()
-
-    {:noreply, state}
   end
 
   defp delete_resource(resource_type, resource_id) do
@@ -82,10 +41,6 @@ defmodule TdAuth.Permissions.AclLoader do
     end)
 
     {:ok, _} = AclCache.delete_acl_roles(resource_type, resource_id)
-  end
-
-  defp schedule_work(action, millis) do
-    Process.send_after(self(), action, millis)
   end
 
   defp put_cache(%{} = user_ids_by_resource_and_role) do
