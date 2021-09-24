@@ -6,8 +6,12 @@ defmodule TdAuth.HttpClient do
   use HTTPoison.Base
 
   def process_request_options(options) do
+    IO.puts("process_request_options")
+    IO.inspect(__MODULE__, label: "__MODULE__")
+
     :td_auth
     |> Application.get_env(__MODULE__, [])
+    |> IO.inspect(label: "GET_ENV")
     |> Enum.reduce(options, &put_option/2)
   end
 
@@ -18,6 +22,10 @@ defmodule TdAuth.HttpClient do
   defp put_option({:proxy_auth, {user, password}}, options)
        when is_binary(user) and is_binary(password) do
     Keyword.put_new(options, :proxy_auth, {user, password})
+  end
+
+  defp put_option({:hackney, hackney_opts}, options) do
+    Keyword.put_new(options, :hackney, hackney_opts)
   end
 
   defp put_option(_, options), do: options
