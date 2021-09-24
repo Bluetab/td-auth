@@ -111,4 +111,9 @@ config :td_auth, TdAuthWeb.AuthProvider.OIDC,
 config :td_auth, TdAuth.HttpClient,
   proxy:
     {System.get_env("PROXY_HOST"), System.get_env("PROXY_PORT", "80") |> String.to_integer()},
-  proxy_auth: {System.get_env("PROXY_USER"), System.get_env("PROXY_PASSWORD")}
+  proxy_auth: {System.get_env("PROXY_USER"), System.get_env("PROXY_PASSWORD")},
+  hackney: [
+    ssl_options: [
+      cacertfile: System.get_env("CACERTFILE")
+    ]
+  ]
