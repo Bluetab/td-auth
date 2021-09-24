@@ -29,7 +29,7 @@ defmodule TdAuth.Permissions.AclEntry do
     belongs_to(:user, User)
     belongs_to(:group, Group)
 
-    timestamps()
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc """

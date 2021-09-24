@@ -8,10 +8,12 @@ defmodule TdAuth.Permissions.Permission do
   import Ecto.Changeset
 
   alias TdAuth.Permissions.PermissionGroup
+  alias TdAuth.Permissions.Role
 
   schema "permissions" do
     field(:name, :string)
     belongs_to(:permission_group, PermissionGroup)
+    many_to_many(:roles, Role, join_through: "roles_permissions")
 
     timestamps()
   end

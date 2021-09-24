@@ -10,49 +10,17 @@ defmodule TdAuth.Permissions.AclEntries do
 
   import Ecto.Query
 
-  @type clauses :: %{optional(atom) => term} | keyword
-
-  @doc """
-  Gets a single acl_entry.
-
-  Raises `Ecto.NoResultsError` if the Acl entry does not exist.
-
-  ## Examples
-
-      iex> get_acl_entry!(123)
-      %AclEntry{}
-
-      iex> get_acl_entry!(456)
-      ** (Ecto.NoResultsError)
-
-  """
   def get_acl_entry!(id), do: Repo.get!(AclEntry, id)
 
-  @doc """
-  Returns a list of acl_entries matching the given `filter_clauses`.
+  @spec list_acl_entries(map) :: [Ecto.Schema.t()]
+  def list_acl_entries(clauses \\ %{}) do
+    clauses = Map.put_new(clauses, :preload, [:group, :role, :user])
 
-  ## Options
-
-    * `:preload` - Preloads the specified associations into the result set. See
-      `Ecto.Query.preload/3`. Defaults to `[:group, :role, :user]`.
-
-  """
-  @spec list_acl_entries(clauses, keyword) :: [Ecto.Schema.t()]
-  def list_acl_entries(filter_clauses \\ [], opts \\ [preload: [:group, :role, :user]]) do
-    with preloads <- Keyword.get(opts, :preload, []) do
-      AclEntry
-      |> do_where(filter_clauses)
-      |> preload(^preloads)
-      |> Repo.all()
-    end
+    AclEntry
+    |> build_query(clauses)
+    |> Repo.all()
   end
 
-  @doc """
-  Creates a new `%AclEntry{}`.
-
-  Returns `{:ok, struct}` if the ACL entry was created successfully or `{:error,
-  changeset}` if there was a validation or constraint error.
-  """
   def create_acl_entry(%{} = params) do
     params
     |> AclEntry.changeset()
@@ -67,27 +35,15 @@ defmodule TdAuth.Permissions.AclEntries do
     |> refresh_cache()
   end
 
-  @doc """
-  Deletes a AclEntry.
-
-  ## Examples
-
-      iex> delete_acl_entry(acl_entry)
-      {:ok, %AclEntry{}}
-
-      iex> delete_acl_entry(acl_entry)
-      {:error, %Ecto.Changeset{}}
-
-  """
   def delete_acl_entry(%AclEntry{} = acl_entry) do
     acl_entry
     |> Repo.delete()
     |> refresh_cache()
   end
 
-  def delete_acl_entries(filter_clauses) do
+  def delete_acl_entries(clauses) do
     AclEntry
-    |> do_where(filter_clauses)
+    |> build_query(clauses)
     |> select([e], e)
     |> Repo.delete_all()
     |> case do
@@ -100,9 +56,9 @@ defmodule TdAuth.Permissions.AclEntries do
     end
   end
 
-  def get_user_ids_by_resource_and_role(filter_clauses \\ %{}) do
+  def get_user_ids_by_resource_and_role(clauses \\ %{}) do
     AclEntry
-    |> do_where(filter_clauses)
+    |> build_query(clauses)
     |> join(:inner, [e], r in assoc(e, :role))
     |> join(:left, [e, _r], g in assoc(e, :group))
     |> join(:left, [e, _r, g], u in assoc(g, :users))
@@ -133,8 +89,8 @@ defmodule TdAuth.Permissions.AclEntries do
     Repo.get_by(AclEntry, clauses)
   end
 
-  defp do_where(queryable, filter_clauses) do
-    Enum.reduce(filter_clauses, queryable, fn
+  defp build_query(queryable, clauses) do
+    Enum.reduce(clauses, queryable, fn
       {:resource_type, resource_type}, q -> where(q, resource_type: ^resource_type)
       {:resource_id, {:not_in, ids}}, q -> where(q, [e], e.resource_id not in ^ids)
       {:resource_id, {:in, ids}}, q -> where(q, [e], e.resource_id in ^ids)
@@ -142,6 +98,9 @@ defmodule TdAuth.Permissions.AclEntries do
       {:user_groups, {uid, gids}}, q -> where(q, [e], e.user_id == ^uid or e.group_id in ^gids)
       {:user_id, user_id}, q -> where(q, user_id: ^user_id)
       {:group_id, group_id}, q -> where(q, group_id: ^group_id)
+      {:preload, preloads}, q -> preload(q, ^preloads)
+      {:updated_since, nil}, q -> q
+      {:updated_since, ts}, q -> where(q, [e], e.updated_at > ^ts)
       _, q -> q
     end)
   end
