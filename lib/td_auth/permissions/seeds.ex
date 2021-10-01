@@ -109,7 +109,8 @@ defmodule TdAuth.Permissions.Seeds do
     "grants" => [
       "view_grants",
       "manage_grants",
-      "create_grant_request"
+      "create_grant_request",
+      "approve_grant_request"
     ]
   }
 

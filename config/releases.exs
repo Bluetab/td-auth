@@ -117,3 +117,22 @@ config :td_auth, TdAuth.HttpClient,
       cacertfile: System.get_env("CACERTFILE")
     ]
   ]
+
+config :td_auth, TdAuth.Scheduler,
+  jobs: [
+    [
+      schedule: System.get_env("ACL_LOADER_SCHEDULE", "@reboot"),
+      task: {TdAuth.Permissions.AclLoader, :load_cache, []},
+      run_strategy: Quantum.RunStrategy.Local
+    ],
+    [
+      schedule: System.get_env("ACL_REMOVER_SCHEDULE", "@hourly"),
+      task: {TdAuth.Permissions.AclRemover, :delete_stale_acl_entries, []},
+      run_strategy: Quantum.RunStrategy.Local
+    ],
+    [
+      schedule: System.get_env("ROLE_LOADER_SCHEDULE", "@minutely"),
+      task: {TdAuth.Permissions.RoleLoader, :load_roles, []},
+      run_strategy: Quantum.RunStrategy.Local
+    ]
+  ]

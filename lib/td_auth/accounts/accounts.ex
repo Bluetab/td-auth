@@ -174,7 +174,7 @@ defmodule TdAuth.Accounts do
       |> select([ug], ug.group_id)
       |> Repo.all()
 
-    AclEntries.list_acl_entries(resource_type: "domain", user_groups: {user_id, group_ids})
+    AclEntries.list_acl_entries(%{resource_type: "domain", user_groups: {user_id, group_ids}})
   end
 
   @doc """
@@ -184,9 +184,11 @@ defmodule TdAuth.Accounts do
     user = get_user!(user_id, preload: :groups)
     group_ids = Enum.map(user.groups, & &1.id)
 
-    AclEntries.list_acl_entries([resource_type: "domain", user_groups: {user_id, group_ids}],
+    AclEntries.list_acl_entries(%{
+      resource_type: "domain",
+      user_groups: {user_id, group_ids},
       preload: preloads
-    )
+    })
   end
 
   @doc """
@@ -289,7 +291,7 @@ defmodule TdAuth.Accounts do
   defp refresh_cache({:ok, group}), do: refresh_cache(group)
 
   defp refresh_cache(%Group{id: id} = group) do
-    group_domains = AclEntries.list_acl_entries(resource_type: "domain", group_id: id)
+    group_domains = AclEntries.list_acl_entries(%{resource_type: "domain", group_id: id})
     do_refresh_cache(group_domains)
     {:ok, group}
   end
@@ -329,7 +331,7 @@ defmodule TdAuth.Accounts do
 
   """
   def delete_group(%Group{} = group) do
-    group_domains = AclEntries.list_acl_entries(resource_type: "domain", group_id: group.id)
+    group_domains = AclEntries.list_acl_entries(%{resource_type: "domain", group_id: group.id})
 
     group
     |> Repo.delete()
