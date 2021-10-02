@@ -96,4 +96,21 @@ defmodule TdAuth.Map.Helpers do
   defp deep_resolve(_key, _left, right) do
     right
   end
+
+  @doc """
+  Recursively convert keyword list to map
+  """
+  def to_map(keyword_list) when is_list(keyword_list) do
+    Enum.reduce(
+      keyword_list,
+      %{},
+      fn {key, value}, acc ->
+        Map.merge(%{key => to_map(value)}, acc)
+      end
+    )
+  end
+
+  def to_map(value) do
+    value
+  end
 end

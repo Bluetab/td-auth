@@ -5,6 +5,8 @@ defmodule TdAuth.HttpClient do
   """
   use HTTPoison.Base
 
+  alias TdAuth.Map.Helpers
+
   def process_request_options(options) do
     :td_auth
     |> Application.get_env(__MODULE__, [])
@@ -20,5 +22,22 @@ defmodule TdAuth.HttpClient do
     Keyword.put_new(options, :proxy_auth, {user, password})
   end
 
+  defp put_option({:hackney, hackney_opts}, options) do
+    Helpers.to_map(hackney_opts)
+    |> maybe_put_cacertfile(options)
+  end
+
   defp put_option(_, options), do: options
+
+  defp maybe_put_cacertfile(%{ssl_options: %{cacertfile: nil}}, options) do
+    options
+  end
+
+  defp maybe_put_cacertfile(%{ssl_options: %{cacertfile: cacertfile}}, options) do
+    Keyword.put_new(options, :hackney, ssl_options: [cacertfile: cacertfile])
+  end
+
+  defp maybe_put_cacertfile(_, options) do
+    options
+  end
 end

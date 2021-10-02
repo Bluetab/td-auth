@@ -4,6 +4,7 @@
 
 ### Added
 
+- [TD-4057] OIDC: Allow discovery uri to be self-signed
 - New permission `approve_grant_request`
 - [TD-4076] store roles with permissions in cache
 
