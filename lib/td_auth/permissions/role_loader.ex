@@ -33,6 +33,7 @@ defmodule TdAuth.Permissions.RoleLoader do
 
   def put_permission_roles do
     Permissions.list_permissions(preload: :roles)
+    |> Enum.reject(&Enum.empty?(&1.roles))
     |> Map.new(fn %{name: name, roles: roles} -> {name, Enum.map(roles, & &1.name)} end)
     |> CachePermissions.put_permission_roles()
   end
