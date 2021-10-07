@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.29.2] 2021-10-07
+
+### Fixed
+
+- [TD-4205] TdAuth.Permissions.RoleLoader server was not started on application
+
 ## [4.29.1] 2021-10-07
 
 ### Fixed
