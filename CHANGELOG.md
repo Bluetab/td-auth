@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.29.1] 2021-10-07
+
+### Fixed
+
+- [TD-4044] Filter permissions without role before putting to cache
+
 ## [4.29.0] 2021-10-04
 
 ### Added
