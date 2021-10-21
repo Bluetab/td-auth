@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-4203] Update `td-cache` for role permissions
+
 ## [4.29.2] 2021-10-07
 
 ### Fixed
