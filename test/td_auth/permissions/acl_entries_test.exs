@@ -153,9 +153,21 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       assert {_, [constraint: :check, constraint_name: "user_xor_group"]} = errors[:group_id]
     end
 
-    test "delete_acl_entry/1 deletes the ACL Entry" do
-      acl_entry = insert(:acl_entry)
+    test "delete_acl_entry/1 deletes the ACL Entry from both the database and AclCache" do
+      alias TdCache.AclCache
+
+      %AclEntry{
+        resource_type: resource_type,
+        resource_id: resource_id,
+        role: %{name: role_name},
+        user_id: user_id
+      } = acl_entry = insert(:acl_entry)
+
+      {:ok, _} = AclCache.set_acl_role_users(resource_type, resource_id, role_name, [user_id])
+
+      assert AclCache.has_role?(resource_type, resource_id, role_name, user_id)
       assert {:ok, %AclEntry{}} = AclEntries.delete_acl_entry(acl_entry)
+      assert not AclCache.has_role?(resource_type, resource_id, role_name, user_id)
     end
 
     test "delete_acl_entries/1 applies filters" do
