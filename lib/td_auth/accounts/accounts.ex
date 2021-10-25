@@ -154,6 +154,7 @@ defmodule TdAuth.Accounts do
   """
   def delete_user(%User{} = user) do
     user
+    |> Repo.preload([acl_entries: :role])
     |> Repo.delete()
     |> post_delete()
   end
@@ -357,8 +358,8 @@ defmodule TdAuth.Accounts do
 
   defp post_upsert(result), do: result
 
-  defp post_delete({:ok, %User{id: id} = user}) do
-    UserLoader.delete(id)
+  defp post_delete({:ok, %User{} = user}) do
+    UserLoader.delete(user)
     {:ok, user}
   end
 
