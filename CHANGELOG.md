@@ -8,6 +8,22 @@
   - Remove ACLs after domain member deletion
   - Remove ACLs after user deletion
 
+### Changed
+
+- [TD-4203] Update `td-cache` for role permissions
+
+## [4.29.2] 2021-10-07
+
+### Fixed
+
+- [TD-4205] TdAuth.Permissions.RoleLoader server was not started on application
+
+## [4.29.1] 2021-10-07
+
+### Fixed
+
+- [TD-4044] Filter permissions without role before putting to cache
+
 ## [4.29.0] 2021-10-04
 
 ### Added
