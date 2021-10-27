@@ -18,8 +18,8 @@ defmodule TdAuth.Accounts.UserLoader do
     GenServer.call(__MODULE__, {:refresh, user_id})
   end
 
-  def delete(user_id) do
-    GenServer.call(__MODULE__, {:delete, user_id})
+  def delete(user) do
+    GenServer.call(__MODULE__, {:delete, user})
   end
 
   @impl GenServer
@@ -40,8 +40,8 @@ defmodule TdAuth.Accounts.UserLoader do
   end
 
   @impl GenServer
-  def handle_call({:delete, user_id}, _from, state) do
-    reply = UserCache.delete(user_id)
+  def handle_call({:delete, user}, _from, state) do
+    reply = UserCache.delete(user)
     {:reply, reply, state}
   end
 
