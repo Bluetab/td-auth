@@ -38,7 +38,7 @@ defmodule TdAuth.Permissions.AclEntries do
   def delete_acl_entry(%AclEntry{} = acl_entry) do
     acl_entry
     |> Repo.delete()
-    |> refresh_cache()
+    |> delete_from_cache
   end
 
   def delete_acl_entries(clauses) do
