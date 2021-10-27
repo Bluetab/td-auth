@@ -76,7 +76,6 @@ defmodule TdAuth.Mixfile do
       {:cowboy, "~> 2.7", override: true},
       {:quantum, "~> 3.0"},
       {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.31.1"}
-
     ]
   end
 
