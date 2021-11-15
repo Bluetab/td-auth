@@ -12,6 +12,7 @@ defmodule TdAuthWeb.UserControllerTest do
   @create_attrs %{
     password: "some password_hash",
     user_name: "some user_name",
+    external_id: "some external_id",
     email: "some@email.com",
     groups: ["Group"]
   }
@@ -21,6 +22,7 @@ defmodule TdAuthWeb.UserControllerTest do
   }
   @update_attrs %{
     user_name: "some updated user_name",
+    external_id: "some updated external_id",
     groups: ["GroupNew"]
   }
   @invalid_attrs %{user_name: nil, email: nil}
@@ -58,6 +60,19 @@ defmodule TdAuthWeb.UserControllerTest do
                |> json_response(:ok)
 
       assert [%{"role" => "admin"}, %{"role" => "service"}] = data
+    end
+
+    @tag authentication: [role: :admin]
+    test "includes external_id in response", %{conn: conn, swagger_schema: schema} do
+      insert(:user, external_id: "foo")
+
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.user_path(conn, :index))
+               |> validate_resp_schema(schema, "UsersResponseData")
+               |> json_response(:ok)
+
+      assert Enum.find(data, fn user -> Map.get(user, "external_id") == "foo" end)
     end
 
     @tag authentication: [role: :service]
@@ -147,7 +162,7 @@ defmodule TdAuthWeb.UserControllerTest do
       domain = build(:domain)
       role = insert(:role)
       group = insert(:group)
-      user = insert(:user, groups: [group])
+      user = insert(:user, external_id: "get external_id", groups: [group])
 
       {:ok, _} = TaxonomyCache.put_domain(domain)
 
@@ -170,6 +185,7 @@ defmodule TdAuthWeb.UserControllerTest do
       conn = get(conn, Routes.user_path(conn, :show, user.id))
       validate_resp_schema(conn, schema, "UserResponse")
       user_data = json_response(conn, :ok)["data"]
+      assert user_data["external_id"] == user.external_id
       assert Map.has_key?(user_data, "acls")
       acls = Map.get(user_data, "acls")
       assert length(acls) == 2

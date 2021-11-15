@@ -23,7 +23,7 @@ defmodule TdAuthWeb.UserView do
     groups = render_many(groups, GroupView, "name.json")
 
     user
-    |> Map.take([:id, :user_name, :email, :full_name, :role])
+    |> Map.take([:id, :user_name, :external_id, :email, :full_name, :role])
     |> Map.put(:groups, groups)
     |> render_acls(assigns)
   end

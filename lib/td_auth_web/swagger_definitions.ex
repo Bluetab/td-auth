@@ -98,6 +98,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           properties do
             id(:integer, "unique identifier", required: true)
             user_name(:string, "user name", required: true)
+            external_id([:string, :null], "external id")
             email([:string, :null], "email")
             role(:string, "role", required: true)
             full_name([:string, :null], "full name")
