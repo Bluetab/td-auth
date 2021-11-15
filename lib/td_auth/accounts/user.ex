@@ -15,6 +15,7 @@ defmodule TdAuth.Accounts.User do
   schema "users" do
     field(:password_hash, :string)
     field(:user_name, :string)
+    field(:external_id, :string)
     field(:password, :string, virtual: true)
     field(:old_password, :string, virtual: true)
     field(:email, :string)
@@ -30,7 +31,7 @@ defmodule TdAuth.Accounts.User do
 
   def changeset(%__MODULE__{} = user, params, keep_groups \\ false) do
     user
-    |> cast(params, [:user_name, :role, :email, :full_name])
+    |> cast(params, [:user_name, :external_id, :role, :email, :full_name])
     |> cast(params, [:password, :old_password], empty_values: [])
     |> validate_required(:user_name)
     |> validate_length(:password, min: 6)
@@ -40,6 +41,7 @@ defmodule TdAuth.Accounts.User do
     |> put_groups(user.groups, keep_groups, params)
     |> put_role()
     |> unique_constraint(:user_name)
+    |> unique_constraint(:external_id)
   end
 
   defp validate_old_password(

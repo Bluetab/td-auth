@@ -149,6 +149,25 @@ defmodule TdAuth.Accounts.UserTest do
       assert {_, [constraint: :unique, constraint_name: _]} = errors[:user_name]
     end
 
+    test "captures unique constraint on external_id" do
+      insert(:user, external_id: "foo")
+
+      params = %{
+        user_name: "jane",
+        email: "some@example.com",
+        password: "secret",
+        external_id: "foo"
+      }
+
+      assert {:error, %Changeset{errors: errors} = changeset} =
+               params
+               |> User.changeset()
+               |> Repo.insert()
+
+      refute changeset.valid?
+      assert {_, [constraint: :unique, constraint_name: _]} = errors[:external_id]
+    end
+
     test "validates role" do
       params = %{password: "secret", email: "foo@bar.com", user_name: "foo", role: :foo}
 

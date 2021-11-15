@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-4228] Include optional `external_id` for users
+
 ## [4.31.0] 2021-11-02
 
 ### Fixed
