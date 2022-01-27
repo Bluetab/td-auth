@@ -38,7 +38,7 @@ defmodule TdAuth.Permissions.AclEntries do
   def delete_acl_entry(%AclEntry{} = acl_entry) do
     acl_entry
     |> Repo.delete()
-    |> delete_from_cache
+    |> delete_from_cache()
   end
 
   def delete_acl_entries(clauses) do
@@ -126,8 +126,8 @@ defmodule TdAuth.Permissions.AclEntries do
            role_id: role_id
          } = acl_entry
        ) do
-    role = Roles.get_role!(role_id)
-    AclLoader.delete_acl(resource_type, resource_id, role.name, user_id)
+    %{name: role_name} = Roles.get_role!(role_id)
+    AclLoader.delete_acl(resource_type, resource_id, role_name, user_id)
     {:ok, acl_entry}
   end
 

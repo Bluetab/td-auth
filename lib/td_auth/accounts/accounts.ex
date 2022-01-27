@@ -154,7 +154,6 @@ defmodule TdAuth.Accounts do
   """
   def delete_user(%User{} = user) do
     user
-    |> Repo.preload(acl_entries: :role)
     |> Repo.delete()
     |> post_delete()
   end
@@ -179,7 +178,7 @@ defmodule TdAuth.Accounts do
   end
 
   @doc """
-    Returns the acl entries with specified preloads associated with user_id or its groups
+  Returns the acl entries with specified preloads associated with user_id or its groups
   """
   def get_user_acls(user_id, preloads) do
     user = get_user!(user_id, preload: :groups)
@@ -358,8 +357,8 @@ defmodule TdAuth.Accounts do
 
   defp post_upsert(result), do: result
 
-  defp post_delete({:ok, %User{} = user}) do
-    UserLoader.delete(user)
+  defp post_delete({:ok, %User{id: id} = user}) do
+    UserLoader.delete(id)
     {:ok, user}
   end
 

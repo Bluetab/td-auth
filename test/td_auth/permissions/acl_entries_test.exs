@@ -2,8 +2,10 @@ defmodule TdAuth.Permissions.AclEntriesTest do
   use TdAuth.DataCase
 
   alias Ecto.Changeset
+  alias TdAuth.CacheHelpers
   alias TdAuth.Permissions.AclEntries
   alias TdAuth.Permissions.AclEntry
+  alias TdCache.AclCache
 
   @acl_entry_keys [
     :id,
@@ -46,10 +48,9 @@ defmodule TdAuth.Permissions.AclEntriesTest do
     end
 
     test "create_acl_entry/1 with valid params creates an ACL entry and refreshes cache" do
-      alias TdCache.AclCache
-
-      %{id: user_id} = insert(:user)
+      %{id: user_id} = user = insert(:user)
       %{id: role_id, name: role_name} = insert(:role)
+      CacheHelpers.put_user(user)
 
       %{resource_id: resource_id} =
         params = %{
@@ -61,7 +62,7 @@ defmodule TdAuth.Permissions.AclEntriesTest do
 
       assert {:ok, acl_entry = %AclEntry{}} = AclEntries.create_acl_entry(params)
       assert_changed(acl_entry, params)
-      assert "#{user_id}" in AclCache.get_acl_role_users("domain", resource_id, role_name)
+      assert user_id in AclCache.get_acl_role_users("domain", resource_id, role_name)
       assert role_name in AclCache.get_acl_roles("domain", resource_id)
     end
 
@@ -154,20 +155,20 @@ defmodule TdAuth.Permissions.AclEntriesTest do
     end
 
     test "delete_acl_entry/1 deletes the ACL Entry from both the database and AclCache" do
-      alias TdCache.AclCache
-
       %AclEntry{
         resource_type: resource_type,
         resource_id: resource_id,
         role: %{name: role_name},
-        user_id: user_id
-      } = acl_entry = insert(:acl_entry)
+        user: %{id: user_id} = user
+      } = acl_entry = insert(:acl_entry, principal_type: :user)
+
+      CacheHelpers.put_user(user)
 
       {:ok, _} = AclCache.set_acl_role_users(resource_type, resource_id, role_name, [user_id])
 
       assert AclCache.has_role?(resource_type, resource_id, role_name, user_id)
       assert {:ok, %AclEntry{}} = AclEntries.delete_acl_entry(acl_entry)
-      assert not AclCache.has_role?(resource_type, resource_id, role_name, user_id)
+      refute AclCache.has_role?(resource_type, resource_id, role_name, user_id)
     end
 
     test "delete_acl_entries/1 applies filters" do
