@@ -25,8 +25,6 @@ defmodule TdAuthWeb.AuthProvider.CustomProfileMapping do
   defp profile_mapping_value(profile, key) when is_binary(key), do: Map.get(profile, key)
 
   defp profile_mapping_value(profile, keys) when is_list(keys) do
-    keys
-    |> Enum.map(&Map.get(profile, &1, ""))
-    |> Enum.join(" ")
+    Enum.map_join(keys, " ", &Map.get(profile, &1, ""))
   end
 end

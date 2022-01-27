@@ -243,14 +243,9 @@ defmodule TdAuth.Permissions do
           names = Enum.map(permissions, &%{name: &1.name})
           domain_ids = TaxonomyCache.get_domain_ids()
 
-          domain_ids
-          |> Enum.map(
-            &%{
-              role: %{permissions: names},
-              group: nil,
-              resource_type: "domain",
-              resource_id: &1
-            }
+          Enum.map(
+            domain_ids,
+            &%{role: %{permissions: names}, group: nil, resource_type: "domain", resource_id: &1}
           )
 
         _nil ->
@@ -262,10 +257,7 @@ defmodule TdAuth.Permissions do
     Enum.map(perms, fn perm_name ->
       domains =
         all_acls
-        |> Enum.filter(&(&1.resource_type == "domain"))
-        |> Enum.filter(fn acl_entry ->
-          Enum.any?(acl_entry.role.permissions, &(&1.name == perm_name))
-        end)
+        |> Enum.filter(&has_domain_permission?(&1, perm_name))
         |> Enum.map(&Map.get(&1, :resource_id))
         |> Enum.uniq()
         |> Enum.map(&TaxonomyCache.get_domain/1)
@@ -275,4 +267,10 @@ defmodule TdAuth.Permissions do
       %{name: perm_name, domains: domains}
     end)
   end
+
+  defp has_domain_permission?(%{resource_type: "domain", role: %{permissions: permissions}}, name) do
+    Enum.any?(permissions, &(&1.name == name))
+  end
+
+  defp has_domain_permission?(_, _), do: false
 end
