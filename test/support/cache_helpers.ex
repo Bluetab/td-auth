@@ -5,7 +5,13 @@ defmodule TdAuth.CacheHelpers do
 
   import ExUnit.Callbacks, only: [on_exit: 1]
 
+  alias TdCache.DomainCache
   alias TdCache.UserCache
+
+  def put_domain(%{id: id} = domain) do
+    on_exit(fn -> DomainCache.delete(id) end)
+    DomainCache.put(domain, publish: false)
+  end
 
   def put_user(%{} = user) do
     %{id: id} = user = maybe_put_id(user)

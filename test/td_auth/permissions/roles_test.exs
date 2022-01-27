@@ -1,53 +1,61 @@
 defmodule TdAuth.Permissions.RoleTest do
   use TdAuth.DataCase
 
-  import Ecto.Query
-
-  alias TdAuth.Permissions
-  alias TdAuth.Permissions.Role
   alias TdAuth.Permissions.Roles
 
-  describe "roles" do
-    test "list_roles/0 returns all roles" do
-      assert Enum.empty?(Roles.list_roles())
-      %{id: role_id} = insert(:role)
+  setup do
+    role = insert(:role, permissions: [build(:permission)])
+    permissions = Enum.map(1..20, fn _ -> insert(:permission) end)
+    [permissions: permissions, role: role]
+  end
+
+  describe "Roles.list_roles/0" do
+    test "list_roles/0 returns all roles", %{role: %{id: role_id}} do
       assert [%{id: ^role_id}] = Roles.list_roles()
+      insert(:role)
+      assert [_, _] = Roles.list_roles()
+    end
+  end
+
+  describe "Roles.get_role!/1" do
+    test "returns the role with given id", %{role: expected} do
+      role = Roles.get_role!(expected.id)
+      assert_structs_equal(role, expected, [:id, :name, :inserted_at])
+    end
+  end
+
+  describe "Roles.create_role/1" do
+    test "with valid data creates a role" do
+      %{name: name} = params_for(:role)
+      assert {:ok, %{role: role}} = Roles.create_role(%{name: name})
+      assert %{name: ^name} = role
     end
 
-    test "get_role!/1 returns the role with given id" do
-      role = insert(:role)
-      assert Roles.get_role!(role.id) == role
+    test "replaces default role if is_default is true" do
+      role1 = insert(:role, is_default: true, name: "old_default")
+
+      assert {:ok, multi} = Roles.create_role(%{name: "new_default", is_default: true})
+      assert %{role: role2, unset_default: {1, [prev_default]}} = multi
+      assert %{name: "new_default", is_default: true} = role2
+      assert %{is_default: false} = prev_default
+
+      assert_structs_equal(role1, prev_default, [:id, :name, :inserted_at])
     end
 
-    test "create_role/1 with valid data creates a role" do
-      assert {:ok, %{role: %Role{name: "valid role"}}} = Roles.create_role(%{name: "valid role"})
-    end
-
-    test "create_role/1 replaces default role if is_default is true" do
-      role = insert(:role, is_default: true)
-
-      assert {:ok,
-              %{
-                role: %Role{name: "default role", is_default: true},
-                unset_default: {1, [prev_default]}
-              }} = Roles.create_role(%{name: "default role", is_default: true})
-
-      assert_structs_equal(role, prev_default, [:id, :name, :inserted_at])
-      refute prev_default.is_default
-    end
-
-    test "create_role/1 with invalid data returns error changeset" do
+    test "with invalid data returns error changeset" do
       assert {:error, :role, %Ecto.Changeset{}, %{}} = Roles.create_role(%{})
     end
+  end
 
-    test "update_role/2 with valid data updates the role" do
+  describe "Roles.update_role/2" do
+    test "with valid data updates the role" do
       role = insert(:role)
 
       assert {:ok, %{role: %{name: "updated role"}}} =
                Roles.update_role(role, %{name: "updated role"})
     end
 
-    test "update_role/2 unsets current default role" do
+    test "unsets current default role" do
       default = insert(:role, is_default: true)
       role = insert(:role)
 
@@ -60,71 +68,42 @@ defmodule TdAuth.Permissions.RoleTest do
       assert_structs_equal(prev_default, default, [:id, :name, :inserted_at])
     end
 
-    test "update_role/2 with invalid data returns error changeset" do
+    test "with invalid data returns error changeset" do
       role = insert(:role)
       assert {:error, :role, %Ecto.Changeset{}, %{}} = Roles.update_role(role, %{name: nil})
     end
+  end
 
-    test "get_by/1 returns the default role" do
+  describe "Roles.get_by/1 " do
+    test "returns the default role" do
       refute Roles.get_by(is_default: true)
       role = insert(:role, is_default: true)
       assert Roles.get_by(is_default: true) == role
     end
 
-    test "get_by/1 returns a role by name" do
+    test "returns a role by name" do
       refute Roles.get_by(name: "foo")
       role = insert(:role, name: "foo")
       assert Roles.get_by(name: "foo") == role
     end
+  end
 
-    test "delete_role/1 deletes the role" do
+  describe "Roles.delete_role/1" do
+    test "deletes the role" do
       %{id: role_id} = role = insert(:role)
-      assert {:ok, %Role{}} = Roles.delete_role(role)
-      refute Repo.exists?(from(r in Role, where: [id: ^role_id]))
+      assert {:ok, %{role: role}} = Roles.delete_role(role)
+      assert %{__meta__: %{state: :deleted}, id: ^role_id} = role
     end
   end
 
-  describe "role permissions" do
-    @role_attrs %{name: "rolename"}
+  describe "Roles.put_permissions/2" do
+    test "replaces the permissions of a role", %{role: role, permissions: permissions} do
+      role_permissions = Enum.take_random(permissions, 5)
+      assert {:ok, %{role: role}} = Roles.put_permissions(role, role_permissions)
+      assert_lists_equal(role.permissions, role_permissions)
 
-    test "put_permissions/2 adds permissions to a role" do
-      Roles.create_role(@role_attrs)
-
-      permissions = Permissions.list_permissions()
-      permissions = Enum.sort(permissions, &(&1.name < &2.name))
-
-      role = Roles.get_or_create(@role_attrs.name)
-      Roles.put_permissions(role, permissions)
-
-      role = Roles.get_or_create(@role_attrs.name)
-      stored_permissions = Roles.get_role_permissions(role)
-      stored_permissions = Enum.sort(stored_permissions, &(&1.name < &2.name))
-
-      assert permissions == stored_permissions
-    end
-
-    test "put_permissions/2 delete all permissions" do
-      Roles.create_role(@role_attrs)
-
-      permissions = Permissions.list_permissions()
-      permissions = Enum.sort(permissions, &(&1.name < &2.name))
-
-      role = Roles.get_or_create(@role_attrs.name)
-      Roles.put_permissions(role, permissions)
-
-      role = Roles.get_or_create(@role_attrs.name)
-      stored_permissions = Roles.get_role_permissions(role)
-      stored_permissions = Enum.sort(stored_permissions, &(&1.name < &2.name))
-
-      assert permissions == stored_permissions
-
-      role = Roles.get_or_create(@role_attrs.name)
-      Roles.put_permissions(role, [])
-
-      role = Roles.get_or_create(@role_attrs.name)
-      stored_permissions = Roles.get_role_permissions(role)
-
-      assert [] == stored_permissions
+      assert {:ok, %{role: role}} = Roles.put_permissions(role, [])
+      assert role.permissions == []
     end
   end
 end

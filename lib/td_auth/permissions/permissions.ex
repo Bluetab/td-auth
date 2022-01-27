@@ -9,21 +9,13 @@ defmodule TdAuth.Permissions do
   alias TdAuth.Accounts.User
   alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.PermissionGroup
+  alias TdAuth.Permissions.Role
   alias TdAuth.Permissions.Roles
   alias TdAuth.Repo
   alias TdCache.TaxonomyCache
 
   @default_preloads :permission_group
 
-  @doc """
-  Returns the list of permissions.
-
-  ## Examples
-
-      iex> list_permissions()
-      [%Permission{}, ...]
-
-  """
   def list_permissions(opts \\ [preload: @default_preloads]) do
     filter_clauses = Keyword.put_new(opts, :preload, @default_preloads)
 
@@ -32,20 +24,6 @@ defmodule TdAuth.Permissions do
     |> Repo.all()
   end
 
-  @doc """
-  Gets a single permission.
-
-  Raises `Ecto.NoResultsError` if the Permission does not exist.
-
-  ## Examples
-
-      iex> get_permission!(123)
-      %Permission{}
-
-      iex> get_permission!(456)
-      ** (Ecto.NoResultsError)
-
-  """
   def get_permission!(id, opts \\ [preload: @default_preloads]) do
     with preloads <- Keyword.get(opts, :preload, []) do
       Permission
@@ -54,34 +32,8 @@ defmodule TdAuth.Permissions do
     end
   end
 
-  @doc """
-  Gets a single permission by name.
-
-  Raises `Ecto.NoResultsError` if the Permission does not exist.
-
-  ## Examples
-
-      iex> get_permission_by_name("view_domain")
-      {:ok, %Permission{}}
-
-      iex> get_permission_by_name("does_not_exist")
-      nil
-
-  """
   def get_permission_by_name(name), do: Repo.get_by(Permission, name: name)
 
-  @doc """
-  Creates a permission.
-
-  ## Examples
-
-      iex> create_permission(%{name: "custom_permission"})
-      {:ok, %Permission{}}
-
-      iex> create_permission(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def create_permission(attrs \\ %{}) do
     %Permission{}
     |> Permission.changeset(attrs)
@@ -105,13 +57,7 @@ defmodule TdAuth.Permissions do
 
   def cache_session_permissions([], _jti, _exp), do: []
 
-  def cache_session_permissions(acl_entries, jti, exp) do
-    do_cache_session_permissions(jti, exp, acl_entries)
-  end
-
-  def do_cache_session_permissions(_jti, _exp, []), do: []
-
-  def do_cache_session_permissions(jti, exp, acl_entries) when is_list(acl_entries) do
+  def cache_session_permissions(acl_entries, jti, exp) when is_list(acl_entries) do
     TdCache.Permissions.cache_session_permissions!(jti, exp, acl_entries)
   end
 
@@ -131,85 +77,26 @@ defmodule TdAuth.Permissions do
     }
   end
 
-  @doc """
-  Returns the list of permission_groups.
-
-  ## Examples
-
-      iex> list_permission_groups()
-      [%PermissionGroup{}, ...]
-
-  """
   def list_permission_groups do
     Repo.all(PermissionGroup)
   end
 
-  @doc """
-  Gets a single permission_group.
-
-  Raises `Ecto.NoResultsError` if the Permission group does not exist.
-
-  ## Examples
-
-      iex> get_permission_group!(123)
-      %PermissionGroup{}
-
-      iex> get_permission_group!(456)
-      ** (Ecto.NoResultsError)
-
-  """
   def get_permission_group!(id) do
     Repo.get!(PermissionGroup, id)
   end
 
-  @doc """
-  Creates a permission_group.
-
-  ## Examples
-
-      iex> create_permission_group(%{field: value})
-      {:ok, %PermissionGroup{}}
-
-      iex> create_permission_group(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def create_permission_group(attrs \\ %{}) do
     attrs
     |> PermissionGroup.changeset()
     |> Repo.insert()
   end
 
-  @doc """
-  Updates a permission_group.
-
-  ## Examples
-
-      iex> update_permission_group(permission_group, %{field: new_value})
-      {:ok, %PermissionGroup{}}
-
-      iex> update_permission_group(permission_group, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def update_permission_group(%PermissionGroup{} = permission_group, params) do
     permission_group
     |> PermissionGroup.changeset(params)
     |> Repo.update()
   end
 
-  @doc """
-  Deletes a PermissionGroup.
-
-  ## Examples
-
-      iex> delete_permission_group(permission_group)
-      {:ok, %PermissionGroup{}}
-
-      iex> delete_permission_group(permission_group)
-      {:error, %Ecto.Changeset{}}
-
-  """
   def delete_permission_group(%PermissionGroup{} = permission_group) do
     permission_group
     |> PermissionGroup.delete_changeset()
@@ -273,4 +160,13 @@ defmodule TdAuth.Permissions do
   end
 
   defp has_domain_permission?(_, _), do: false
+
+  @spec default_permissions :: list(binary())
+  def default_permissions do
+    Role
+    |> where(is_default: true)
+    |> join(:inner, [r], p in assoc(r, :permissions))
+    |> select([_, p], p.name)
+    |> Repo.all()
+  end
 end
