@@ -61,7 +61,7 @@ defmodule TdAuth.Accounts.UserLoader do
     load_user_data([user])
   end
 
-  defp load_all_users do
+  def load_all_users do
     users = Accounts.list_users()
     load_user_data(users)
   end
@@ -69,7 +69,7 @@ defmodule TdAuth.Accounts.UserLoader do
   def load_user_data(users) do
     results =
       users
-      |> Enum.map(&Map.take(&1, [:id, :user_name, :full_name, :email]))
+      |> Enum.map(&Map.take(&1, [:id, :external_id, :user_name, :full_name, :email]))
       |> Enum.map(&UserCache.put/1)
       |> Enum.map(fn {res, _} -> res end)
 
