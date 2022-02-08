@@ -1,10 +1,15 @@
 # Changelog
 
-## [4.32.0] 2021-11-15
+## [Unreleased]
 
 ### Added
 
 - [TD-4456] Include user external_id in UserCache.put
+
+## [4.32.0] 2021-11-15
+
+### Added
+
 - [TD-4228] Include optional `external_id` for users
 
 ## [4.31.0] 2021-11-02
