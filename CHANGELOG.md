@@ -14,6 +14,12 @@
 
 ## [4.31.0] 2021-11-02
 
+### Fixed
+
+- [TD-4212]
+  - Remove ACLs after domain member deletion
+  - Remove ACLs after user deletion
+
 ### Changed
 
 - [TD-4203] Update `td-cache` for role permissions
