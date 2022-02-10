@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-4456] Include user external_id in UserCache.put (**removes [TD-4212]**)
+
 ## [4.32.0] 2021-11-15
 
 ### Added
