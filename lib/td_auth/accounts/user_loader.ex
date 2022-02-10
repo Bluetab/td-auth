@@ -18,8 +18,8 @@ defmodule TdAuth.Accounts.UserLoader do
     GenServer.call(__MODULE__, {:refresh, user_id})
   end
 
-  def delete(user) do
-    GenServer.call(__MODULE__, {:delete, user})
+  def delete(user_id) do
+    GenServer.call(__MODULE__, {:delete, user_id})
   end
 
   @impl GenServer
@@ -40,8 +40,8 @@ defmodule TdAuth.Accounts.UserLoader do
   end
 
   @impl GenServer
-  def handle_call({:delete, user}, _from, state) do
-    reply = UserCache.delete(user)
+  def handle_call({:delete, user_id}, _from, state) do
+    reply = UserCache.delete(user_id)
     {:reply, reply, state}
   end
 
@@ -61,7 +61,7 @@ defmodule TdAuth.Accounts.UserLoader do
     load_user_data([user])
   end
 
-  defp load_all_users do
+  def load_all_users do
     users = Accounts.list_users()
     load_user_data(users)
   end
@@ -69,7 +69,7 @@ defmodule TdAuth.Accounts.UserLoader do
   def load_user_data(users) do
     results =
       users
-      |> Enum.map(&Map.take(&1, [:id, :user_name, :full_name, :email]))
+      |> Enum.map(&Map.take(&1, [:id, :external_id, :user_name, :full_name, :email]))
       |> Enum.map(&UserCache.put/1)
       |> Enum.map(fn {res, _} -> res end)
 
