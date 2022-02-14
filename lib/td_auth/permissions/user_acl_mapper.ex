@@ -19,7 +19,7 @@ defmodule TdAuth.Permissions.UserAclMapper do
 
   defp domain(id) do
     name =
-      case TaxonomyCache.get(id) do
+      case TaxonomyCache.get_domain(id) do
         %{name: name} -> name
         _ -> nil
       end

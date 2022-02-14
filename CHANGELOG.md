@@ -4,7 +4,7 @@
 
 ### Changed
 
-- [TD-4461] Caching of permissions has been refactored
+- [TD-4491] Caching of permissions has been refactored
 
 ## [4.32.0] 2021-11-15
 

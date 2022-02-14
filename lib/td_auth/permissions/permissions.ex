@@ -46,35 +46,10 @@ defmodule TdAuth.Permissions do
     |> Repo.update()
   end
 
-  def retrieve_acl_with_permissions(user_id) do
-    alias TdAuth.Accounts
+  def cache_session_permissions(permissions, _jti, _exp) when permissions == %{}, do: :ok
 
-    user_id
-    |> Accounts.get_user_acls()
-    |> Repo.preload(role: [permissions: :permission_group])
-    |> Enum.map(&acl_entry_to_permissions/1)
-  end
-
-  def cache_session_permissions([], _jti, _exp), do: []
-
-  def cache_session_permissions(acl_entries, jti, exp) when is_list(acl_entries) do
-    TdCache.Permissions.cache_session_permissions!(jti, exp, acl_entries)
-  end
-
-  defp acl_entry_to_permissions(%{
-         resource_type: resource_type,
-         resource_id: resource_id,
-         role: %{permissions: permissions}
-       }) do
-    groups = Enum.map(permissions, & &1.permission_group)
-    permissions = Enum.map(permissions, & &1.name)
-
-    %{
-      resource_type: resource_type,
-      resource_id: resource_id,
-      permissions: permissions,
-      groups: groups
-    }
+  def cache_session_permissions(permissions, jti, exp) do
+    TdCache.Permissions.cache_session_permissions!(jti, exp, permissions)
   end
 
   def list_permission_groups do
@@ -112,13 +87,12 @@ defmodule TdAuth.Permissions do
   end
 
   def get_permissions_domains(%User{role: :admin}, perms) do
-    all_domains =
-      TaxonomyCache.get_domain_ids()
-      |> Enum.map(&TaxonomyCache.get_domain/1)
-      |> Enum.filter(& &1)
+    domains =
+      TaxonomyCache.domain_map()
+      |> Map.values()
       |> Enum.map(&Map.take(&1, [:id, :name, :external_id]))
 
-    Enum.map(perms, &%{name: &1, domains: all_domains})
+    Enum.map(perms, &%{name: &1, domains: domains})
   end
 
   def get_permissions_domains(%User{id: user_id}, perms) do
@@ -148,7 +122,7 @@ defmodule TdAuth.Permissions do
         |> Enum.map(&Map.get(&1, :resource_id))
         |> Enum.uniq()
         |> Enum.map(&TaxonomyCache.get_domain/1)
-        |> Enum.filter(& &1)
+        |> Enum.filter(&is_map/1)
         |> Enum.map(&Map.take(&1, [:id, :name, :external_id]))
 
       %{name: perm_name, domains: domains}
@@ -167,6 +141,37 @@ defmodule TdAuth.Permissions do
     |> where(is_default: true)
     |> join(:inner, [r], p in assoc(r, :permissions))
     |> select([_, p], p.name)
+    |> Repo.all()
+  end
+
+  @spec user_permissions(User.t()) :: map
+  def user_permissions(user)
+
+  def user_permissions(%User{role: :admin}), do: %{}
+
+  def user_permissions(%User{id: user_id}) do
+    do_user_permissions(user_id)
+  end
+
+  defp do_user_permissions(user_id) do
+    Permission
+    |> join(:inner, [p], r in assoc(p, :roles))
+    |> join(:inner, [_, r], a in assoc(r, :acl_entries))
+    |> join(:left, [_, _, a], ug in "users_groups", on: ug.group_id == a.group_id)
+    |> where([_, _, a], a.resource_type == "domain")
+    |> where([_, _, a, ug], fragment("coalesce(?, ?)", a.user_id, ug.user_id) == ^user_id)
+    |> select([p, _, a, _], {p.name, a.resource_id})
+    |> Repo.all()
+    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+  end
+
+  @spec group_names(list(binary)) :: list(binary)
+  def group_names(permission_names) do
+    Permission
+    |> where([p], p.name in ^permission_names)
+    |> join(:inner, [p], g in assoc(p, :permission_group))
+    |> select([_, g], g.name)
+    |> distinct(true)
     |> Repo.all()
   end
 end
