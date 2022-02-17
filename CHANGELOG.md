@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- [TD-4481]  New permission `manage_business_concepts_domain`
+
 ## [4.37.0] 2022-02-10
 
 ### Added
