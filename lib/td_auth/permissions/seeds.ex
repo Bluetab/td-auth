@@ -32,7 +32,8 @@ defmodule TdAuth.Permissions.Seeds do
       "view_deprecated_business_concepts",
       "view_draft_business_concepts",
       "view_rejected_business_concepts",
-      "share_with_domain"
+      "share_with_domain",
+      "manage_business_concepts_domain"
     ],
     "configurations" => [
       "manage_configurations"
