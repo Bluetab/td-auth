@@ -1,6 +1,7 @@
 # Changelog
 
-## [Unreleased]
+## [4.39.0] 2022-02-22
+
 ### Added
 
 - New permissions:
