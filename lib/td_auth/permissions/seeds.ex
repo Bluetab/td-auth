@@ -71,7 +71,8 @@ defmodule TdAuth.Permissions.Seeds do
       "manage_quality_rule",
       "manage_quality_rule_implementations",
       "view_quality_rule",
-      "manage_raw_quality_rule_implementations"
+      "manage_raw_quality_rule_implementations",
+      "manage_rule_results"
     ],
     "data_sources" => [
       "manage_data_sources"
