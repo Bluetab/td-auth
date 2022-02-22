@@ -1,8 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+### Added
 
-- [TD-4481]  New permission `manage_business_concepts_domain`
+- New permissions:
+  - [TD-4437] `manage_rule_results`
+  - [TD-4481] `manage_business_concepts_domain`
 
 ## [4.37.0] 2022-02-10
 
