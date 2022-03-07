@@ -44,5 +44,14 @@ defmodule TdAuth.Permissions.RoleLoaderTest do
       assert UserCache.get_roles(user_id) == {:ok, %{role_name => [resource_id]}}
       assert UserCache.get_roles(user_id2) == {:ok, %{role_name => [resource_id]}}
     end
+
+    test "put_default_permissions/1 updates default permissions in cache" do
+      permissions = Enum.map(1..10, fn _ -> build(:permission) end)
+      default_permissions = Enum.take_random(permissions, 5)
+
+      insert(:role, is_default: true, permissions: default_permissions)
+
+      assert {:ok, [_, 5]} = RoleLoader.put_default_permissions()
+    end
   end
 end

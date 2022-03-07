@@ -8,17 +8,13 @@ defmodule TdAuth.Permissions.Roles do
   alias Ecto.Changeset
   alias Ecto.Multi
   alias TdAuth.Permissions.Role
+  alias TdAuth.Permissions.RoleLoader
   alias TdAuth.Repo
 
-  @doc """
-  Returns the list of roles.
+  @typep multi_result ::
+           {:ok, map} | {:error, Multi.name(), any(), %{required(Multi.name()) => any()}}
 
-  ## Examples
-
-      iex> list_roles()
-      [%Role{}, ...]
-
-  """
+  @doc "Returns the list of roles"
   def list_roles do
     Repo.all(Role)
   end
@@ -27,30 +23,10 @@ defmodule TdAuth.Permissions.Roles do
   Gets a single role.
 
   Raises `Ecto.NoResultsError` if the Role does not exist.
-
-  ## Examples
-
-      iex> get_role!(123)
-      %Role{}
-
-      iex> get_role!(456)
-      ** (Ecto.NoResultsError)
-
   """
   def get_role!(id), do: Repo.get!(Role, id)
 
-  @doc """
-  Gets a single role.
-
-  ## Examples
-
-      iex> get_role(123)
-      %Role{}
-
-      iex> get_role(456)
-      nil
-
-  """
+  @doc "Gets a single role, returning nil if it doesn't exist."
   def get_role(id), do: Repo.get(Role, id)
 
   @doc """
@@ -61,24 +37,16 @@ defmodule TdAuth.Permissions.Roles do
     * `role` - The created role
     * `unset_default` - The result of the update_all operation on the current
       default role
-
-  ## Examples
-
-      iex> create_role(%{field: value})
-      {:ok, %{role: %Role{}}}
-
-      iex> create_role(%{field: bad_value})
-      {:error, :role, %Ecto.Changeset{}, %{}}
-
   """
-  def create_role(params \\ %{}) do
-    case Role.changeset(params) do
-      changeset = %Changeset{} ->
-        Multi.new()
-        |> unset_default(changeset)
-        |> Multi.insert(:role, changeset)
-        |> Repo.transaction()
-    end
+  @spec create_role(map) :: multi_result
+  def create_role(%{} = params) do
+    changeset = Role.changeset(params)
+
+    Multi.new()
+    |> unset_default(changeset)
+    |> Multi.insert(:role, changeset)
+    |> Repo.transaction()
+    |> maybe_refresh_cache()
   end
 
   @doc """
@@ -89,40 +57,25 @@ defmodule TdAuth.Permissions.Roles do
     * `role` - The created role
     * `unset_default` - The result of the update_all operation on the current
       default role
-
-  ## Examples
-
-      iex> update_role(role, %{field: new_value})
-      {:ok, %{role: %Role{}}}
-
-      iex> update_role(role, %{field: bad_value})
-      {:error, :role, %Ecto.Changeset{}, %{}}
-
   """
+  @spec update_role(Role.t(), map) :: multi_result
   def update_role(%Role{} = role, params) do
-    case Role.changeset(role, params) do
-      changeset = %Changeset{} ->
-        Multi.new()
-        |> unset_default(changeset)
-        |> Multi.update(:role, changeset)
-        |> Repo.transaction()
-    end
+    changeset = Role.changeset(role, params)
+
+    Multi.new()
+    |> unset_default(changeset)
+    |> Multi.update(:role, changeset)
+    |> Repo.transaction()
+    |> maybe_refresh_cache()
   end
 
-  @doc """
-  Deletes a Role.
-
-  ## Examples
-
-      iex> delete_role(role)
-      {:ok, %Role{}}
-
-      iex> delete_role(role)
-      {:error, %Ecto.Changeset{}}
-
-  """
+  @doc "Deletes a Role"
+  @spec delete_role(Role.t()) :: multi_result
   def delete_role(%Role{} = role) do
-    Repo.delete(role)
+    Multi.new()
+    |> Multi.delete(:role, role)
+    |> Repo.transaction()
+    |> maybe_refresh_cache()
   end
 
   @doc """
@@ -153,32 +106,22 @@ defmodule TdAuth.Permissions.Roles do
     end
   end
 
-  @doc """
-  Associate Permissions to a Role.
-
-  ## Examples
-
-      iex> put_permissions!()
-      %Role{}
-
-  """
+  @doc "Associate Permissions to a Role"
+  @spec put_permissions(Role.t(), list) :: multi_result
   def put_permissions(%Role{} = role, permissions) do
-    role
-    |> Repo.preload(:permissions)
-    |> Changeset.change()
-    |> Changeset.put_assoc(:permissions, permissions)
-    |> Repo.update!()
+    changeset =
+      role
+      |> Repo.preload(:permissions)
+      |> Changeset.change()
+      |> Changeset.put_assoc(:permissions, permissions)
+
+    Multi.new()
+    |> Multi.update(:role, changeset)
+    |> Repo.transaction()
+    |> maybe_refresh_cache()
   end
 
-  @doc """
-  Returns the list of Permissions asociated to a Role.
-
-  ## Examples
-
-      iex> get_role_permissions()
-      [%Permission{}, ...]
-
-  """
+  @doc "Returns the list of Permissions asociated to a Role"
   def get_role_permissions(%Role{} = role) do
     role
     |> Repo.preload(permissions: :permission_group)
@@ -186,8 +129,6 @@ defmodule TdAuth.Permissions.Roles do
   end
 
   defp unset_default(%Multi{} = multi, %Changeset{} = changeset) do
-    import Ecto.Query
-
     case Changeset.fetch_change(changeset, :is_default) do
       {:ok, true} ->
         Multi.update_all(
@@ -201,6 +142,13 @@ defmodule TdAuth.Permissions.Roles do
         multi
     end
   end
+
+  defp maybe_refresh_cache({:ok, _} = res) do
+    RoleLoader.load_roles()
+    res
+  end
+
+  defp maybe_refresh_cache(res), do: res
 
   defp reduce_opts(queryable, opts) do
     Enum.reduce(opts, queryable, fn

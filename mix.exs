@@ -56,16 +56,11 @@ defmodule TdAuth.Mixfile do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.1"},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:guardian, "~> 2.0"},
       {:canada, "~> 2.0"},
       {:bcrypt_elixir, "~> 2.0"},
       {:cors_plug, "~> 2.0"},
       {:httpoison, "~> 1.6"},
-      {:cabbage,
-       git: "https://github.com/Bluetab/cabbage", branch: "feature/background", only: :test},
-      {:ex_machina, "~> 2.3", only: :test},
-      {:assertions, "~> 0.15", only: :test},
       {:phoenix_swagger, "~> 0.8"},
       {:ex_json_schema, "~> 0.6"},
       {:inflex, "~> 2.0"},
@@ -75,7 +70,12 @@ defmodule TdAuth.Mixfile do
       # See https://github.com/handnot2/esaml/issues/29
       {:cowboy, "~> 2.7", override: true},
       {:quantum, "~> 3.0"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.38.1", override: true},
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.40.0"},
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:cabbage,
+       git: "https://github.com/Bluetab/cabbage", branch: "feature/background", only: :test},
+      {:ex_machina, "~> 2.3", only: :test},
+      {:assertions, "~> 0.15", only: :test}
     ]
   end
 

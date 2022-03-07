@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-4491] Caching of permissions has been refactored
+-
+
 ## [4.38.0] 2022-02-22
 
 ### Added

@@ -7,8 +7,9 @@ defmodule TdAuth.Permissions.RoleLoader do
 
   alias TdAuth.Permissions
   alias TdAuth.Permissions.AclEntries
-  alias TdCache.Permissions, as: CachePermissions
   alias TdCache.UserCache
+
+  # Public API
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -18,24 +19,34 @@ defmodule TdAuth.Permissions.RoleLoader do
     GenServer.cast(__MODULE__, :load_roles)
   end
 
+  # GenServer callbacks
+
   @impl true
   def init(_) do
-    {:ok, _acl_ts = nil}
+    {:ok, _acls_ts = nil}
   end
 
   @impl true
   def handle_cast(:load_roles, acls_ts) do
-    acls_ts = put_roles(acls_ts)
     {:ok, _} = put_permission_roles()
+    {:ok, _} = put_default_permissions()
+    acls_ts = put_roles(acls_ts)
 
     {:noreply, acls_ts}
+  end
+
+  # Private functions (should only be used by this module or tests)
+
+  def put_default_permissions do
+    perms = Permissions.default_permissions()
+    TdCache.Permissions.put_default_permissions(perms)
   end
 
   def put_permission_roles do
     Permissions.list_permissions(preload: :roles)
     |> Enum.reject(&Enum.empty?(&1.roles))
     |> Map.new(fn %{name: name, roles: roles} -> {name, Enum.map(roles, & &1.name)} end)
-    |> CachePermissions.put_permission_roles()
+    |> TdCache.Permissions.put_permission_roles()
   end
 
   def put_roles(last_updated_at) do

@@ -53,9 +53,8 @@ defmodule TdAuthWeb.RolePermissionController do
     with %Role{} = role <- Roles.get_role!(role_id),
          {:can, true} <- {:can, can?(claims, update(role))},
          ids <- Enum.map(perms, &Map.get(&1, "id")),
-         permissions <- Permissions.list_permissions(id: {:in, ids}) do
-      Roles.put_permissions(role, permissions)
-
+         permissions <- Permissions.list_permissions(id: {:in, ids}),
+         {:ok, _} <- Roles.put_permissions(role, permissions) do
       conn
       |> put_view(PermissionView)
       |> render("index.json", permissions: permissions)

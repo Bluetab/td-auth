@@ -56,9 +56,8 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
 
   def authenticate(%Conn{} = conn) do
     with {:ok, token} <- bearer_token(conn),
-         {:ok, claims} <- OpenIDConnect.verify(:oidc, token),
-         {:ok, profile} <- map_profile(claims) do
-      {:ok, profile}
+         {:ok, claims} <- OpenIDConnect.verify(:oidc, token) do
+      map_profile(claims)
     end
   end
 
@@ -67,9 +66,8 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
          params <- verification_params(params, verifier),
          {:ok, %{"id_token" => token}} <- OpenIDConnect.fetch_tokens(:oidc, params),
          {:ok, claims} <- OpenIDConnect.verify(:oidc, token),
-         {:ok, _} <- validate_nonce(claims),
-         {:ok, profile} <- map_profile(claims) do
-      {:ok, profile}
+         {:ok, _} <- validate_nonce(claims) do
+      map_profile(claims)
     end
   end
 

@@ -8,7 +8,6 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuth.Ldap.Ldap
   alias TdAuth.Permissions
-  alias TdAuth.Permissions.Roles
   alias TdAuth.Saml.SamlWorker
   alias TdAuthWeb.AuthProvider.ActiveDirectory
   alias TdAuthWeb.AuthProvider.Auth0
@@ -16,7 +15,6 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuthWeb.ErrorView
   alias TdAuthWeb.SwaggerDefinitions
   alias TdCache.NonceCache
-  alias TdCache.TaxonomyCache
 
   require Logger
 
@@ -128,13 +126,17 @@ defmodule TdAuthWeb.SessionController do
     |> render("show.json", token: tokens)
   end
 
-  defp create_tokens(conn, user, access_method) do
-    acl_entries = retrieve_acl_with_permissions(user)
-    claims = claims(user, acl_entries, access_method)
+  defp create_tokens(conn, %User{role: role} = user, access_method) do
+    default_permissions = Permissions.default_permissions()
+    user_permissions = Permissions.user_permissions(user)
+    permission_groups = permission_groups(user, Map.keys(user_permissions) ++ default_permissions)
+    claims = claims(user, permission_groups, access_method)
     conn = handle_sign_in(conn, user, claims)
     token = GuardianPlug.current_token(conn)
     %{"jti" => jti, "exp" => exp} = GuardianPlug.current_claims(conn)
-    Permissions.cache_session_permissions(acl_entries, jti, exp)
+    unless role == :admin do
+      Permissions.cache_session_permissions(user_permissions, jti, exp)
+    end
 
     {:ok, refresh_token, _full_claims} =
       Guardian.encode_and_sign(user, %{}, token_type: "refresh")
@@ -157,41 +159,6 @@ defmodule TdAuthWeb.SessionController do
     |> put_status(:unprocessable_entity)
     |> put_view(ErrorView)
     |> render("422.json")
-  end
-
-  defp has_user_permissions?(%User{role: :admin}, _acl_entries), do: true
-
-  defp has_user_permissions?(%User{}, acl_entries) do
-    acl_entries
-    |> Enum.any?(&(Map.has_key?(&1, :permissions) && !Enum.empty?(&1.permissions)))
-  end
-
-  defp retrieve_acl_with_permissions(%User{role: :admin}), do: []
-
-  defp retrieve_acl_with_permissions(%User{} = user) do
-    acl_entries = Permissions.retrieve_acl_with_permissions(user.id)
-
-    default_acl_entries =
-      case Roles.get_by(is_default: true, preload: [permissions: :permission_group]) do
-        %{permissions: permissions} ->
-          names = Enum.map(permissions, & &1.name)
-          groups = Enum.map(permissions, & &1.permission_group)
-
-          TaxonomyCache.get_root_domain_ids()
-          |> Enum.map(
-            &%{
-              permissions: names,
-              groups: groups,
-              resource_type: "domain",
-              resource_id: &1
-            }
-          )
-
-        _nil ->
-          []
-      end
-
-    acl_entries ++ default_acl_entries
   end
 
   defp authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding) do
@@ -287,12 +254,15 @@ defmodule TdAuthWeb.SessionController do
     end
   end
 
-  defp claims(user, acl_entries, access_method) do
-    user
-    |> Map.take([:user_name, :role])
-    |> Map.new(fn {k, v} -> {k, to_string(v)} end)
-    |> Map.put(:has_permissions, has_user_permissions?(user, acl_entries))
-    |> Map.put(:groups, permission_groups(user, acl_entries))
+  defp claims(%{role: role, user_name: user_name}, groups, access_method) do
+    has_permissions = role == :admin || groups != []
+
+    %{
+      user_name: user_name,
+      role: to_string(role),
+      has_permissions: has_permissions,
+      groups: groups
+    }
     |> with_access_method(access_method)
   end
 
@@ -301,14 +271,10 @@ defmodule TdAuthWeb.SessionController do
 
   defp with_access_method(claims, _), do: claims
 
-  defp permission_groups(%User{role: :admin}, _acl_entries), do: []
+  defp permission_groups(%{role: :admin}, _permissions), do: []
 
-  defp permission_groups(_user, acl_entries) do
-    acl_entries
-    |> Enum.map(&(&1.groups || []))
-    |> List.flatten()
-    |> Enum.uniq_by(& &1.id)
-    |> Enum.map(& &1.name)
+  defp permission_groups(_user, permissions) when is_list(permissions) do
+    Permissions.group_names(permissions)
   end
 
   def ping(conn, _params) do
