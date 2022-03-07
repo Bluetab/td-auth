@@ -35,6 +35,7 @@ defmodule TdAuth.AuthenticationTest do
     {:ok, Map.merge(state, data)}
   end
 
+  # credo:disable-for-next-line
   defwhen ~r/^"(?<user_name>[^"]+)" tries to create a user "(?<new_user_name>[^"]+)" with password "(?<new_password>[^"]+)"$/,
           %{user_name: _user_name, new_user_name: new_user_name, new_password: new_password},
           state do
@@ -123,6 +124,7 @@ defmodule TdAuth.AuthenticationTest do
     assert json_resp["token"] == nil
   end
 
+  # credo:disable-for-next-line
   defgiven ~r/^an existing user "(?<user_name>[^"]+)" with password "(?<password>[^"]+)" with "super-admin" permission$/,
            %{user_name: user_name, password: password},
            state do
@@ -184,6 +186,7 @@ defmodule TdAuth.AuthenticationTest do
     {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
+  # credo:disable-for-next-line
   defgiven ~r/^if result "(?<actual_result>[^"]+)" is "(?<expected_result>[^"]+)" user "(?<user_name>[^"]+)" does not exist$/,
            %{
              actual_result: actual_result,
@@ -198,6 +201,7 @@ defmodule TdAuth.AuthenticationTest do
     end
   end
 
+  # credo:disable-for-next-line
   defgiven ~r/^if result "(?<actual_result>[^"]+)" is not "(?<expected_result>[^"]+)" user "(?<user_name>[^"]+)" can be authenticated with password "(?<password>[^"]+)"$/,
            %{
              actual_result: actual_result,
@@ -213,6 +217,7 @@ defmodule TdAuth.AuthenticationTest do
     end
   end
 
+  # credo:disable-for-next-line
   defwhen ~r/^"(?<user_name>[^"]+)" tries to reset "(?<other_user_name>[^"]+)" password with new_password "(?<new_password>[^"]+)"$/,
           %{user_name: _user_name, other_user_name: other_user_name, new_password: new_password},
           state do
@@ -224,6 +229,7 @@ defmodule TdAuth.AuthenticationTest do
     {:ok, Map.merge(state, %{status_code: status_code})}
   end
 
+  # credo:disable-for-next-line
   defwhen ~r/^"(?<user_name>[^"]+)" tries to reset his "(?<property>[^"]+)" with new property value "(?<new_value>[^"]+)"$/,
           %{user_name: user_name, property: property, new_value: new_value},
           state do

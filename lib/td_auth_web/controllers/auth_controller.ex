@@ -77,6 +77,10 @@ defmodule TdAuthWeb.AuthController do
     config
     |> Enum.into(%{})
     |> Map.get(check_field)
-    |> (fn v -> v == "" or is_nil(v) end).()
+    |> is_nil_or_empty()
   end
+
+  defp is_nil_or_empty(nil), do: true
+  defp is_nil_or_empty(""), do: true
+  defp is_nil_or_empty(_), do: false
 end

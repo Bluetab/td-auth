@@ -2,8 +2,10 @@ defmodule TdAuth.Permissions.AclEntriesTest do
   use TdAuth.DataCase
 
   alias Ecto.Changeset
+  alias TdAuth.CacheHelpers
   alias TdAuth.Permissions.AclEntries
   alias TdAuth.Permissions.AclEntry
+  alias TdCache.AclCache
 
   @acl_entry_keys [
     :id,
@@ -46,10 +48,9 @@ defmodule TdAuth.Permissions.AclEntriesTest do
     end
 
     test "create_acl_entry/1 with valid params creates an ACL entry and refreshes cache" do
-      alias TdCache.AclCache
-
-      %{id: user_id} = insert(:user)
+      %{id: user_id} = user = insert(:user)
       %{id: role_id, name: role_name} = insert(:role)
+      CacheHelpers.put_user(user)
 
       %{resource_id: resource_id} =
         params = %{
@@ -61,7 +62,7 @@ defmodule TdAuth.Permissions.AclEntriesTest do
 
       assert {:ok, acl_entry = %AclEntry{}} = AclEntries.create_acl_entry(params)
       assert_changed(acl_entry, params)
-      assert "#{user_id}" in AclCache.get_acl_role_users("domain", resource_id, role_name)
+      assert user_id in AclCache.get_acl_role_users("domain", resource_id, role_name)
       assert role_name in AclCache.get_acl_roles("domain", resource_id)
     end
 

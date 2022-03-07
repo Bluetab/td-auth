@@ -126,7 +126,7 @@ defmodule TdAuth.Saml do
   def generate_metadata(sp) do
     sp
     |> :esaml_sp.generate_metadata()
-    |> (fn x -> [x] end).()
+    |> List.wrap()
     |> :xmerl.export(:xmerl_xml)
     |> List.flatten()
   end

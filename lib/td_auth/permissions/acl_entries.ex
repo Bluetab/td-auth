@@ -126,8 +126,8 @@ defmodule TdAuth.Permissions.AclEntries do
            role_id: role_id
          } = acl_entry
        ) do
-    role = Roles.get_role!(role_id)
-    AclLoader.delete_acl(resource_type, resource_id, role.name, user_id)
+    %{name: role_name} = Roles.get_role!(role_id)
+    AclLoader.delete_acl(resource_type, resource_id, role_name, user_id)
     {:ok, acl_entry}
   end
 

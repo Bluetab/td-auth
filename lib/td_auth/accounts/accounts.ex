@@ -178,7 +178,7 @@ defmodule TdAuth.Accounts do
   end
 
   @doc """
-    Returns the acl entries with specified preloads associated with user_id or its groups
+  Returns the acl entries with specified preloads associated with user_id or its groups
   """
   def get_user_acls(user_id, preloads) do
     user = get_user!(user_id, preload: :groups)
