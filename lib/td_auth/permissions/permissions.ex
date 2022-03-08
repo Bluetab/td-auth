@@ -5,14 +5,11 @@ defmodule TdAuth.Permissions do
 
   import Ecto.Query, warn: false
 
-  alias TdAuth.Accounts
   alias TdAuth.Accounts.User
   alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.PermissionGroup
   alias TdAuth.Permissions.Role
-  alias TdAuth.Permissions.Roles
   alias TdAuth.Repo
-  alias TdCache.TaxonomyCache
 
   @default_preloads :permission_group
 
@@ -85,55 +82,6 @@ defmodule TdAuth.Permissions do
       _, q -> q
     end)
   end
-
-  def get_permissions_domains(%User{role: :admin}, perms) do
-    domains =
-      TaxonomyCache.domain_map()
-      |> Map.values()
-      |> Enum.map(&Map.take(&1, [:id, :name, :external_id]))
-
-    Enum.map(perms, &%{name: &1, domains: domains})
-  end
-
-  def get_permissions_domains(%User{id: user_id}, perms) do
-    acls = Accounts.get_user_acls(user_id, [:group, [role: :permissions], :user])
-
-    default_acls =
-      case Roles.get_by(is_default: true, preload: [permissions: :permission_group]) do
-        %{permissions: permissions} ->
-          names = Enum.map(permissions, &%{name: &1.name})
-          domain_ids = TaxonomyCache.get_domain_ids()
-
-          Enum.map(
-            domain_ids,
-            &%{role: %{permissions: names}, group: nil, resource_type: "domain", resource_id: &1}
-          )
-
-        _nil ->
-          []
-      end
-
-    all_acls = acls ++ default_acls
-
-    Enum.map(perms, fn perm_name ->
-      domains =
-        all_acls
-        |> Enum.filter(&has_domain_permission?(&1, perm_name))
-        |> Enum.map(&Map.get(&1, :resource_id))
-        |> Enum.uniq()
-        |> Enum.map(&TaxonomyCache.get_domain/1)
-        |> Enum.filter(&is_map/1)
-        |> Enum.map(&Map.take(&1, [:id, :name, :external_id]))
-
-      %{name: perm_name, domains: domains}
-    end)
-  end
-
-  defp has_domain_permission?(%{resource_type: "domain", role: %{permissions: permissions}}, name) do
-    Enum.any?(permissions, &(&1.name == name))
-  end
-
-  defp has_domain_permission?(_, _), do: false
 
   @spec default_permissions :: list(binary())
   def default_permissions do

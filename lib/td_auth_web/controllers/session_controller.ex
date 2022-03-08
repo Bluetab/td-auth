@@ -134,6 +134,7 @@ defmodule TdAuthWeb.SessionController do
     conn = handle_sign_in(conn, user, claims)
     token = GuardianPlug.current_token(conn)
     %{"jti" => jti, "exp" => exp} = GuardianPlug.current_claims(conn)
+
     unless role == :admin do
       Permissions.cache_session_permissions(user_permissions, jti, exp)
     end
