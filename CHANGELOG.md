@@ -5,7 +5,10 @@
 ### Changed
 
 - [TD-4491] Caching of permissions has been refactored
--
+
+### Removed
+
+- [TD-4604] Removed route `/api/users/me/permissions`
 
 ## [4.38.0] 2022-02-22
 

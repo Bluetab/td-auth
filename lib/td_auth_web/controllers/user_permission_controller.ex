@@ -1,9 +1,6 @@
 defmodule TdAuthWeb.UserPermissionController do
   use TdAuthWeb, :controller
 
-  alias TdAuth.Accounts
-  alias TdAuth.Accounts.User
-  alias TdAuth.Permissions
   alias TdAuthWeb.SwaggerDefinitions
 
   require Logger
@@ -31,16 +28,5 @@ defmodule TdAuthWeb.UserPermissionController do
 
     response(200, "OK", Schema.ref(:PermissionDomainsResponseData))
     response(400, "Client Error")
-  end
-
-  def show(conn, %{"user_id" => "me", "permissions" => perms}) do
-    permissions = String.split(perms, ",")
-    %{user_id: user_id} = conn.assigns[:current_resource]
-
-    case Accounts.get_user!(user_id) do
-      %User{} = user ->
-        permission_domains = Permissions.get_permissions_domains(user, permissions)
-        render(conn, "show.json", permission_domains: permission_domains)
-    end
   end
 end
