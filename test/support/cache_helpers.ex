@@ -10,7 +10,7 @@ defmodule TdAuth.CacheHelpers do
 
   def put_domain(%{id: id} = domain) do
     on_exit(fn -> DomainCache.delete(id) end)
-    DomainCache.put(domain, publish: false)
+    DomainCache.put(domain)
   end
 
   def put_user(%{} = user) do
