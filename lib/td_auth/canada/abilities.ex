@@ -33,7 +33,7 @@ defmodule TdBg.Canada.Abilities do
     end
 
     def can?(%Claims{jti: jti}, :view, Role) do
-      Permissions.has_any_permission_on_resource_type?(jti, [:create_acl_entry], "domain")
+      Permissions.has_permission?(jti, :create_acl_entry)
     end
 
     def can?(%Claims{}, _action, _entity), do: false

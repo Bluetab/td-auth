@@ -76,7 +76,6 @@ defmodule TdAuth.Factory do
   def domain_factory do
     %{
       id: System.unique_integer([:positive]),
-      parent_ids: [],
       name: sequence(:domain_name, &"Domain #{&1}"),
       updated_at: "2020-02-02T02:02:02.000000Z"
     }
