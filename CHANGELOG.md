@@ -4,6 +4,8 @@
 
 ### Changed
 
+- [TD-2501] Database timeout and pool size can now be configured using
+  `DB_TIMEOUT_MILLIS` and `DB_POOL_SIZE` environment variables
 - [TD-4491] Caching of permissions has been refactored
 
 ### Removed

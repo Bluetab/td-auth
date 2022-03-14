@@ -25,7 +25,7 @@ config :td_auth, TdAuthWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: TdAuthWeb.ErrorView, accepts: ~w(json)]
 
-config :td_auth, TdAuth.Repo, pool_size: 10
+config :td_auth, TdAuth.Repo, pool_size: 4
 
 # Configures Elixir's Logger
 # set EX_LOGGER_FORMAT environment variable to override Elixir's Logger format

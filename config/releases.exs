@@ -17,7 +17,9 @@ config :td_auth, TdAuth.Repo,
   password: System.fetch_env!("DB_PASSWORD"),
   database: System.fetch_env!("DB_NAME"),
   hostname: System.fetch_env!("DB_HOST"),
-  port: System.get_env("DB_PORT", "5432") |> String.to_integer()
+  port: System.get_env("DB_PORT", "5432") |> String.to_integer(),
+  pool_size: System.get_env("DB_POOL_SIZE", "4") |> String.to_integer(),
+  timeout: System.get_env("DB_TIMEOUT_MILLIS", "15000") |> String.to_integer()
 
 config :td_auth, TdAuth.Auth.Guardian,
   token_ttl: %{
