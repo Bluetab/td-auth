@@ -5,6 +5,7 @@
 ### Added
 
 - [TD-4271] New permissions `link_implementation_business_concept`
+- [TD-3233] Rule result remediation plan `manage_remediations` permission
 
 ## [4.40.0] 2022-03-14
 
