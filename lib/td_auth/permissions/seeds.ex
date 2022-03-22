@@ -52,6 +52,8 @@ defmodule TdAuth.Permissions.Seeds do
       "view_data_structure",
       "view_data_structures_profile",
       "profile_structures",
+      "view_structure_note",
+      "view_structure_note_history",
       "link_data_structure_tag"
     ],
     "data_dictionary_structure_notes" => [
@@ -63,8 +65,6 @@ defmodule TdAuth.Permissions.Seeds do
       "deprecate_structure_note",
       "publish_structure_note",
       "delete_structure_note",
-      "view_structure_note",
-      "view_structure_note_history",
       "publish_structure_note_from_draft"
     ],
     "data_quality" => [
