@@ -24,6 +24,11 @@ defmodule TdAuth.Permissions.RoleLoaderTest do
       assert {:ok, []} = Permissions.get_permission_roles("foo")
     end
 
+    test "put_permission_roles/0 without roles no updates cache" do
+      %{permissions: []} = insert(:role, name: "role1", permissions: [])
+      assert {:ok, nil} = RoleLoader.put_permission_roles()
+    end
+
     test "put_roles/1 updates cache and returns latest updated_at" do
       %{id: user_id} = insert(:user)
 
