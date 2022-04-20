@@ -46,7 +46,7 @@ defmodule TdAuth.Permissions.RoleLoader do
     Permissions.list_permissions(preload: :roles)
     |> Enum.reject(&Enum.empty?(&1.roles))
     |> Map.new(fn %{name: name, roles: roles} -> {name, Enum.map(roles, & &1.name)} end)
-    |> TdCache.Permissions.put_permission_roles()
+    |> cache_permissions_roles()
   end
 
   def put_roles(last_updated_at) do
@@ -68,6 +68,12 @@ defmodule TdAuth.Permissions.RoleLoader do
     entries
     |> Enum.map(& &1.updated_at)
     |> Enum.max(DateTime, fn -> last_updated_at end)
+  end
+
+  defp cache_permissions_roles(permissions) when permissions == %{}, do: {:ok, nil}
+
+  defp cache_permissions_roles(permissions) do
+    TdCache.Permissions.put_permission_roles(permissions)
   end
 
   defp to_entries(%{group: %{users: users}} = acl_entry) do

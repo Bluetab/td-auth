@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unrelease]
+
+### Fixed
+
+- [TD-4625] `RoleLoader.load_roles/0` was failing when no roles exist
+
 ## [4.40.1] 2022-03-21
 
 ### Added
