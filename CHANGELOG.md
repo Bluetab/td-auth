@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unrelease]
+## [4.42.0] 2022-04-25
 
 ### Fixed
 
