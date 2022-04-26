@@ -75,7 +75,8 @@ defmodule TdAuth.Permissions.Seeds do
       "manage_raw_quality_rule_implementations",
       "manage_rule_results",
       "link_implementation_business_concept",
-      "manage_remediations"
+      "manage_remediations",
+      "link_implementation_structure"
     ],
     "data_sources" => [
       "manage_data_sources"

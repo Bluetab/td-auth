@@ -2,6 +2,10 @@
 
 ## [4.42.0] 2022-04-25
 
+### Added
+
+- [TD-4271] New permissions `link_implementation_structure`
+
 ### Fixed
 
 - [TD-4625] `RoleLoader.load_roles/0` was failing when no roles exist
