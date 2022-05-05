@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- [TD-4538] New permission `manage_segments` in `data_quality`
+
 ## [4.42.0] 2022-04-25
 
 ### Added
