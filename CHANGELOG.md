@@ -1,12 +1,13 @@
 # Changelog
 
-## [Unreleased]
+## [4.44.0] 2022-05-23
 
 ### Added
 
+- [TD-4089] New permission `manage_ruleless_implementations`
+
 ## [4.43.0] 2022-05-09
 
-- [TD-4089] New permission `manage_ruleless_implementations`
 - [TD-4538] New permission `manage_segments` in `data_quality`
 
 ## [4.42.0] 2022-04-25
