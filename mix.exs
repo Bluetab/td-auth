@@ -6,7 +6,7 @@ defmodule TdAuth.Mixfile do
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "4.44.0-local"
+          nil -> "4.45.0-local"
           v -> v
         end,
       elixir: "~> 1.11",
@@ -51,8 +51,8 @@ defmodule TdAuth.Mixfile do
     [
       {:phoenix, "~> 1.5.0"},
       {:phoenix_ecto, "~> 4.0"},
-      {:ecto_sql, "~> 3.1"},
-      {:postgrex, "~> 0.15.0"},
+      {:ecto_sql, "~> 3.8"},
+      {:postgrex, "~> 0.16.3"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.1"},
