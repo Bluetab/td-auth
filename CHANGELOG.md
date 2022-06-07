@@ -6,6 +6,12 @@
 
 - [TD-4431] New permission `request_grant_removal`
 
+## [4.45.0] 2022-06-06
+
+### Added
+
+- [TD-4540] New permissions for implementation workflow
+
 ## [4.44.0] 2022-05-23
 
 ### Added
