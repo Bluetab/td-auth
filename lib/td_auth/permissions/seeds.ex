@@ -120,7 +120,8 @@ defmodule TdAuth.Permissions.Seeds do
       "view_grants",
       "manage_grants",
       "create_grant_request",
-      "approve_grant_request"
+      "approve_grant_request",
+      "request_grant_removal"
     ]
   }
 
