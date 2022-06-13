@@ -67,21 +67,30 @@ defmodule TdAuth.Permissions.Seeds do
       "delete_structure_note",
       "publish_structure_note_from_draft"
     ],
-    "data_quality" => [
-      "execute_quality_rule_implementations",
-      "manage_quality_rule",
+    "quality" => [
       "view_quality_rule",
+      "manage_quality_rule"
+    ],
+    "quality_implementation_workflow_management" => [
+      # new, edit, submit for approval, delete (draft/rejected),
+      # clone -> only implementation with rule
+      "manage_quality_rule_implementations",
+      # new, edit, submit for approval, delete (draft/rejected),
+      #clone -> only native implementation with rule
       "manage_raw_quality_rule_implementations",
+      # manage impl/manage native: new, edit, submit for approval,
+      #delete (draft/rejected), clone -> only impl/native with no rule
       "manage_ruleless_implementations",
+      # Publish, Reject, deprecate implementations
+      "publish_implementation"
+    ],
+    "quality_implementation_additional_actions" => [
+      "execute_quality_rule_implementations",
       "manage_rule_results",
-      "manage_segments",
-      "link_implementation_business_concept",
       "manage_remediations",
       "link_implementation_structure",
-      "manage_quality_rule_implementations",
-      "manage_draft_implementation",
-      "publish_implementation",
-      "deprecate_implementation"
+      "link_implementation_business_concept",
+      "manage_segments"
     ],
     "data_sources" => [
       "manage_data_sources"

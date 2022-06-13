@@ -5,6 +5,7 @@
 ### Added
 
 - [TD-4431] New permission `request_grant_removal`
+- [TD-4918] Refactor quality implementations permissions
 
 ## [4.45.0] 2022-06-06
 
