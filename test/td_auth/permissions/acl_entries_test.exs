@@ -215,6 +215,29 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       refute {e4.resource_type, e4.resource_id, e4.role.name} in result
     end
 
+    test "get_group_ids_by_resource_and_role/0 returns group_ids grouped by resource and role" do
+      e1 = insert(:acl_entry, resource_type: "foo", resource_id: 12, principal_type: :group)
+      e2 = insert(:acl_entry, resource_type: "foo", resource_id: 99, principal_type: :group)
+      e3 = insert(:acl_entry, resource_type: "bar", resource_id: 12, principal_type: :group)
+
+      result = AclEntries.get_group_ids_by_resource_and_role()
+      assert e1.group_id in Map.get(result, {e1.resource_type, e1.resource_id, e1.role.name}, [])
+      assert e2.group_id in Map.get(result, {e2.resource_type, e2.resource_id, e2.role.name}, [])
+      assert e3.group_id in Map.get(result, {e3.resource_type, e3.resource_id, e3.role.name}, [])
+    end
+
+    test "get_group_ids_by_resource_and_role/1 filters by resource_type and resource_id" do
+      e1 = insert(:acl_entry, resource_type: "foo", resource_id: 12, principal_type: :group)
+      e2 = insert(:acl_entry, resource_type: "foo", resource_id: 99, principal_type: :group)
+
+      result =
+        AclEntries.get_group_ids_by_resource_and_role(resource_type: "foo", resource_id: 12)
+        |> Map.keys()
+
+      assert {e1.resource_type, e1.resource_id, e1.role.name} in result
+      refute {e2.resource_type, e2.resource_id, e2.role.name} in result
+    end
+
     test "find_by_resource_and_principal/1 applies filters" do
       insert(:acl_entry, resource_type: "foo", resource_id: 12, principal_type: :user)
       entry = insert(:acl_entry, resource_type: "bar", resource_id: 12, principal_type: :user)

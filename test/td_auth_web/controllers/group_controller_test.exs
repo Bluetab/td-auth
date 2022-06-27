@@ -10,6 +10,7 @@ defmodule TdAuthWeb.GroupControllerTest do
 
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
+    start_supervised!(TdAuth.Accounts.GroupLoader)
     :ok
   end
 

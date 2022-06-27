@@ -38,6 +38,7 @@ defmodule TdAuth.Application do
     [
       TdAuth.Permissions.Seeds,
       TdAuth.Accounts.UserLoader,
+      TdAuth.Accounts.GroupLoader,
       TdAuth.Permissions.RoleLoader,
       TdAuth.Scheduler
     ] ++ oidc_workers() ++ saml_workers() ++ ldap_workers()
