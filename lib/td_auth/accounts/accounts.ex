@@ -6,6 +6,7 @@ defmodule TdAuth.Accounts do
   import Ecto.Query, warn: false
 
   alias TdAuth.Accounts.Group
+  alias TdAuth.Accounts.GroupLoader
   alias TdAuth.Accounts.User
   alias TdAuth.Accounts.UserLoader
   alias TdAuth.Map.Helpers
@@ -263,6 +264,7 @@ defmodule TdAuth.Accounts do
     %Group{}
     |> Group.changeset(params)
     |> Repo.insert()
+    |> post_group_upsert()
   end
 
   @doc """
@@ -283,6 +285,7 @@ defmodule TdAuth.Accounts do
     group
     |> Group.changeset(params)
     |> Repo.update()
+    |> post_group_upsert()
     |> refresh_cache()
   end
 
@@ -335,6 +338,7 @@ defmodule TdAuth.Accounts do
 
     group
     |> Repo.delete()
+    |> post_group_delete()
     |> refresh_cache(group_domains)
   end
 
@@ -363,6 +367,20 @@ defmodule TdAuth.Accounts do
   end
 
   defp post_delete(result), do: result
+
+  defp post_group_upsert({:ok, %Group{id: id} = group}) do
+    GroupLoader.refresh(id)
+    {:ok, group}
+  end
+
+  defp post_group_upsert(result), do: result
+
+  defp post_group_delete({:ok, %Group{id: id} = group}) do
+    GroupLoader.delete(id)
+    {:ok, group}
+  end
+
+  defp post_group_delete(result), do: result
 
   defp put_users(%{"user_ids" => user_ids} = params) do
     users = list_users(id: {:in, user_ids})

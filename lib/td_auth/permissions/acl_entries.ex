@@ -72,6 +72,21 @@ defmodule TdAuth.Permissions.AclEntries do
     )
   end
 
+  def get_group_ids_by_resource_and_role(clauses \\ %{}) do
+    AclEntry
+    |> build_query(clauses)
+    |> join(:inner, [e], r in assoc(e, :role))
+    |> join(:left, [e, _r], g in assoc(e, :group))
+    |> select([e, r, g], {e.resource_type, e.resource_id, r.name, coalesce(e.group_id, g.id)})
+    |> where([e, _r, g], not is_nil(coalesce(e.group_id, g.id)))
+    |> distinct(true)
+    |> Repo.all()
+    |> Enum.group_by(
+      fn {resource_type, resource_id, role, _} -> {resource_type, resource_id, role} end,
+      fn {_, _, _, group_id} -> group_id end
+    )
+  end
+
   def find_by_resource_and_principal(clauses) do
     clauses
     |> build_resource_and_principal_clauses()
@@ -111,6 +126,7 @@ defmodule TdAuth.Permissions.AclEntries do
 
   defp refresh_cache(%{resource_type: resource_type, resource_id: resource_id} = acl_entry) do
     AclLoader.refresh(resource_type, resource_id)
+    AclLoader.refresh_group(resource_type, resource_id)
     {:ok, acl_entry}
   end
 
@@ -121,13 +137,18 @@ defmodule TdAuth.Permissions.AclEntries do
   defp delete_from_cache(
          %{
            user_id: user_id,
+           group_id: group_id,
            resource_type: resource_type,
            resource_id: resource_id,
            role_id: role_id
          } = acl_entry
        ) do
     %{name: role_name} = Roles.get_role!(role_id)
-    AclLoader.delete_acl(resource_type, resource_id, role_name, user_id)
+    if is_nil(group_id) do
+      AclLoader.delete_acl(resource_type, resource_id, role_name, user_id)
+    else
+      AclLoader.delete_group_acl(resource_type, resource_id, role_name, group_id)
+    end
     {:ok, acl_entry}
   end
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-4412] Support for caching groups and group related acls
+
 ## [4.46.0] 2022-06-20
 
 ### Added
