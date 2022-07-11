@@ -7,7 +7,7 @@ defmodule TdAuthWeb.Authentication do
   import Plug.Conn
 
   alias Phoenix.ConnTest
-  alias TdAuth.Auth.Guardian
+  alias TdAuth.Sessions
   alias TdAuthWeb.Router.Helpers, as: Routes
 
   @endpoint TdAuthWeb.Endpoint
@@ -20,13 +20,13 @@ defmodule TdAuthWeb.Authentication do
   end
 
   def authenticate(conn, user) do
-    {:ok, jwt, _full_claims} = Guardian.encode_and_sign(user, Map.take(user, [:role]))
+    {:ok, %{token: jwt}} = Sessions.create(user, "pwd")
+
     put_auth_headers(conn, jwt)
   end
 
   def create_user_auth_conn(user) do
-    {:ok, jwt, full_claims} = Guardian.encode_and_sign(user, Map.take(user, [:role]))
-    {:ok, claims} = Guardian.resource_from_claims(full_claims)
+    {:ok, %{token: jwt, claims: claims}} = Sessions.create(user, "pwd")
 
     conn =
       ConnTest.build_conn()

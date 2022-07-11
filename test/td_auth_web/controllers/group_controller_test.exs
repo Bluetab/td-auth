@@ -6,7 +6,7 @@ defmodule TdAuthWeb.GroupControllerTest do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.Group
-  alias TdAuth.Auth.Guardian
+  alias TdAuth.Auth.AccessToken
 
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
@@ -102,8 +102,7 @@ defmodule TdAuthWeb.GroupControllerTest do
                )
                |> json_response(:created)
 
-      assert {:ok, %{"groups" => ["business_glossary_view"]}} =
-               Guardian.decode_and_verify(token, %{"typ" => "access"})
+      assert {:ok, %{"groups" => ["business_glossary_view"]}} = AccessToken.verify(token)
 
       assert conn
              |> put_auth_headers(token)

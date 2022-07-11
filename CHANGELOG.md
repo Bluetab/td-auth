@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-3614] Support short-lived access tokens with refresh mechanism using
+  secure cookie
+
 ## [4.47.0] 2022-07-04
 
 ### Added

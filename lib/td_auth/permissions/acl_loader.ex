@@ -9,6 +9,7 @@ defmodule TdAuth.Permissions.AclLoader do
   def load_cache do
     AclEntries.get_user_ids_by_resource_and_role()
     |> put_cache()
+
     AclEntries.get_group_ids_by_resource_and_role()
     |> put_group_cache()
   end

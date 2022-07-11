@@ -47,19 +47,17 @@ config :td_cache, :audit,
   service: "td_auth",
   stream: "audit:events"
 
-config :td_auth, TdAuth.Auth.Guardian,
-  # optional
-  allowed_algos: ["HS512"],
-  issuer: "tdauth",
-  token_ttl: %{
-    "access" => {12, :hours},
-    "refresh" => {24, :hours}
-  },
-  secret_key: "SuperSecretTruedat"
+# Truedat JWT access token and refreh token
+# 10 minutes
+config :td_auth, TdAuth.Auth.AccessToken, ttl_seconds: 600
+# 24 hours
+config :td_auth, TdAuth.Auth.RefreshToken, ttl_seconds: 60 * 60 * 24
 
-config :td_auth, TdAuth.Auth.Auth0,
-  allowed_algos: ["RS256"],
-  verify_issuer: true
+config :joken,
+  default_signer: [
+    signer_alg: "HS512",
+    key_octet: "SuperSecretTruedat"
+  ]
 
 # ------------ ldap ----------
 

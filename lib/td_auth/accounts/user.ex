@@ -11,6 +11,8 @@ defmodule TdAuth.Accounts.User do
   alias TdAuth.Accounts.Group
   alias TdAuth.Permissions.AclEntry
 
+  @type t :: %__MODULE__{}
+
   @derive {Jason.Encoder, only: [:id, :user_name]}
   schema "users" do
     field(:password_hash, :string)

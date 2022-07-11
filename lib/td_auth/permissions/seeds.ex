@@ -76,10 +76,10 @@ defmodule TdAuth.Permissions.Seeds do
       # clone -> only implementation with rule
       "manage_quality_rule_implementations",
       # new, edit, submit for approval, delete (draft/rejected),
-      #clone -> only native implementation with rule
+      # clone -> only native implementation with rule
       "manage_raw_quality_rule_implementations",
       # manage impl/manage native: new, edit, submit for approval,
-      #delete (draft/rejected), clone -> only impl/native with no rule
+      # delete (draft/rejected), clone -> only impl/native with no rule
       "manage_ruleless_implementations",
       # Publish, Reject, deprecate implementations
       "publish_implementation"

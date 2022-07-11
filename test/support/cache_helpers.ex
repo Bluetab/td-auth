@@ -4,13 +4,16 @@ defmodule TdAuth.CacheHelpers do
   """
 
   import ExUnit.Callbacks, only: [on_exit: 1]
+  import TdAuth.Factory
 
-  alias TdCache.DomainCache
+  alias TdCache.TaxonomyCache
   alias TdCache.UserCache
 
-  def put_domain(%{id: id} = domain) do
-    on_exit(fn -> DomainCache.delete(id) end)
-    DomainCache.put(domain)
+  def put_domain(params \\ %{}) do
+    %{id: domain_id} = domain = build(:domain, params)
+    on_exit(fn -> TaxonomyCache.delete_domain(domain_id, clean: true) end)
+    TaxonomyCache.put_domain(domain)
+    domain
   end
 
   def put_user(%{} = user) do

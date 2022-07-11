@@ -7,7 +7,6 @@ defmodule TdAuth.AuditAuth do
   @doc """
   Publishes the corresponding audit attemp event
   """
-
   def attempt_event(access_method, %{"user" => %{"user_name" => user_name}} = _params) do
     Audit.login_attempt(access_method, user_name)
   end

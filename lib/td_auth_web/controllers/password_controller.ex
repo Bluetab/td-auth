@@ -25,7 +25,6 @@ defmodule TdAuthWeb.PasswordController do
     end
 
     response(200, "OK", Schema.ref(:UserResponse))
-    response(401, "Unauthorized")
     response(403, "Forbidden")
     response(404, "Not Found")
     response(422, "Unprocessable Entity")

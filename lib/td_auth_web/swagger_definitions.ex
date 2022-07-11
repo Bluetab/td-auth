@@ -12,9 +12,6 @@ defmodule TdAuthWeb.SwaggerDefinitions do
 
           properties do
             token(:string, "token")
-            refresh_token(:string, "refresh token", required: true)
-            has_permissions(:boolean, "has_permissions", required: false)
-            refresh_token(:string, "access_method")
           end
         end,
       Claims:

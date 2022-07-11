@@ -2,12 +2,12 @@ defmodule TdAuthWeb.Router do
   use TdAuthWeb, :router
 
   pipeline :api_unsecured do
-    plug(:accepts, ["json"])
+    plug :accepts, ["json"]
   end
 
-  pipeline :api_secured do
-    plug(TdAuth.Auth.Pipeline.Secure)
-    plug(:accepts, ["json"])
+  pipeline :api_auth do
+    plug TdAuth.Auth.Pipeline.Secure
+    plug :accepts, ["json"]
   end
 
   scope "/api/swagger" do
@@ -15,7 +15,7 @@ defmodule TdAuthWeb.Router do
   end
 
   scope "/api", TdAuthWeb do
-    pipe_through(:api_unsecured)
+    pipe_through :api_unsecured
     get("/auth", AuthController, :index)
     get("/ping", PingController, :ping)
     post("/sessions", SessionController, :create)
@@ -24,16 +24,15 @@ defmodule TdAuthWeb.Router do
   end
 
   scope "/", TdAuthWeb do
-    pipe_through(:api_unsecured)
+    pipe_through :api_unsecured
     post("/callback", SessionController, :create)
   end
 
   scope "/api", TdAuthWeb do
-    pipe_through([:api_secured])
-
-    post("/sessions/refresh", SessionController, :refresh)
+    pipe_through :api_auth
 
     get("/sessions", SessionController, :ping)
+    post("/sessions/refresh", SessionController, :refresh)
     delete("/sessions", SessionController, :destroy)
 
     resources("/users/search", UserSearchController, only: [:create], singleton: true)

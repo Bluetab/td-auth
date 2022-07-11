@@ -73,7 +73,8 @@ defmodule TdAuthWeb.UserController do
 
   def can_init(conn, _params) do
     can_init = !Accounts.user_exists?()
-    send_resp(conn, 200, Jason.encode!(can_init))
+
+    render(conn, "can_init.json", can_init: can_init)
   end
 
   def init(conn, %{"user" => user_params}) do

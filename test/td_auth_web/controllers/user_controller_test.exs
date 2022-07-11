@@ -4,8 +4,8 @@ defmodule TdAuthWeb.UserControllerTest do
 
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
-  alias TdAuth.Auth.Guardian
-  alias TdCache.TaxonomyCache
+  alias TdAuth.Auth.AccessToken
+  alias TdAuth.CacheHelpers
 
   import TdAuthWeb.Authentication, only: :functions
 
@@ -119,8 +119,7 @@ defmodule TdAuthWeb.UserControllerTest do
                )
                |> json_response(:created)
 
-      assert {:ok, %{"groups" => ["business_glossary_view"]}} =
-               Guardian.decode_and_verify(token, %{"typ" => "access"})
+      assert {:ok, %{"groups" => ["business_glossary_view"]}} = AccessToken.verify(token)
 
       assert conn
              |> put_auth_headers(token)
@@ -159,17 +158,16 @@ defmodule TdAuthWeb.UserControllerTest do
   describe "get user" do
     @tag authentication: [role: :admin]
     test "renders user with configured acls", %{conn: conn, swagger_schema: schema} do
-      domain = build(:domain)
       role = insert(:role)
       group = insert(:group)
       user = insert(:user, external_id: "get external_id", groups: [group])
 
-      {:ok, _} = TaxonomyCache.put_domain(domain)
+      %{id: domain_id} = domain = CacheHelpers.put_domain()
 
       insert(:acl_entry,
         user_id: user.id,
         principal_type: :user,
-        resource_id: domain.id,
+        resource_id: domain_id,
         resource_type: "domain",
         role: role
       )
@@ -177,7 +175,7 @@ defmodule TdAuthWeb.UserControllerTest do
       insert(:acl_entry,
         group_id: group.id,
         principal_type: :group,
-        resource_id: domain.id,
+        resource_id: domain_id,
         resource_type: "domain",
         role: role
       )

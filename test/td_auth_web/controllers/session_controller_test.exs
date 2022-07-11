@@ -5,11 +5,10 @@ defmodule TdAuthWeb.SessionControllerTest do
   import TdAuthWeb.Authentication, only: :functions
 
   alias TdAuth.Accounts
-  alias TdAuth.Auth.Guardian
+  alias TdAuth.Auth.AccessToken
   alias TdAuthWeb.ApiServices.MockAuth0Service
   alias TdCache.Redix
   alias TdCache.Redix.Stream
-  alias TdCache.TaxonomyCache
 
   @stream TdCache.Audit.stream()
 
@@ -18,25 +17,21 @@ defmodule TdAuthWeb.SessionControllerTest do
   @invalid_attrs %{password: "invalido", user_name: "usuariotemporal"}
 
   setup_all do
-    on_exit(fn ->
-      Redix.del!(@stream)
-    end)
-
+    Redix.del!(@stream)
     start_supervised!(TdAuth.Accounts.UserLoader)
     start_supervised!(MockAuth0Service)
     :ok
   end
 
   setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+    on_exit(fn -> Redix.del!(@stream) end)
+    [conn: put_req_header(conn, "accept", "application/json")]
   end
 
   describe "create session" do
     setup :create_user
 
     test "create valid user session", %{conn: conn, swagger_schema: schema} do
-      Redix.del!(@stream)
-
       assert conn
              |> post(Routes.session_path(conn, :create),
                access_method: "access_method",
@@ -58,7 +53,7 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = event_attempt
 
       assert %{
-               "access_method" => "alternative_login",
+               "access_method" => "pwd",
                "user_name" => "usuariotemporal"
              } = Jason.decode!(payload_attempt)
 
@@ -75,13 +70,12 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = event_success
 
       assert %{
-               "access_method" => "alternative_login",
+               "access_method" => "pwd",
                "user_name" => "usuariotemporal"
              } = Jason.decode!(payload_success)
     end
 
     test "create session with claims", %{conn: conn, swagger_schema: schema, user: user} do
-      Redix.del!(@stream)
       permission_fixture(user)
 
       assert %{"token" => token} =
@@ -93,7 +87,7 @@ defmodule TdAuthWeb.SessionControllerTest do
                |> validate_resp_schema(schema, "Token")
                |> json_response(:created)
 
-      assert {:ok, claims} = Guardian.decode_and_verify(token, %{"typ" => "access"})
+      assert {:ok, claims} = AccessToken.verify(token)
 
       assert %{"role" => "user"} = claims
       assert_lists_equal(claims["groups"], ["create_pg", "view_pg", "update_pg"])
@@ -111,7 +105,7 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = event_attempt
 
       assert %{
-               "access_method" => "alternative_login",
+               "access_method" => "pwd",
                "user_name" => "usuariotemporal"
              } = Jason.decode!(payload_attempt)
 
@@ -128,14 +122,12 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = event_success
 
       assert %{
-               "access_method" => "alternative_login",
+               "access_method" => "pwd",
                "user_name" => "usuariotemporal"
              } = Jason.decode!(payload_success)
     end
 
     test "create invalid user session", %{conn: conn} do
-      Redix.del!(@stream)
-
       assert conn
              |> post(Routes.session_path(conn, :create),
                access_method: "access_method",
@@ -156,7 +148,7 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = event
 
       assert %{
-               "access_method" => "alternative_login",
+               "access_method" => "pwd",
                "user_name" => "usuariotemporal"
              } = Jason.decode!(payload)
     end
@@ -166,8 +158,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup :create_user
 
     test "create valid non existing user session", %{conn: conn, swagger_schema: schema} do
-      Redix.del!(@stream)
-      {:ok, jwt, _full_claims} = Guardian.encode_and_sign(nil)
+      {:ok, jwt, _full_claims} = AccessToken.encode_and_sign(%{})
       conn = put_auth_headers(conn, jwt)
 
       profile = %{
@@ -204,14 +195,13 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = event
 
       assert %{
-               "access_method" => nil,
+               "access_method" => "fed",
                "user_name" => "user_name"
              } = Jason.decode!(payload)
     end
 
     test "create valid existing user session", %{conn: conn, swagger_schema: schema} do
-      Redix.del!(@stream)
-      {:ok, jwt, _full_claims} = Guardian.encode_and_sign(nil)
+      {:ok, jwt, _full_claims} = AccessToken.encode_and_sign(%{})
       conn = put_auth_headers(conn, jwt)
 
       profile = %{
@@ -248,14 +238,13 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = event
 
       assert %{
-               "access_method" => nil,
+               "access_method" => "fed",
                "user_name" => "usuariotemporal"
              } = Jason.decode!(payload)
     end
 
     test "create invalid user session with access token", %{conn: conn} do
-      Redix.del!(@stream)
-      {:ok, jwt, _full_claims} = Guardian.encode_and_sign(nil)
+      {:ok, jwt, _full_claims} = AccessToken.encode_and_sign(%{})
       profile = %{nickname: "user_name", name: "name", email: "email@xyz.com"}
       MockAuth0Service.set_user_info(401, Jason.encode!(profile))
 
@@ -270,7 +259,6 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create session proxy login when not allowed", %{conn: conn} do
-      Redix.del!(@stream)
       Application.put_env(:td_auth, :allow_proxy_login, "false")
 
       assert %{"errors" => errors} =
@@ -285,7 +273,6 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create session proxy login when is allowed and user is invalid", %{conn: conn} do
-      Redix.del!(@stream)
       Application.put_env(:td_auth, :allow_proxy_login, "true")
 
       assert %{"errors" => errors} =
@@ -300,7 +287,6 @@ defmodule TdAuthWeb.SessionControllerTest do
     end
 
     test "create session proxy login when is allowed and user is valid", %{conn: conn} do
-      Redix.del!(@stream)
       Application.put_env(:td_auth, :allow_proxy_login, "true")
 
       assert conn
@@ -333,27 +319,34 @@ defmodule TdAuthWeb.SessionControllerTest do
   describe "refresh session" do
     setup :create_user
 
-    test "refresh session with valid refresh token", %{conn: conn, swagger_schema: schema} do
-      assert %{"token" => token, "refresh_token" => refresh_token} =
-               conn
-               |> post(Routes.session_path(conn, :create),
-                 access_method: "access_method",
-                 user: @valid_attrs
-               )
-               |> validate_resp_schema(schema, "Token")
-               |> json_response(:created)
+    test "a refresh token can be exchanged once for a new access token", %{
+      conn: conn,
+      swagger_schema: schema
+    } do
+      %{resp_cookies: resp_cookies} =
+        conn1 =
+        post(conn, Routes.session_path(conn, :create),
+          access_method: "access_method",
+          user: @valid_attrs
+        )
+
+      assert %{"token" => token} = json_response(conn1, :created)
+      assert %{"_td_refresh" => %{same_site: "Strict", value: refresh_token}} = resp_cookies
 
       assert %{"token" => token} =
                conn
                |> put_auth_headers(token)
-               |> post(Routes.session_path(conn, :refresh), %{refresh_token: refresh_token})
+               |> put_req_cookie("_td_refresh", refresh_token)
+               |> post(Routes.session_path(conn, :refresh))
                |> validate_resp_schema(schema, "Token")
                |> json_response(:created)
 
-      assert conn
-             |> put_auth_headers(token)
-             |> get(Routes.session_path(conn, :ping))
-             |> response(:ok)
+      assert %{"errors" => %{"detail" => "Invalid credentials"}} =
+               conn
+               |> put_auth_headers(token)
+               |> put_req_cookie("_td_refresh", refresh_token)
+               |> post(Routes.session_path(conn, :refresh))
+               |> json_response(:unauthorized)
     end
   end
 
@@ -376,11 +369,10 @@ defmodule TdAuthWeb.SessionControllerTest do
     insert(:role, is_default: true, name: "default", permissions: [create, update])
 
     Enum.each([owner, viewer], fn role ->
-      domain = build(:domain)
-      {:ok, _} = TaxonomyCache.put_domain(domain)
+      %{id: domain_id} = TdAuth.CacheHelpers.put_domain()
 
       insert(:acl_entry,
-        resource_id: domain.id,
+        resource_id: domain_id,
         user_id: user.id,
         principal_type: "user",
         resource_type: "domain",

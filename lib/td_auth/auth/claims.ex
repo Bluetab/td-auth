@@ -10,10 +10,7 @@ defmodule TdAuth.Auth.Claims do
           user_id: non_neg_integer() | nil,
           user_name: binary() | nil,
           role: binary() | nil,
-          has_permissions: boolean(),
-          groups: [binary()],
-          jti: binary() | nil,
-          access_method: binary() | nil
+          jti: binary() | nil
         }
 
   @derive {Jason.Encoder, only: [:user_id, :user_name]}
@@ -21,10 +18,7 @@ defmodule TdAuth.Auth.Claims do
     :user_id,
     :user_name,
     :role,
-    :jti,
-    :access_method,
-    has_permissions: false,
-    groups: []
+    :jti
   ]
 
   @spec is_admin?(Plug.Conn.t()) :: boolean
