@@ -19,6 +19,10 @@ defmodule TdAuthWeb.UserView do
     }
   end
 
+  def render("can_init.json", %{can_init: can_init}) do
+    can_init
+  end
+
   def render("user.json", %{user: %{groups: groups} = user} = assigns) do
     groups = render_many(groups, GroupView, "name.json")
 

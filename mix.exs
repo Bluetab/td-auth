@@ -31,7 +31,7 @@ defmodule TdAuth.Mixfile do
   def application do
     [
       mod: {TdAuth.Application, []},
-      extra_applications: [:logger, :runtime_tools, :exldap, :esaml]
+      extra_applications: [:logger, :runtime_tools, :exldap, :esaml, :td_cache]
     ]
   end
 
@@ -56,7 +56,7 @@ defmodule TdAuth.Mixfile do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.1"},
-      {:guardian, "~> 2.0"},
+      {:joken, "~> 2.5"},
       {:canada, "~> 2.0"},
       {:bcrypt_elixir, "~> 2.0"},
       {:cors_plug, "~> 2.0"},
@@ -70,8 +70,10 @@ defmodule TdAuth.Mixfile do
       # See https://github.com/handnot2/esaml/issues/29
       {:cowboy, "~> 2.7", override: true},
       {:quantum, "~> 3.0"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.47.0"},
+      {:td_cache,
+       git: "https://github.com/Bluetab/td-cache.git", tag: "4.48.0", override: true},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:cabbage,
        git: "https://github.com/Bluetab/cabbage", branch: "feature/background", only: :test},
       {:ex_machina, "~> 2.3", only: :test},

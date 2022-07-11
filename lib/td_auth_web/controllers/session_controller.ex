@@ -1,14 +1,13 @@
 defmodule TdAuthWeb.SessionController do
   use TdAuthWeb, :controller
 
+  alias Plug.Conn.Cookies
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
   alias TdAuth.AuditAuth
-  alias TdAuth.Auth.Guardian
-  alias TdAuth.Auth.Guardian.Plug, as: GuardianPlug
   alias TdAuth.Ldap.Ldap
-  alias TdAuth.Permissions
   alias TdAuth.Saml.SamlWorker
+  alias TdAuth.Sessions
   alias TdAuthWeb.AuthProvider.ActiveDirectory
   alias TdAuthWeb.AuthProvider.Auth0
   alias TdAuthWeb.AuthProvider.OIDC
@@ -20,11 +19,6 @@ defmodule TdAuthWeb.SessionController do
 
   def swagger_definitions do
     SwaggerDefinitions.session_swagger_definitions()
-  end
-
-  defp handle_sign_in(conn, user, custom_claims) do
-    resource = user |> Jason.encode!() |> Jason.decode!()
-    GuardianPlug.sign_in(conn, resource, custom_claims)
   end
 
   swagger_path :create do
@@ -90,8 +84,8 @@ defmodule TdAuthWeb.SessionController do
   end
 
   def create(conn, %{"user" => %{"user_name" => user_name, "password" => password}} = params) do
-    {:ok, _} = AuditAuth.attempt_event("alternative_login", params)
-    authenticate_and_create_session(conn, user_name, password, "alternative_login")
+    {:ok, _} = AuditAuth.attempt_event("pwd", params)
+    authenticate_and_create_session(conn, user_name, password, "pwd")
   end
 
   def create(%{req_headers: headers} = conn, params) do
@@ -115,34 +109,13 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp create_session(conn, user, access_method) do
-    tokens = create_tokens(conn, user, access_method)
+    {:ok, %{token: token, refresh_token: refresh_token}} = Sessions.create(user, access_method)
     {:ok, _} = AuditAuth.session_event(access_method, user)
-    create_session_with_tokens(conn, tokens)
-  end
 
-  defp create_session_with_tokens(conn, tokens) do
     conn
+    |> put_refresh_token(refresh_token)
     |> put_status(:created)
-    |> render("show.json", token: tokens)
-  end
-
-  defp create_tokens(conn, %User{role: role} = user, access_method) do
-    default_permissions = Permissions.default_permissions()
-    user_permissions = Permissions.user_permissions(user)
-    permission_groups = permission_groups(user, Map.keys(user_permissions) ++ default_permissions)
-    claims = claims(user, permission_groups, access_method)
-    conn = handle_sign_in(conn, user, claims)
-    token = GuardianPlug.current_token(conn)
-    %{"jti" => jti, "exp" => exp} = GuardianPlug.current_claims(conn)
-
-    unless role == :admin do
-      Permissions.cache_session_permissions(user_permissions, jti, exp)
-    end
-
-    {:ok, refresh_token, _full_claims} =
-      Guardian.encode_and_sign(user, %{}, token_type: "refresh")
-
-    %{token: token, refresh_token: refresh_token}
+    |> render("show.json", token: token)
   end
 
   def create_nonce_session(conn, "saml", json) do
@@ -165,7 +138,7 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_using_saml_and_create_session(conn, saml_response, saml_encoding) do
     with {:ok, profile} <- SamlWorker.validate(saml_response, saml_encoding),
          {:ok, user} <- Accounts.create_or_update_user(profile, true) do
-      create_session(conn, user, nil)
+      create_session(conn, user, "fed")
     else
       error ->
         Logger.info("While authenticating using SAML ... #{inspect(error)}")
@@ -176,7 +149,7 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_using_active_directory_and_create_session(conn, user_name, password) do
     with {:ok, profile} <- ActiveDirectory.authenticate(user_name, password),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user, nil)
+      create_session(conn, user, "ad")
     else
       error ->
         Logger.info("While authenticating using active directory ... #{inspect(error)}")
@@ -186,12 +159,13 @@ defmodule TdAuthWeb.SessionController do
 
   defp authenticate_using_ldap_and_create_session(conn, user_name, password) do
     with {:ok, profile, validation_warnings} <- Ldap.authenticate(user_name, password),
-         {:ok, user} <- Accounts.create_or_update_user(profile) do
-      tokens = create_tokens(conn, user, nil)
-
+         {:ok, user} <- Accounts.create_or_update_user(profile),
+         {:ok, %{token: access_token, refresh_token: refresh_token}} <-
+           Sessions.create(user, "ldap") do
       conn
+      |> put_refresh_token(refresh_token)
       |> put_status(:created)
-      |> render("show_ldap.json", token: tokens, validation_warnings: validation_warnings)
+      |> render("show_ldap.json", token: access_token, validation_warnings: validation_warnings)
     else
       {:ldap_error, error} -> unauthorized(conn, "401_ldap.json", error: error)
       _ -> unauthorized(conn)
@@ -225,7 +199,7 @@ defmodule TdAuthWeb.SessionController do
     with %{} = params <- Map.delete(params, "auth_realm"),
          {:ok, profile} <- OIDC.authenticate(params),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user, nil)
+      create_session(conn, user, "fed")
     else
       error ->
         Logger.info("While authenticating using OpenID Connect... #{inspect(error)}")
@@ -236,7 +210,7 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_using_oidc_and_create_session(conn, _params) do
     with {:ok, profile} <- OIDC.authenticate(conn),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user, nil)
+      create_session(conn, user, "fed")
     else
       error ->
         Logger.info("While authenticating using OpenID Connect... #{inspect(error)}")
@@ -247,35 +221,12 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_using_auth0_and_create_session(conn, _params) do
     with {:ok, profile} <- Auth0.authenticate(conn),
          {:ok, user} <- Accounts.create_or_update_user(profile) do
-      create_session(conn, user, nil)
+      create_session(conn, user, "fed")
     else
       error ->
         Logger.info("While authenticating using auth0... #{inspect(error)}")
         unauthorized(conn)
     end
-  end
-
-  defp claims(%{role: role, user_name: user_name}, groups, access_method) do
-    has_permissions = role == :admin || groups != []
-
-    %{
-      user_name: user_name,
-      role: to_string(role),
-      has_permissions: has_permissions,
-      groups: groups
-    }
-    |> with_access_method(access_method)
-  end
-
-  defp with_access_method(claims, "alternative_login" = access_method),
-    do: Map.put(claims, :access_method, access_method)
-
-  defp with_access_method(claims, _), do: claims
-
-  defp permission_groups(%{role: :admin}, _permissions), do: []
-
-  defp permission_groups(_user, permissions) when is_list(permissions) do
-    Permissions.group_names(permissions)
   end
 
   def ping(conn, _params) do
@@ -294,27 +245,50 @@ defmodule TdAuthWeb.SessionController do
     response(400, "Client Error")
   end
 
-  def refresh(conn, params) do
-    refresh_token = params["refresh_token"]
-
-    {:ok, _old_stuff, {token, _new_claims}} =
-      Guardian.exchange(refresh_token, "refresh", "access")
-
-    conn
-    |> put_status(:created)
-    |> render("show.json", token: %{token: token, refresh_token: refresh_token})
+  def refresh(conn, _params) do
+    with rt when is_binary(rt) <- refresh_token(conn),
+         at when is_binary(at) <- conn.assigns[:current_token],
+         {:ok, %{token: token, refresh_token: refresh_token}} <- Sessions.refresh(rt, at) do
+      conn
+      |> put_refresh_token(refresh_token)
+      |> put_status(:created)
+      |> render("show.json", token: token)
+    else
+      _ -> unauthorized(conn)
+    end
   end
 
   def destroy(conn, _params) do
-    token = GuardianPlug.current_token(conn)
-    Guardian.revoke(token)
-    send_resp(conn, :no_content, "")
+    access_token = conn.assigns[:current_token]
+    refresh_token = refresh_token(conn)
+    Sessions.delete(refresh_token, access_token)
+
+    conn
+    |> delete_refresh_token()
+    |> send_resp(:no_content, "")
   end
 
   defp unauthorized(conn, template \\ "401.json", assigns \\ %{}) do
     conn
+    |> delete_refresh_token()
     |> put_status(:unauthorized)
     |> put_view(ErrorView)
     |> render(template, assigns)
+  end
+
+  defp refresh_token(conn) do
+    conn
+    |> get_req_header("cookie")
+    |> List.first("")
+    |> Cookies.decode()
+    |> Map.get("_td_refresh")
+  end
+
+  defp put_refresh_token(conn, refresh_token) do
+    put_resp_cookie(conn, "_td_refresh", refresh_token, same_site: "Strict")
+  end
+
+  defp delete_refresh_token(conn) do
+    delete_resp_cookie(conn, "_td_refresh", same_site: "Strict")
   end
 end

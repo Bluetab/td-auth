@@ -21,22 +21,17 @@ config :td_auth, TdAuth.Repo,
   pool_size: System.get_env("DB_POOL_SIZE", "4") |> String.to_integer(),
   timeout: System.get_env("DB_TIMEOUT_MILLIS", "15000") |> String.to_integer()
 
-config :td_auth, TdAuth.Auth.Guardian,
-  token_ttl: %{
-    "access" => {
-      System.get_env("JWT_TTL_TIME", "12") |> String.to_integer(),
-      System.get_env("JWT_TTL_UNIT", "HOURS")
-      |> String.downcase()
-      |> String.to_atom()
-    },
-    "refresh" => {
-      System.get_env("JWT_REFRESH_TIME", "24") |> String.to_integer(),
-      System.get_env("JWT_REFRESH_UNIT", "HOURS")
-      |> String.downcase()
-      |> String.to_atom()
-    }
-  },
-  secret_key: System.fetch_env!("GUARDIAN_SECRET_KEY")
+config :joken,
+  default_signer: [
+    signer_alg: "HS512",
+    key_octet: System.fetch_env!("GUARDIAN_SECRET_KEY")
+  ]
+
+config :td_auth, TdAuth.Auth.AccessToken,
+  ttl_seconds: System.get_env("ACCESS_TOKEN_TTL_SECONDS", "600") |> String.to_integer()
+
+config :td_auth, TdAuth.Auth.RefreshToken,
+  ttl_seconds: System.get_env("REFRESH_TOKEN_TTL_SECONDS", "86400") |> String.to_integer()
 
 config :td_auth, :auth0,
   protocol: System.get_env("AUTH0_PROTOCOL"),

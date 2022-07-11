@@ -2,13 +2,12 @@ defmodule TdAuthWeb.SessionView do
   use TdAuthWeb, :view
 
   def render("show.json", %{token: token}) do
-    %{token: token.token, refresh_token: token.refresh_token}
+    %{token: token}
   end
 
   def render("show_ldap.json", %{token: token, validation_warnings: validation_warnings}) do
     %{
-      token: token.token,
-      refresh_token: token.refresh_token,
+      token: token,
       validation_warnings: validation_warnings
     }
   end

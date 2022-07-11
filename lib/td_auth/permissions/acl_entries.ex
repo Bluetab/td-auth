@@ -144,11 +144,13 @@ defmodule TdAuth.Permissions.AclEntries do
          } = acl_entry
        ) do
     %{name: role_name} = Roles.get_role!(role_id)
+
     if is_nil(group_id) do
       AclLoader.delete_acl(resource_type, resource_id, role_name, user_id)
     else
       AclLoader.delete_group_acl(resource_type, resource_id, role_name, group_id)
     end
+
     {:ok, acl_entry}
   end
 

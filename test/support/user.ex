@@ -3,7 +3,7 @@ defmodule TdAuthWeb.User do
 
   import TdAuthWeb.Authentication, only: :functions
 
-  alias TdAuth.Auth.Guardian
+  alias TdAuth.Auth.AccessToken
   alias TdAuthWeb.Router.Helpers, as: Routes
 
   @endpoint TdAuthWeb.Endpoint
@@ -57,8 +57,7 @@ defmodule TdAuthWeb.User do
   end
 
   def get_subject(token) do
-    with %{claims: claims} <- Guardian.peek(token),
-         %{"sub" => sub} <- claims do
+    with {:ok, %{"sub" => sub}} <- AccessToken.verify(token) do
       Jason.decode!(sub)
     end
   end
