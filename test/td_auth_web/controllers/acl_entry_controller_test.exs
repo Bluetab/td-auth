@@ -4,12 +4,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
   import Routes, only: [acl_entry_path: 2, acl_entry_path: 3]
 
-  setup_all do
-    start_supervised!(TdAuth.Accounts.UserLoader)
-    :ok
-  end
-
   setup do
+    start_supervised!(TdAuth.Accounts.UserLoader)
     [acl_entry: insert(:acl_entry, principal_type: :user)]
   end
 
@@ -130,10 +126,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
   describe "update acl_entry" do
     @tag authentication: [role: :admin]
-    test "renders acl_entry when data is valid", %{
-      conn: conn,
-      acl_entry: acl_entry
-    } do
+    test "renders acl_entry when data is valid", %{conn: conn, acl_entry: acl_entry} do
       description = "updated description"
       %{id: id} = acl_entry
 
@@ -148,10 +141,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
     end
 
     @tag authentication: [role: :user]
-    test "forbidden when user has not permissions", %{
-      conn: conn,
-      acl_entry: acl_entry
-    } do
+    test "forbidden when user has not permissions", %{conn: conn, acl_entry: acl_entry} do
       description = "updated description"
 
       assert %{"errors" => %{"detail" => "Forbidden"}} =
@@ -163,10 +153,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
     end
 
     @tag authentication: [role: :admin]
-    test "renders errors when data is invalid", %{
-      conn: conn,
-      acl_entry: acl_entry
-    } do
+    test "renders errors when data is invalid", %{conn: conn, acl_entry: acl_entry} do
       invalid_description = String.pad_leading("foo", 130, "bar")
 
       assert %{"errors" => errors} =
@@ -176,7 +163,7 @@ defmodule TdAuthWeb.AclEntryControllerTest do
                )
                |> json_response(:unprocessable_entity)
 
-      assert errors == %{"description" => ["max_length.120"]}
+      assert %{"description" => ["should be at most 120 character(s)"]} = errors
     end
   end
 end

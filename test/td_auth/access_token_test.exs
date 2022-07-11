@@ -40,7 +40,9 @@ defmodule TdAuth.Auth.AccessTokenTest do
       %{user: user} =
         insert(:acl_entry, principal_type: :user, role: role, resource_id: domain_id)
 
-      assert {:ok, _token, claims, user_permissions} = AccessToken.new(user, "pwd")
+      assert {:ok, %{token: _token, claims: claims, permissions: user_permissions}} =
+               AccessToken.new(user, "pwd")
+
       assert %{"amr" => ["pwd"], "entitlements" => ["p"], "groups" => groups} = claims
       assert length(groups) > 0
       assert Enum.count(user_permissions) == permissions_count
