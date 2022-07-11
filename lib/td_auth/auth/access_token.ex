@@ -15,17 +15,20 @@ defmodule TdAuth.Auth.AccessToken do
     default_claims(aud: "truedat", iss: "tdauth", default_exp: exp)
   end
 
-  @spec new(User.t(), map() | binary() | nil) ::
-          {:ok, Joken.bearer_token(), Joken.claims()} | {:error, Joken.error_reason()}
+  @spec new(User.t(), map() | binary() | nil) :: {:ok, map()} | {:error, Joken.error_reason()}
   def new(%User{} = user, auth_method_or_claims) do
     default_permissions = Permissions.default_permissions()
     user_permissions = Permissions.user_permissions(user)
     permission_groups = permission_groups(user, Map.keys(user_permissions) ++ default_permissions)
     {:ok, claims} = claims(user, permission_groups, auth_method_or_claims)
 
-    claims
-    |> encode_and_sign()
-    |> Tuple.append(user_permissions)
+    case encode_and_sign(claims) do
+      {:ok, token, claims} ->
+        {:ok, %{token: token, claims: claims, permissions: user_permissions}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   @spec resource_from_claims(map) :: {:ok, TdAuth.Auth.Claims.t()}

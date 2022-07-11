@@ -70,8 +70,7 @@ defmodule TdAuth.Mixfile do
       # See https://github.com/handnot2/esaml/issues/29
       {:cowboy, "~> 2.7", override: true},
       {:quantum, "~> 3.0"},
-      {:td_cache,
-       git: "https://github.com/Bluetab/td-cache.git", tag: "4.48.0", override: true},
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.48.0", override: true},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:cabbage,

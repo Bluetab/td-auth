@@ -43,9 +43,13 @@ defmodule TdAuth.Permissions do
     |> Repo.update()
   end
 
-  def cache_session_permissions(permissions, _jti, _exp) when permissions == %{}, do: :ok
+  def cache_session_permissions(permissions, %{"jti" => jti, "exp" => exp} = _claims) do
+    do_cache_session_permissions(permissions, jti, exp)
+  end
 
-  def cache_session_permissions(permissions, jti, exp) do
+  defp do_cache_session_permissions(permissions, _jti, _exp) when permissions == %{}, do: :ok
+
+  defp do_cache_session_permissions(permissions, jti, exp) do
     TdCache.Permissions.cache_session_permissions!(jti, exp, permissions)
   end
 

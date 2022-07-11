@@ -54,7 +54,9 @@ defmodule TdAuth.SessionsTest do
         insert(:acl_entry, principal_type: :user, role: role, resource_id: domain_id)
 
       {:ok, %{token: token, refresh_token: refresh}} = Sessions.create(user, "foo")
-      {:ok, %{token: _, refresh_token: _, claims: %{"jti" => jti}}} = Sessions.refresh(refresh, token)
+
+      {:ok, %{token: _, refresh_token: _, claims: %{"jti" => jti}}} =
+        Sessions.refresh(refresh, token)
 
       expected_permissions = Permissions.user_permissions(user)
       cache_permissions = CachePermissions.get_session_permissions(jti)

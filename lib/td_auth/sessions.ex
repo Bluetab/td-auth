@@ -10,12 +10,12 @@ defmodule TdAuth.Sessions do
   alias TdCache.SessionCache
 
   def create(%{} = user, auth_method) do
-    with {:ok, access_token, claims, user_permissions} <- AccessToken.new(user, auth_method),
+    with {:ok, %{token: access_token, claims: claims, permissions: permissions}} <-
+           AccessToken.new(user, auth_method),
          {:ok, refresh_token, refresh_claims} <- create_refresh_token(claims),
          :ok <- SessionCache.put(claims),
-         :ok <- SessionCache.put(refresh_claims),
-         %{"jti" => jti, "exp" => exp} <- claims do
-      Permissions.cache_session_permissions(user_permissions, jti, exp)
+         :ok <- SessionCache.put(refresh_claims) do
+      Permissions.cache_session_permissions(permissions, claims)
       {:ok, %{token: access_token, refresh_token: refresh_token, claims: claims}}
     end
   end
@@ -27,14 +27,14 @@ defmodule TdAuth.Sessions do
            AccessToken.verify_and_validate(access_token),
          {:ok, %{"id" => user_id}} <- Jason.decode(sub),
          user <- Accounts.get_user!(user_id),
-         {:ok, access_token, claims, user_permissions} <- AccessToken.new(user, prev_claims),
+         {:ok, %{token: access_token, claims: claims, permissions: permissions}} <-
+           AccessToken.new(user, prev_claims),
          {:ok, refresh_token, %{} = refresh_claims} <- create_refresh_token(claims, exp),
          :ok <- SessionCache.delete(jti),
          :ok <- SessionCache.delete(refresh_jti),
          :ok <- SessionCache.put(claims),
-         :ok <- SessionCache.put(refresh_claims),
-         %{"jti" => jti, "exp" => exp} <- claims do
-      Permissions.cache_session_permissions(user_permissions, jti, exp)
+         :ok <- SessionCache.put(refresh_claims) do
+      Permissions.cache_session_permissions(permissions, claims)
       {:ok, %{token: access_token, refresh_token: refresh_token, claims: claims}}
     end
   end
