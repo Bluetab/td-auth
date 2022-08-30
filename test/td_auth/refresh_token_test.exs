@@ -20,7 +20,7 @@ defmodule TdAuth.Auth.RefreshTokenTest do
       assert {:ok, jwt, ^claims} = RefreshToken.encode_and_sign(claims)
       assert {:ok, ^claims} = RefreshToken.verify(jwt)
       assert {:ok, ^claims} = RefreshToken.validate(claims)
-      assert exp == iat + 86_400
+      assert exp == iat + RefreshToken.expiry()
       assert nbf == iat
     end
   end

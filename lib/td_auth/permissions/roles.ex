@@ -9,6 +9,7 @@ defmodule TdAuth.Permissions.Roles do
   alias Ecto.Multi
   alias TdAuth.Permissions.Role
   alias TdAuth.Permissions.RoleLoader
+  alias TdAuth.Permissions.RolePermission
   alias TdAuth.Repo
 
   @typep multi_result ::
@@ -104,6 +105,20 @@ defmodule TdAuth.Permissions.Roles do
       role ->
         role
     end
+  end
+
+  def delete_permission(role_id, permission_id) do
+    RolePermission
+    |> Repo.get_by!(role_id: role_id, permission_id: permission_id)
+    |> Repo.delete()
+    |> maybe_refresh_cache()
+  end
+
+  def add_permission(role_id, permission_id) do
+    %{role_id: role_id, permission_id: permission_id}
+    |> RolePermission.changeset()
+    |> Repo.insert()
+    |> maybe_refresh_cache()
   end
 
   @doc "Associate Permissions to a Role"

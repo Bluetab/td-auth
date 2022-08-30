@@ -5,9 +5,12 @@ defmodule TdAuth.Permissions.Seeds do
 
   use Task
 
+  alias TdAuth.Permissions.Constants
   alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.PermissionGroup
   alias TdAuth.Repo
+
+  @custom_prefix Constants.custom_prefix()
 
   import Ecto.Query
 
@@ -169,7 +172,7 @@ defmodule TdAuth.Permissions.Seeds do
     permission_names = permissions()
 
     Permission
-    |> where([p], p.name not in ^permission_names)
+    |> where([p], p.name not in ^permission_names and not like(p.name, ^"#{@custom_prefix}%"))
     |> select([p], p.name)
     |> Repo.delete_all()
     |> case do
@@ -182,7 +185,7 @@ defmodule TdAuth.Permissions.Seeds do
     group_names = permission_groups()
 
     PermissionGroup
-    |> where([g], g.name not in ^group_names)
+    |> where([g], g.name not in ^group_names and not like(g.name, ^"#{@custom_prefix}%"))
     |> select([g], g.name)
     |> Repo.delete_all()
     |> case do

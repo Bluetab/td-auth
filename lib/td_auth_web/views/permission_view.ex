@@ -11,11 +11,22 @@ defmodule TdAuthWeb.PermissionView do
     %{data: render_one(permission, PermissionView, "permission.json")}
   end
 
-  def render("permission.json", %{permission: permission}) do
+  def render("permission.json", %{
+        permission: %{id: id, name: name, permission_group: %Ecto.Association.NotLoaded{}}
+      }) do
     %{
-      id: permission.id,
-      name: permission.name,
-      group: render_one(permission.permission_group, PermissionGroupView, "permission_group.json")
+      id: id,
+      name: name
+    }
+  end
+
+  def render("permission.json", %{
+        permission: %{id: id, name: name, permission_group: permission_group}
+      }) do
+    %{
+      id: id,
+      name: name,
+      group: render_one(permission_group, PermissionGroupView, "permission_group.json")
     }
   end
 end

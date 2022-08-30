@@ -4,6 +4,10 @@ defmodule TdAuthWeb.SwaggerDefinitions do
   """
   import PhoenixSwagger
 
+  alias TdAuth.Permissions.Constants
+
+  @custom_prefix Constants.custom_prefix()
+
   def session_swagger_definitions do
     %{
       Token:
@@ -592,6 +596,48 @@ defmodule TdAuthWeb.SwaggerDefinitions do
           type(:array)
           items(Schema.ref(:PermissionItem))
         end,
+      CreatePermissionProps:
+        swagger_schema do
+          properties do
+            name(:string, "permission name", required: true)
+            permission_group_id(:integer, "permission group identifier", required: true)
+          end
+
+          example(%{
+            name: "#{@custom_prefix}permission_name",
+            permission_group_id: 1234
+          })
+        end,
+      CreatePermission:
+        swagger_schema do
+          properties do
+            permission(Schema.ref(:CreatePermissionProps))
+
+            allow_non_custom_name(:boolean, "Allow groups not starting with #{@custom_prefix}",
+              default: false
+            )
+          end
+        end,
+      PermissionRelation:
+        swagger_schema do
+          properties do
+            permission_name(:string, "permission name")
+            permission_id(:integer, "permission identifier", required: true)
+          end
+        end,
+      RolePermissionResponseProps:
+        swagger_schema do
+          properties do
+            role_id(:integer, "Role Identifier")
+            permission_id(:integer, "permission identifier", required: true)
+          end
+        end,
+      RolePermissionResponse:
+        swagger_schema do
+          properties do
+            data(Schema.ref(:RolePermissionResponseProps))
+          end
+        end,
       AddPermissions:
         swagger_schema do
           properties do
@@ -629,7 +675,11 @@ defmodule TdAuthWeb.SwaggerDefinitions do
 
           properties do
             id(:integer, "unique identifier", required: true)
-            name(:string, "group's name", required: true)
+
+            name(:string, "group's name",
+              required: true,
+              example: "#{@custom_prefix}permission_group_name"
+            )
           end
         end,
       PermissionGroupItem:
@@ -638,11 +688,20 @@ defmodule TdAuthWeb.SwaggerDefinitions do
             id(:integer, "unique identifier", required: true)
             name(:string, "permission group name")
           end
+
+          example(%{
+            name: "#{@custom_prefix}permission_group_name",
+            id: 1234
+          })
         end,
       PermissionGroupCreateUpdate:
         swagger_schema do
           properties do
             permission_group(Schema.ref(:PermissionGroupItem))
+
+            allow_non_custom_name(:boolean, "Allow groups not starting with #{@custom_prefix}",
+              default: false
+            )
           end
         end,
       PermissionGroups:
