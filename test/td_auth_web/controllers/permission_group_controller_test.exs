@@ -1,11 +1,13 @@
 defmodule TdAuthWeb.PermissionGroupControllerTest do
   use TdAuthWeb.ConnCase
 
+  alias TdAuth.Permissions.Constants
   alias TdAuth.Permissions.PermissionGroup
 
-  @create_attrs %{name: "group name"}
-  @update_attrs %{name: "new group name"}
   @invalid_attrs %{name: nil}
+  @custom_prefix Constants.custom_prefix()
+  @create_attrs %{name: "#{@custom_prefix}group name"}
+  @update_attrs %{name: "#{@custom_prefix}new_group_name"}
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
@@ -56,6 +58,39 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
 
       assert errors == %{"name" => ["can't be blank"]}
     end
+
+    @tag authentication: [role: :admin]
+    test "renders errors if non-custom group is created without allow_non_custom_name", %{
+      conn: conn
+    } do
+      assert %{"errors" => errors} =
+               conn
+               |> post(Routes.permission_group_path(conn, :create),
+                 permission_group: %{name: "non_custom_name"}
+               )
+               |> json_response(:unprocessable_entity)
+
+      assert errors == %{
+               "name" => [
+                 "External permission group creation requires a name starting with '#{@custom_prefix}'"
+               ]
+             }
+    end
+
+    @tag authentication: [role: :admin]
+    test "render permission_group if non-custom group is created with allow_non_custom_name", %{
+      conn: conn
+    } do
+      assert %{"data" => data} =
+               conn
+               |> post(
+                 Routes.permission_group_path(conn, :create),
+                 %{permission_group: %{name: "non_custom_name"}, allow_non_custom_name: true}
+               )
+               |> json_response(:created)
+
+      assert %{"id" => _id} = data
+    end
   end
 
   describe "update permission_group" do
@@ -84,6 +119,43 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
         )
 
       assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    @tag authentication: [role: :admin]
+    test "renders errors if non-custom group is created without allow_non_custom_name", %{
+      conn: conn,
+      permission_group: permission_group
+    } do
+      assert %{"errors" => errors} =
+               put(conn, Routes.permission_group_path(conn, :update, permission_group),
+                 permission_group: %{name: "changed_non_custom_name"}
+               )
+               |> json_response(:unprocessable_entity)
+
+      assert errors == %{
+               "name" => [
+                 "External permission group creation requires a name starting with '#{@custom_prefix}'"
+               ]
+             }
+    end
+
+    @tag authentication: [role: :admin]
+    test "renders permission_group if non-custom group is created with allow_non_custom_name", %{
+      conn: conn,
+      permission_group: %PermissionGroup{id: id} = permission_group
+    } do
+      assert %{"data" => data} =
+               conn
+               |> put(
+                 Routes.permission_group_path(conn, :update, permission_group),
+                 %{
+                   permission_group: %{name: "changed_non_custom_name"},
+                   allow_non_custom_name: true
+                 }
+               )
+               |> json_response(:ok)
+
+      assert %{"id" => ^id} = data
     end
   end
 

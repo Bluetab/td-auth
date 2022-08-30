@@ -1,7 +1,11 @@
 defmodule TdAuth.Permissions.RoleTest do
   use TdAuth.DataCase
 
+  alias TdAuth.Permissions.Constants
+  alias TdAuth.Permissions.RolePermission
   alias TdAuth.Permissions.Roles
+
+  @custom_prefix Constants.custom_prefix()
 
   setup do
     role = insert(:role, permissions: [build(:permission)])
@@ -93,6 +97,25 @@ defmodule TdAuth.Permissions.RoleTest do
       %{id: role_id} = role = insert(:role)
       assert {:ok, %{role: role}} = Roles.delete_role(role)
       assert %{__meta__: %{state: :deleted}, id: ^role_id} = role
+    end
+  end
+
+  describe "Roles.add_permission/2" do
+    test "adds permission to a role", %{role: %{id: role_id}} do
+      %{id: permission_id} = insert(:permission, name: "#{@custom_prefix}permission")
+
+      assert {:ok, %RolePermission{role_id: ^role_id, permission_id: ^permission_id}} =
+               Roles.add_permission(role_id, permission_id)
+    end
+  end
+
+  describe "Roles.delete_permission/2" do
+    test "deletes permission from a role", %{permissions: permissions} do
+      %{id: role_id} = insert(:role, name: "role_with_permissions", permissions: permissions)
+      [%{id: permission_id}] = Enum.take_random(permissions, 1)
+
+      assert {:ok, %RolePermission{role_id: ^role_id, permission_id: ^permission_id}} =
+               Roles.delete_permission(role_id, permission_id)
     end
   end
 

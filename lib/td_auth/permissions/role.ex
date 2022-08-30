@@ -18,7 +18,7 @@ defmodule TdAuth.Permissions.Role do
     has_many(:acl_entries, AclEntry)
 
     many_to_many(:permissions, Permission,
-      join_through: "roles_permissions",
+      join_through: TdAuth.Permissions.RolePermission,
       on_replace: :delete,
       on_delete: :delete_all
     )

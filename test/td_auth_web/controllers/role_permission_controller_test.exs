@@ -2,6 +2,10 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  alias TdAuth.Permissions.Constants
+
+  @custom_prefix Constants.custom_prefix()
+
   setup tags do
     context =
       Enum.reduce(tags, %{}, fn
@@ -20,6 +24,151 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
   end
 
   describe "role permissions" do
+    @tag authentication: [role: :admin]
+    @tag role: %{
+           name: "test",
+           permissions: ["#{@custom_prefix}permission1", "#{@custom_prefix}permission2"]
+         }
+    test "add role role-permission relation by permission name", %{
+      conn: conn,
+      swagger_schema: schema,
+      role: %{id: role_id}
+    } do
+      %{id: permission_id} = insert(:permission, name: "#{@custom_prefix}permission3")
+
+      params = %{
+        "permission_name" => "#{@custom_prefix}permission3"
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.role_permission_path(conn, :create, role_id), params)
+               |> validate_resp_schema(schema, "RolePermissionResponse")
+               |> json_response(:ok)
+
+      assert %{
+               "role_id" => ^role_id,
+               "permission_id" => ^permission_id
+             } = data
+
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.role_permission_path(conn, :show, role_id))
+               |> validate_resp_schema(schema, "PermissionsResponse")
+               |> json_response(:ok)
+
+      assert [
+               %{"name" => "#{@custom_prefix}permission1"},
+               %{"name" => "#{@custom_prefix}permission2"},
+               %{"name" => "#{@custom_prefix}permission3"}
+             ] = data
+    end
+
+    @tag authentication: [role: :admin]
+    @tag role: %{
+           name: "test",
+           permissions: ["#{@custom_prefix}permission1", "#{@custom_prefix}permission2"]
+         }
+    test "add role-permission relation by permission ID", %{
+      conn: conn,
+      swagger_schema: schema,
+      role: %{id: role_id}
+    } do
+      %{id: permission_id} = insert(:permission, name: "#{@custom_prefix}permission3")
+
+      params = %{
+        "permission_id" => permission_id
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.role_permission_path(conn, :create, role_id), params)
+               |> validate_resp_schema(schema, "RolePermissionResponse")
+               |> json_response(:ok)
+
+      assert %{
+               "role_id" => ^role_id,
+               "permission_id" => ^permission_id
+             } = data
+
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.role_permission_path(conn, :show, role_id))
+               |> validate_resp_schema(schema, "PermissionsResponse")
+               |> json_response(:ok)
+
+      assert [
+               %{"name" => "#{@custom_prefix}permission1"},
+               %{"name" => "#{@custom_prefix}permission2"},
+               %{"name" => "#{@custom_prefix}permission3"}
+             ] = data
+    end
+
+    @tag authentication: [role: :admin]
+    @tag role: %{
+           name: "test",
+           permissions: ["#{@custom_prefix}permission1", "#{@custom_prefix}permission2"]
+         }
+    test "delete role-permission relation by permission name", %{
+      conn: conn,
+      swagger_schema: schema,
+      role: role
+    } do
+      params = %{
+        "permission_name" => "#{@custom_prefix}permission1"
+      }
+
+      assert conn
+             |> delete(Routes.role_permission_path(conn, :delete, role.id), params)
+             |> response(:no_content)
+
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.role_permission_path(conn, :show, role.id))
+               |> validate_resp_schema(schema, "PermissionsResponse")
+               |> json_response(:ok)
+
+      assert [
+               %{
+                 "name" => "#{@custom_prefix}permission2"
+               }
+             ] = data
+    end
+
+    @tag authentication: [role: :admin]
+    @tag role: %{
+           name: "test",
+           permissions: ["#{@custom_prefix}permission1", "#{@custom_prefix}permission2"]
+         }
+    test "delete role-permission relation by permission ID", %{
+      conn: conn,
+      swagger_schema: schema,
+      role: role
+    } do
+      %{id: permission_to_delete_id} =
+        Enum.find(role.permissions, &(&1.name == "#{@custom_prefix}permission1"))
+
+      params = %{
+        "permission_id" => permission_to_delete_id
+      }
+
+      assert conn
+             |> delete(Routes.role_permission_path(conn, :delete, role.id), params)
+             |> response(:no_content)
+
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.role_permission_path(conn, :show, role.id))
+               |> validate_resp_schema(schema, "PermissionsResponse")
+               |> json_response(:ok)
+
+      assert [
+               %{
+                 "name" => "#{@custom_prefix}permission2"
+               }
+             ] = data
+    end
+
     @tag authentication: [role: :admin]
     @tag role: %{name: "test", permissions: ["permission1", "permission2"]}
     test "list role permissions", %{conn: conn, swagger_schema: schema, role: role} do

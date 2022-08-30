@@ -90,7 +90,7 @@ defmodule TdAuth.Auth.AccessToken do
     Permissions.group_names(permissions)
   end
 
-  defp expiry do
+  def expiry do
     :td_auth
     |> Application.fetch_env!(__MODULE__)
     |> Keyword.fetch!(:ttl_seconds)

@@ -23,7 +23,7 @@ defmodule TdAuth.Auth.AccessTokenTest do
       assert {:ok, jwt, ^claims} = AccessToken.encode_and_sign(claims)
       assert {:ok, ^claims} = AccessToken.verify(jwt)
       assert {:ok, ^claims} = AccessToken.validate(claims)
-      assert exp == iat + 600
+      assert exp == iat + AccessToken.expiry()
       assert nbf == iat
     end
   end

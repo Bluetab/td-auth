@@ -34,7 +34,7 @@ defmodule TdAuth.PermissionsTest do
       |> assert_structs_equal(permission, @permission_keys)
     end
 
-    test "returns the premission and preloaded information with given id" do
+    test "returns the permission and preloaded information with given id" do
       permission_group = insert(:permission_group)
       permission = insert(:permission, permission_group: permission_group)
       assert Permissions.get_permission!(permission.id) == permission

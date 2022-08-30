@@ -46,16 +46,13 @@ defmodule TdAuthWeb.Router do
 
     resources("/acl_entries", AclEntryController, except: [:new, :edit])
 
-    resources("/permissions", PermissionController,
-      except: [:new, :edit, :update, :delete, :create]
-    )
+    resources("/permissions", PermissionController, except: [:new, :edit, :update])
 
-    resources "/permission_groups", PermissionGroupController, except: [:new, :edit]
+    resources "/permission_groups", PermissionGroupController, except: [:edit]
 
-    resources "/roles", RoleController, except: [:new, :edit] do
+    resources "/roles", RoleController, except: [:edit] do
       resources("/permissions", RolePermissionController,
         singleton: true,
-        only: [:show, :update],
         name: "permission"
       )
     end

@@ -11,7 +11,7 @@ defmodule TdAuth.Auth.RefreshToken do
     default_claims(aud: "tdauth", iss: "tdauth", default_exp: exp)
   end
 
-  defp expiry do
+  def expiry do
     :td_auth
     |> Application.fetch_env!(__MODULE__)
     |> Keyword.fetch!(:ttl_seconds)

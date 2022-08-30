@@ -31,6 +31,12 @@ defmodule TdAuth.Permissions do
 
   def get_permission_by_name(name), do: Repo.get_by(Permission, name: name)
 
+  def create_external_permission(attrs \\ %{}) do
+    attrs
+    |> Permission.changeset_external()
+    |> Repo.insert()
+  end
+
   def create_permission(attrs \\ %{}) do
     %Permission{}
     |> Permission.changeset(attrs)
@@ -41,6 +47,10 @@ defmodule TdAuth.Permissions do
     permission
     |> Permission.changeset(params)
     |> Repo.update()
+  end
+
+  def delete_permission(%Permission{} = permission) do
+    Repo.delete(permission)
   end
 
   def cache_session_permissions(permissions, %{"jti" => jti, "exp" => exp} = _claims) do
@@ -61,6 +71,14 @@ defmodule TdAuth.Permissions do
     Repo.get!(PermissionGroup, id)
   end
 
+  def get_permission_group_by_name(name), do: Repo.get_by(PermissionGroup, name: name)
+
+  def create_external_permission_group(attrs \\ %{}) do
+    attrs
+    |> PermissionGroup.changeset_external()
+    |> Repo.insert()
+  end
+
   def create_permission_group(attrs \\ %{}) do
     attrs
     |> PermissionGroup.changeset()
@@ -70,6 +88,12 @@ defmodule TdAuth.Permissions do
   def update_permission_group(%PermissionGroup{} = permission_group, params) do
     permission_group
     |> PermissionGroup.changeset(params)
+    |> Repo.update()
+  end
+
+  def update_to_external_permission_group(%PermissionGroup{} = permission_group, params) do
+    permission_group
+    |> PermissionGroup.changeset_external(params)
     |> Repo.update()
   end
 

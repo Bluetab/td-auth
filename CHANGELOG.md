@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-5036] Custom permissions
+
 ## [4.48.0] 2022-07-26
 
 ### Changed
