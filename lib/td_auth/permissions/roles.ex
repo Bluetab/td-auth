@@ -107,9 +107,12 @@ defmodule TdAuth.Permissions.Roles do
     end
   end
 
-  def delete_permission(role_id, permission_id) do
-    RolePermission
-    |> Repo.get_by!(role_id: role_id, permission_id: permission_id)
+  def get_role_permission!(role_id, permission_id) do
+    Repo.get_by!(RolePermission, role_id: role_id, permission_id: permission_id)
+  end
+
+  def remove_permission(role_permission) do
+    role_permission
     |> Repo.delete()
     |> maybe_refresh_cache()
   end

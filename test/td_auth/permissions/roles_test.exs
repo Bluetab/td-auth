@@ -109,13 +109,14 @@ defmodule TdAuth.Permissions.RoleTest do
     end
   end
 
-  describe "Roles.delete_permission/2" do
+  describe "Roles.remove_permission/2" do
     test "deletes permission from a role", %{permissions: permissions} do
       %{id: role_id} = insert(:role, name: "role_with_permissions", permissions: permissions)
       [%{id: permission_id}] = Enum.take_random(permissions, 1)
+      role_permission = Roles.get_role_permission!(role_id, permission_id)
 
       assert {:ok, %RolePermission{role_id: ^role_id, permission_id: ^permission_id}} =
-               Roles.delete_permission(role_id, permission_id)
+               Roles.remove_permission(role_permission)
     end
   end
 

@@ -4,7 +4,9 @@ defmodule TdAuthWeb.RolePermissionController do
   import Canada, only: [can?: 2]
 
   alias TdAuth.Permissions
+  alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.Role
+  alias TdAuth.Permissions.RolePermission
   alias TdAuth.Permissions.Roles
   alias TdAuthWeb.PermissionView
   alias TdAuthWeb.RolePermissionView
@@ -54,27 +56,21 @@ defmodule TdAuthWeb.RolePermissionController do
   end
 
   def create(conn, %{"role_id" => role_id, "permission_id" => permission_id}) do
-    create(conn, role_id, permission_id)
+    add_permission(conn, role_id, permission_id)
   end
 
   def create(conn, %{"role_id" => role_id, "permission_name" => permission_name}) do
-    permission = Permissions.get_permission_by_name(permission_name)
-    create(conn, role_id, permission)
+    case Permissions.get_permission_by_name(permission_name) do
+      %Permission{id: permission_id} -> add_permission(conn, role_id, permission_id)
+      nil -> {:error, :not_found}
+    end
   end
 
-  def create(_conn, _role_id, nil = _permission) do
-    {:error, :not_found}
-  end
-
-  def create(conn, role_id, %{id: permission_id} = _permission) do
-    create(conn, role_id, permission_id)
-  end
-
-  def create(
-        conn,
-        role_id,
-        permission_id
-      ) do
+  defp add_permission(
+         conn,
+         role_id,
+         permission_id
+       ) do
     claims = conn.assigns[:current_resource]
 
     with {:can, true} <- {:can, can?(claims, create(RolePermission))},
@@ -104,28 +100,23 @@ defmodule TdAuthWeb.RolePermissionController do
   end
 
   def delete(conn, %{"role_id" => role_id, "permission_id" => permission_id}) do
-    delete_permission(conn, role_id, permission_id)
+    remove_permission(conn, role_id, permission_id)
   end
 
   def delete(conn, %{"role_id" => role_id, "permission_name" => permission_name}) do
-    permission = Permissions.get_permission_by_name(permission_name)
-    delete_permission(conn, role_id, permission)
+    case Permissions.get_permission_by_name(permission_name) do
+      %Permission{id: permission_id} -> remove_permission(conn, role_id, permission_id)
+      nil -> {:error, :not_found}
+    end
   end
 
-  defp delete_permission(_conn, _role_id, nil) do
-    {:error, :not_found}
-  end
-
-  defp delete_permission(conn, role_id, %{id: permission_id}) do
-    delete_permission(conn, role_id, permission_id)
-  end
-
-  defp delete_permission(conn, role_id, permission_id) do
+  defp remove_permission(conn, role_id, permission_id) do
     claims = conn.assigns[:current_resource]
-    ## REVIEW: I think that the id to delete should be requested
-    ## first and then send the delete function the schema and not the ids.
+
     with {:can, true} <- {:can, can?(claims, delete(RolePermission))},
-         {:ok, _} <- Roles.delete_permission(role_id, permission_id) do
+         %RolePermission{} = role_permission <-
+           Roles.get_role_permission!(role_id, permission_id),
+         {:ok, _} <- Roles.remove_permission(role_permission) do
       send_resp(conn, :no_content, "")
     end
   end

@@ -76,21 +76,6 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
                ]
              }
     end
-
-    @tag authentication: [role: :admin]
-    test "render permission_group if non-custom group is created with allow_non_custom_name", %{
-      conn: conn
-    } do
-      assert %{"data" => data} =
-               conn
-               |> post(
-                 Routes.permission_group_path(conn, :create),
-                 %{permission_group: %{name: "non_custom_name"}, allow_non_custom_name: true}
-               )
-               |> json_response(:created)
-
-      assert %{"id" => _id} = data
-    end
   end
 
   describe "update permission_group" do
@@ -137,25 +122,6 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
                  "External permission group creation requires a name starting with '#{@custom_prefix}'"
                ]
              }
-    end
-
-    @tag authentication: [role: :admin]
-    test "renders permission_group if non-custom group is created with allow_non_custom_name", %{
-      conn: conn,
-      permission_group: %PermissionGroup{id: id} = permission_group
-    } do
-      assert %{"data" => data} =
-               conn
-               |> put(
-                 Routes.permission_group_path(conn, :update, permission_group),
-                 %{
-                   permission_group: %{name: "changed_non_custom_name"},
-                   allow_non_custom_name: true
-                 }
-               )
-               |> json_response(:ok)
-
-      assert %{"id" => ^id} = data
     end
   end
 

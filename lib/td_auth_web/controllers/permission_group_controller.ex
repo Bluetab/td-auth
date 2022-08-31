@@ -39,32 +39,10 @@ defmodule TdAuthWeb.PermissionGroupController do
     response(403, "Unprocessable Entity")
   end
 
-  def create(
-        conn,
-        %{"permission_group" => _, "allow_non_custom_name" => true} = params
-      ) do
-    create(
-      conn,
-      params,
-      &Permissions.create_permission_group/1
-    )
-  end
-
-  def create(
-        conn,
-        %{"permission_group" => _} = params
-      ) do
-    create(
-      conn,
-      params,
-      &Permissions.create_external_permission_group/1
-    )
-  end
-
-  defp create(conn, %{"permission_group" => permission_group_params}, fn_create_permission_group) do
+  def create(conn, %{"permission_group" => permission_group_params}) do
     with {:can, true} <- {:can, Claims.is_admin?(conn)},
          {:ok, %PermissionGroup{} = permission_group} <-
-           fn_create_permission_group.(permission_group_params) do
+           Permissions.create_external_permission_group(permission_group_params) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.permission_group_path(conn, :show, permission_group))
@@ -105,37 +83,14 @@ defmodule TdAuthWeb.PermissionGroupController do
     response(403, "Unprocessable Entity")
   end
 
-  def update(
-        conn,
-        %{"permission_group" => _, "allow_non_custom_name" => true} = params
-      ) do
-    update(
-      conn,
-      params,
-      &Permissions.update_permission_group/2
-    )
-  end
-
-  def update(
-        conn,
-        %{"permission_group" => _} = params
-      ) do
-    update(
-      conn,
-      params,
-      &Permissions.update_to_external_permission_group/2
-    )
-  end
-
-  defp update(
-         conn,
-         %{"id" => id, "permission_group" => permission_group_params},
-         fn_update_permission_group
-       ) do
+  def update(conn, %{"id" => id, "permission_group" => permission_group_params}) do
     with {:can, true} <- {:can, Claims.is_admin?(conn)},
          permission_group <- Permissions.get_permission_group!(id),
          {:ok, %PermissionGroup{} = permission_group} <-
-           fn_update_permission_group.(permission_group, permission_group_params) do
+           Permissions.update_to_external_permission_group(
+             permission_group,
+             permission_group_params
+           ) do
       render(conn, "show.json", permission_group: permission_group)
     end
   end
