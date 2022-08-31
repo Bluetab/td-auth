@@ -5,12 +5,10 @@ defmodule TdAuth.Permissions.RolePermission do
   use Ecto.Schema
 
   import Ecto.Changeset
-
+  @primary_key false
   schema "roles_permissions" do
-    belongs_to(:role, TdAuth.Permissions.Role)
-    belongs_to(:permission, TdAuth.Permissions.Permission)
-
-    timestamps()
+    belongs_to(:role, TdAuth.Permissions.Role, primary_key: true)
+    belongs_to(:permission, TdAuth.Permissions.Permission, primary_key: true)
   end
 
   def changeset(params) do
@@ -20,6 +18,7 @@ defmodule TdAuth.Permissions.RolePermission do
   def changeset(role_permission, params) do
     role_permission
     |> cast(params, [:role_id, :permission_id])
+    |> unique_constraint([:role_id, :permission_id])
     |> foreign_key_constraint(:role_id)
     |> foreign_key_constraint(:permission_id)
   end
