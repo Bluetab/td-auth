@@ -79,7 +79,7 @@ defmodule TdAuthWeb.PermissionControllerTest do
     end
 
     @tag authentication: [role: :admin]
-    test "create non-custom permission without allow_non_custom_name returns error", %{
+    test "create non-custom permission returns error", %{
       conn: conn,
       swagger_schema: schema
     } do
@@ -98,39 +98,6 @@ defmodule TdAuthWeb.PermissionControllerTest do
                |> json_response(:unprocessable_entity)
 
       assert %{"name" => _name_errors} = errors
-    end
-
-    @tag authentication: [role: :admin]
-    test "create non-custom permission with allow_non_custom_name", %{
-      conn: conn,
-      swagger_schema: schema
-    } do
-      %{id: permission_group_id} =
-        insert(:permission_group, name: "#{@custom_prefix}permission_group")
-
-      params = %{
-        "name" => "non_custom_permission_name",
-        "permission_group_id" => permission_group_id
-      }
-
-      assert %{"data" => data} =
-               conn
-               |> post(Routes.permission_path(conn, :create), %{
-                 permission: params,
-                 allow_non_custom_name: true
-               })
-               |> validate_resp_schema(schema, "PermissionResponse")
-               |> json_response(:created)
-
-      assert %{"id" => new_permission_id, "name" => "non_custom_permission_name"} = data
-
-      assert %{"data" => data} =
-               conn
-               |> get(Routes.permission_path(conn, :show, new_permission_id))
-               |> validate_resp_schema(schema, "PermissionResponse")
-               |> json_response(:ok)
-
-      assert %{"id" => ^new_permission_id, "name" => "non_custom_permission_name"} = data
     end
 
     @tag authentication: [role: :admin]
