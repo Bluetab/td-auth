@@ -68,48 +68,13 @@ defmodule TdAuthWeb.PermissionController do
   def create(
         conn,
         %{
-          "permission" => %{
-            "name" => _name,
-            "permission_group_id" => _permission_group_id
-          },
-          "allow_non_custom_name" => true
-        } = params
+          "permission" => permission_params
+        }
       ) do
-    create(
-      conn,
-      params,
-      &Permissions.create_permission/1
-    )
-  end
-
-  def create(
-        conn,
-        %{
-          "permission" => %{
-            "name" => _name,
-            "permission_group_id" => _permission_group_id
-          }
-        } = params
-      ) do
-    create(
-      conn,
-      params,
-      &Permissions.create_external_permission/1
-    )
-  end
-
-  defp create(
-         conn,
-         %{
-           "permission" =>
-             %{"name" => _name, "permission_group_id" => _permission_group_id} = permission_params
-         },
-         fn_create_permission
-       ) do
     with claims <- conn.assigns[:current_resource],
          {:can, true} <- {:can, can?(claims, create(Permission))},
          {:ok, %Permission{} = permission} <-
-           fn_create_permission.(permission_params) do
+           Permissions.create_external_permission(permission_params) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.permission_path(conn, :show, permission))

@@ -60,7 +60,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
     end
 
     @tag authentication: [role: :admin]
-    test "renders errors if non-custom group is created without allow_non_custom_name", %{
+    test "renders errors if non-custom group is created", %{
       conn: conn
     } do
       assert %{"errors" => errors} =
@@ -107,7 +107,7 @@ defmodule TdAuthWeb.PermissionGroupControllerTest do
     end
 
     @tag authentication: [role: :admin]
-    test "renders errors if non-custom group is created without allow_non_custom_name", %{
+    test "renders errors if non-custom group is created", %{
       conn: conn,
       permission_group: permission_group
     } do

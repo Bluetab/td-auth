@@ -612,10 +612,6 @@ defmodule TdAuthWeb.SwaggerDefinitions do
         swagger_schema do
           properties do
             permission(Schema.ref(:CreatePermissionProps))
-
-            allow_non_custom_name(:boolean, "Allow groups not starting with #{@custom_prefix}",
-              default: false
-            )
           end
         end,
       PermissionRelation:
@@ -675,33 +671,23 @@ defmodule TdAuthWeb.SwaggerDefinitions do
 
           properties do
             id(:integer, "unique identifier", required: true)
-
-            name(:string, "group's name",
-              required: true,
-              example: "#{@custom_prefix}permission_group_name"
-            )
+            name(:string, "group's name", required: true)
           end
         end,
-      PermissionGroupItem:
+      PermissionGroupCreateUpdateProps:
         swagger_schema do
           properties do
-            id(:integer, "unique identifier", required: true)
             name(:string, "permission group name")
           end
 
           example(%{
-            name: "#{@custom_prefix}permission_group_name",
-            id: 1234
+            name: "#{@custom_prefix}permission_group_name"
           })
         end,
       PermissionGroupCreateUpdate:
         swagger_schema do
           properties do
-            permission_group(Schema.ref(:PermissionGroupItem))
-
-            allow_non_custom_name(:boolean, "Allow groups not starting with #{@custom_prefix}",
-              default: false
-            )
+            permission_group(Schema.ref(:PermissionGroupCreateUpdateProps))
           end
         end,
       PermissionGroups:

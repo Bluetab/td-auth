@@ -18,7 +18,7 @@ defmodule TdAuth.Permissions.RolePermission do
   def changeset(role_permission, params) do
     role_permission
     |> cast(params, [:role_id, :permission_id])
-    |> unique_constraint([:role_id, :permission_id])
+    |> unique_constraint([:role_id, :permission_id], name: :roles_permissions_pkey)
     |> foreign_key_constraint(:role_id)
     |> foreign_key_constraint(:permission_id)
   end
