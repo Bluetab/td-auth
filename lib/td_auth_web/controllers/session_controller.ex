@@ -285,10 +285,10 @@ defmodule TdAuthWeb.SessionController do
   end
 
   defp put_refresh_token(conn, refresh_token) do
-    put_resp_cookie(conn, "_td_refresh", refresh_token, same_site: "Strict")
+    put_resp_cookie(conn, "_td_refresh", refresh_token, same_site: "Strict", secure: true)
   end
 
   defp delete_refresh_token(conn) do
-    delete_resp_cookie(conn, "_td_refresh", same_site: "Strict")
+    delete_resp_cookie(conn, "_td_refresh", same_site: "Strict", secure: true)
   end
 end
