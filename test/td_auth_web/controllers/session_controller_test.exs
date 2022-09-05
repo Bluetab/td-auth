@@ -331,7 +331,9 @@ defmodule TdAuthWeb.SessionControllerTest do
         )
 
       assert %{"token" => token} = json_response(conn1, :created)
-      assert %{"_td_refresh" => %{same_site: "Strict", value: refresh_token}} = resp_cookies
+
+      assert %{"_td_refresh" => %{same_site: "Strict", value: refresh_token, secure: true}} =
+               resp_cookies
 
       assert %{"token" => token} =
                conn

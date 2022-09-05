@@ -12,7 +12,7 @@ defmodule TdAuth.Auth.ErrorHandler do
     body = Jason.encode!(%{message: to_string(type)})
 
     conn
-    |> delete_resp_cookie("_td_refresh", same_site: "Strict")
+    |> delete_resp_cookie("_td_refresh", same_site: "Strict", secure: true)
     |> put_resp_content_type("application/json")
     |> send_resp(:unauthorized, body)
   end

@@ -1,10 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [4.50.0] 2022-09-05
 
 ### Added
 
-- [TD-5036] Custom permissions
+- [TD-5036] Support for custom permissions
 
 ## [4.48.0] 2022-07-26
 
