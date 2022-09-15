@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- [TD-5082] view_protected_metadata permission
+
 ## [4.50.0] 2022-09-05
 
 ### Added

@@ -57,7 +57,8 @@ defmodule TdAuth.Permissions.Seeds do
       "profile_structures",
       "view_structure_note",
       "view_structure_note_history",
-      "link_data_structure_tag"
+      "link_data_structure_tag",
+      "view_protected_metadata"
     ],
     "data_dictionary_structure_notes" => [
       "create_structure_note",
