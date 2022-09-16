@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
 
 ### Added
 
 - [TD-5082] view_protected_metadata permission
+- [TD-5133] filter on /user/search for retreaving users with a specific permission
 
 ## [4.50.0] 2022-09-05
 

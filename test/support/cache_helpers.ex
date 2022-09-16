@@ -6,6 +6,8 @@ defmodule TdAuth.CacheHelpers do
   import ExUnit.Callbacks, only: [on_exit: 1]
   import TdAuth.Factory
 
+  alias TdCache.Permissions
+  alias TdCache.Redix
   alias TdCache.TaxonomyCache
   alias TdCache.UserCache
 
@@ -25,4 +27,21 @@ defmodule TdAuth.CacheHelpers do
 
   defp maybe_put_id(%{id: id} = map) when not is_nil(id), do: map
   defp maybe_put_id(%{} = map), do: Map.put(map, :id, System.unique_integer([:positive]))
+
+  def put_session_permissions(%{} = claims, domain_id, permissions) do
+    domain_ids_by_permission = Map.new(permissions, &{to_string(&1), [domain_id]})
+    put_session_permissions(claims, domain_ids_by_permission)
+  end
+
+  def put_session_permissions(
+        %{"jti" => session_id, "exp" => exp},
+        %{} = domain_ids_by_permission
+      ) do
+    put_sessions_permissions(session_id, exp, domain_ids_by_permission)
+  end
+
+  def put_sessions_permissions(session_id, exp, domain_ids_by_permission) do
+    on_exit(fn -> Redix.del!("session:#{session_id}:permissions") end)
+    Permissions.cache_session_permissions!(session_id, exp, domain_ids_by_permission)
+  end
 end

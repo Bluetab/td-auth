@@ -35,6 +35,35 @@ defmodule TdAuth.AccountsTest do
       assert [%{id: ^id}] = Accounts.list_users(role: "service")
     end
 
+    test "list_users/1 filters by permission on domains" do
+      %{permissions: [permission]} =
+        role_1 = insert(:role, name: "role1", permissions: [build(:permission)])
+
+      role_2 = insert(:role, name: "role2", permissions: [permission])
+
+      %{id: user_id_1, groups: [%{id: group_id}]} = insert(:user, groups: [build(:group)])
+      %{id: user_id_2} = insert(:user)
+      %{id: user_id_3} = insert(:user)
+      insert(:user)
+
+      %{resource_id: domain_id_1} = insert(:acl_entry, group_id: group_id, role: role_1)
+      %{resource_id: domain_id_2} = insert(:acl_entry, user_id: user_id_2, role: role_2)
+      insert(:acl_entry, user_id: user_id_3, role: role_2)
+
+      assert [%{id: ^user_id_1}, %{id: ^user_id_2}] =
+               Accounts.list_users(
+                 permission_on_domains: {permission.name, [domain_id_1, domain_id_2]}
+               )
+
+      assert [%{id: ^user_id_1}] =
+               Accounts.list_users(permission_on_domains: {permission.name, [domain_id_1]})
+
+      assert [] =
+               Accounts.list_users(permission_on_domains: {"unknown_permission", [domain_id_1]})
+
+      assert [] = Accounts.list_users(permission_on_domains: {permission.name, []})
+    end
+
     test "get_user!/1 returns the user with given id" do
       %{id: user_id} = insert(:user)
       assert %{id: ^user_id} = Accounts.get_user!(user_id)
