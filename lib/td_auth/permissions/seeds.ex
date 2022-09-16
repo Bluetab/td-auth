@@ -134,7 +134,9 @@ defmodule TdAuth.Permissions.Seeds do
       "manage_grants",
       "create_grant_request",
       "approve_grant_request",
-      "request_grant_removal"
+      "request_grant_removal",
+      "create_foreign_grant_request",
+      "allow_foreign_grant_request"
     ]
   }
 

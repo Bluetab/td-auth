@@ -5,13 +5,9 @@ defmodule TdAuth.Accounts do
 
   import Ecto.Query, warn: false
 
-  alias TdAuth.Accounts.Group
-  alias TdAuth.Accounts.GroupLoader
-  alias TdAuth.Accounts.User
-  alias TdAuth.Accounts.UserLoader
+  alias TdAuth.Accounts.{Group, GroupLoader, User, UserLoader}
   alias TdAuth.Map.Helpers
-  alias TdAuth.Permissions.AclEntries
-  alias TdAuth.Permissions.AclLoader
+  alias TdAuth.Permissions.{AclEntries, AclEntry, AclLoader, Permission, RolePermission}
   alias TdAuth.Repo
 
   def user_exists? do
@@ -29,7 +25,9 @@ defmodule TdAuth.Accounts do
       [%User{}, ...]
 
   """
-  def list_users(opts \\ []) do
+  def list_users(opts \\ [])
+
+  def list_users(opts) do
     User
     |> apply_list_users_opts(opts)
     |> Repo.all()
@@ -56,9 +54,26 @@ defmodule TdAuth.Accounts do
           ilike(u.full_name, ^query) or ilike(u.email, ^query) or ilike(u.user_name, ^query)
         )
 
+      {:permission_on_domains, {permission, domain_ids}}, q ->
+        permission_on_domains_query(q, permission, domain_ids)
+
       _, q ->
         q
     end)
+  end
+
+  def permission_on_domains_query(query, permission, domain_ids) do
+    query
+    |> join(:left, [u], ug in "users_groups", as: :ug, on: ug.user_id == u.id)
+    |> join(:inner, [u, ug: ug], ae in AclEntry,
+      as: :ae,
+      on: ae.group_id == ug.group_id or ae.user_id == u.id
+    )
+    |> join(:inner, [ae: ae], rp in RolePermission, as: :rp, on: rp.role_id == ae.role_id)
+    |> join(:inner, [rp: rp], p in Permission, as: :p, on: p.id == rp.permission_id)
+    |> where([p: p], p.name == ^permission)
+    |> where([ae: ae], ae.resource_type == "domain" and ae.resource_id in ^domain_ids)
+    |> group_by([u], u.id)
   end
 
   @doc """
