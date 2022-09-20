@@ -76,7 +76,8 @@ defmodule TdAuth.Mixfile do
       {:cabbage,
        git: "https://github.com/Bluetab/cabbage", branch: "feature/background", only: :test},
       {:ex_machina, "~> 2.3", only: :test},
-      {:assertions, "~> 0.15", only: :test}
+      {:assertions, "~> 0.15", only: :test},
+      {:sobelow, "~> 0.11", only: [:dev, :test]}
     ]
   end
 

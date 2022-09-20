@@ -25,7 +25,7 @@ defmodule TdAuth.Accounts.Group do
   def changeset(%__MODULE__{} = group, params) do
     group
     |> cast(params, [:name, :description])
-    |> validate_required([:name])
+    |> validate_required(:name)
     |> put_users(params)
     |> unique_constraint(:name)
   end
