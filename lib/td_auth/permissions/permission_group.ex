@@ -38,7 +38,7 @@ defmodule TdAuth.Permissions.PermissionGroup do
   def changeset(%__MODULE__{} = permission_group, params) do
     permission_group
     |> cast(params, [:name])
-    |> validate_required([:name])
+    |> validate_required(:name)
     |> unique_constraint(:name)
   end
 
