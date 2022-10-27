@@ -1,7 +1,7 @@
 defmodule TdAuth.Ldap.Ldap do
   @moduledoc false
 
-  alias Gettext.Interpolation
+  alias Gettext.Interpolation.Default
   alias TdAuth.Ldap.LdapValidation
 
   require Logger
@@ -85,10 +85,9 @@ defmodule TdAuth.Ldap.Ldap do
   defp get_ldap_bind(user_name) do
     bind_pattern = get_ldap_bind_pattern()
 
-    bind_pattern
-    |> Interpolation.to_interpolatable()
-    |> Interpolation.interpolate(%{user_name: user_name})
-    |> elem(1)
+    {:ok, res} = Default.runtime_interpolate(bind_pattern, %{user_name: user_name})
+
+    res
   end
 
   defp ldap_connect do
