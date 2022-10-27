@@ -9,9 +9,9 @@ defmodule TdAuth.Mixfile do
           nil -> "4.52.0-local"
           v -> v
         end,
-      elixir: "~> 1.11",
+      elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers() ++ [:phoenix_swagger],
+      compilers: [:phoenix] ++ Mix.compilers() ++ [:phoenix_swagger],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
@@ -49,11 +49,11 @@ defmodule TdAuth.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.5.0"},
+      {:phoenix, "~> 1.6.0"},
       {:phoenix_ecto, "~> 4.0"},
       {:ecto_sql, "~> 3.8"},
       {:postgrex, "~> 0.16.3"},
-      {:gettext, "~> 0.11"},
+      {:gettext, "~> 0.20"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.1"},
       {:joken, "~> 2.5"},
@@ -70,7 +70,7 @@ defmodule TdAuth.Mixfile do
       # See https://github.com/handnot2/esaml/issues/29
       {:cowboy, "~> 2.7", override: true},
       {:quantum, "~> 3.0"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.50.1", override: true},
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.54.0"},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:cabbage,
@@ -91,7 +91,7 @@ defmodule TdAuth.Mixfile do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end
 end
