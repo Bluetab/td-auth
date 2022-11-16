@@ -131,12 +131,14 @@ defmodule TdAuth.Permissions.Seeds do
     ],
     "grants" => [
       "view_grants",
-      "manage_grants",
       "create_grant_request",
-      "approve_grant_request",
       "request_grant_removal",
       "create_foreign_grant_request",
       "allow_foreign_grant_request"
+    ],
+    "grants_management" => [
+      "manage_grants",
+      "approve_grant_request"
     ]
   }
 

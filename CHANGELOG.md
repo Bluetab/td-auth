@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-5258] 
+  - Reorder grants groups
+  - Update `td-cache-lib`
+  - Add `role` to user data
+
 ## [4.54.0] 2022-10-31
 
 ### Changed
