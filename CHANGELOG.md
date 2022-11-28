@@ -1,16 +1,10 @@
 # Changelog
 
-## [Unreleased]
-
-### Added
-
-- [TD-5258]
-  - Reorder grants groups
-  - Update `td-cache-lib`
-  - Add `role` to user data
+## [4.56.0] 2022-11-28
 
 ### Changed
 
+- [TD-5258] Add `role` to user data
 - [TD-5256] Update dependencies, build with `elixir-1.13.4-alpine`
 
 ## [4.54.0] 2022-10-31
