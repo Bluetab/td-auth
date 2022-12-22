@@ -76,6 +76,8 @@ defmodule TdAuth.Permissions.Seeds do
       "manage_quality_rule"
     ],
     "quality_implementation_workflow_management" => [
+      # new, edit, submit for approval, delete (draft/rejected)
+       "manage_basic_implementations",
       # new, edit, submit for approval, delete (draft/rejected),
       # clone -> only implementation with rule
       "manage_quality_rule_implementations",

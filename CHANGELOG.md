@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-4300] manage_basic_implementations permission
+
 ## [4.56.0] 2022-11-28
 
 ### Changed
