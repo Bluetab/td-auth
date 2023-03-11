@@ -48,6 +48,7 @@ defmodule TdAuth.Permissions.Seeds do
       "create_data_structure",
       "delete_data_structure",
       "link_data_structure",
+      "link_structure_to_structure",
       "manage_confidential_structures",
       "manage_structures_domain",
       "manage_structures_metadata",
@@ -77,7 +78,7 @@ defmodule TdAuth.Permissions.Seeds do
     ],
     "quality_implementation_workflow_management" => [
       # new, edit, submit for approval, delete (draft/rejected)
-       "manage_basic_implementations",
+      "manage_basic_implementations",
       # new, edit, submit for approval, delete (draft/rejected),
       # clone -> only implementation with rule
       "manage_quality_rule_implementations",
