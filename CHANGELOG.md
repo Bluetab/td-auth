@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- [TD-5509] link_structure_to_structure permission
+
 ## [4.58.0] 2022-12-27
 
 ### Added
