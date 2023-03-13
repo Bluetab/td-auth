@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [5.3.0] 2023-03-13
 
 - [TD-5509] link_structure_to_structure permission
 
