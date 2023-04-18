@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-5297] Added `DB_SSL` environment variable for Database SSL connection
+
 ## [5.3.0] 2023-03-13
 
 - [TD-5509] link_structure_to_structure permission
