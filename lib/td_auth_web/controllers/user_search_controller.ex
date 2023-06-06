@@ -27,6 +27,8 @@ defmodule TdAuthWeb.UserSearchController do
     criteria =
       [limit: @max_results]
       |> maybe_with_query(params)
+      |> maybe_with_domains(params)
+      |> maybe_with_any_domain_roles(params)
       |> maybe_with_permission_on_domains(params, claims)
 
     users = Accounts.list_users(criteria)
@@ -39,9 +41,17 @@ defmodule TdAuthWeb.UserSearchController do
   defp maybe_with_query(criteria, %{"query" => query}), do: criteria ++ [query: "%#{query}%"]
   defp maybe_with_query(criteria, _), do: criteria
 
+  defp maybe_with_domains(criteria, %{"domains" => domains}),
+    do: criteria ++ [domains: Enum.map(domains, &String.to_integer(&1))]
+
+  defp maybe_with_domains(criteria, _), do: criteria
+
+  defp maybe_with_any_domain_roles(criteria, %{"roles" => roles}), do: criteria ++ [roles: roles]
+
+  defp maybe_with_any_domain_roles(criteria, _), do: criteria
+
   defp maybe_with_permission_on_domains(criteria, %{"permission" => permission}, claims) do
     domain_ids = permitted_domain_ids(claims, permission)
-
     criteria ++ [permission_on_domains: {permission, domain_ids}]
   end
 

@@ -33,10 +33,24 @@ defmodule TdAuth.Accounts do
     |> Repo.all()
   end
 
+  defp prepare_joins(queryable, filter_clauses) do
+    Enum.reduce_while(filter_clauses, queryable, fn
+      {:domains, _}, q -> {:halt, users_groups_acl_join(q)}
+      {:permission_on_domains, _}, q -> {:halt, users_groups_acl_join(q)}
+      {:roles, _}, q -> {:halt, users_groups_acl_join(q)}
+      _, q -> {:cont, q}
+    end)
+  end
+
   defp apply_list_users_opts(queryable, filter_clauses) do
+    queryable = prepare_joins(queryable, filter_clauses)
+
     Enum.reduce(filter_clauses, queryable, fn
       {:role, role}, q ->
         where(q, role: ^role)
+
+      {:roles, role_ids}, q ->
+        where(q, [ae: ae], ae.role_id in ^role_ids)
 
       {:id, {:in, ids}}, q ->
         where(q, [u], u.id in ^ids)
@@ -57,23 +71,31 @@ defmodule TdAuth.Accounts do
       {:permission_on_domains, {permission, domain_ids}}, q ->
         permission_on_domains_query(q, permission, domain_ids)
 
+      {:domains, domain_ids}, q ->
+        where(q, [ae: ae], ae.resource_id in ^domain_ids)
+
       _, q ->
         q
     end)
+    |> group_by([u], u.id)
   end
 
-  def permission_on_domains_query(query, permission, domain_ids) do
+  defp permission_on_domains_query(query, permission, domain_ids) do
+    query
+    |> join(:inner, [ae: ae], rp in RolePermission, as: :rp, on: rp.role_id == ae.role_id)
+    |> join(:inner, [rp: rp], p in Permission, as: :p, on: p.id == rp.permission_id)
+    |> where([p: p], p.name == ^permission)
+    |> where([ae: ae], ae.resource_id in ^domain_ids)
+  end
+
+  defp users_groups_acl_join(query) do
     query
     |> join(:left, [u], ug in "users_groups", as: :ug, on: ug.user_id == u.id)
     |> join(:inner, [u, ug: ug], ae in AclEntry,
       as: :ae,
       on: ae.group_id == ug.group_id or ae.user_id == u.id
     )
-    |> join(:inner, [ae: ae], rp in RolePermission, as: :rp, on: rp.role_id == ae.role_id)
-    |> join(:inner, [rp: rp], p in Permission, as: :p, on: p.id == rp.permission_id)
-    |> where([p: p], p.name == ^permission)
-    |> where([ae: ae], ae.resource_type == "domain" and ae.resource_id in ^domain_ids)
-    |> group_by([u], u.id)
+    |> where([ae: ae], ae.resource_type == "domain")
   end
 
   @doc """

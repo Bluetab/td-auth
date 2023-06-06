@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- [TD-5691] Domains and role filter for grant requests
+
 ## [5.5.0] 2023-04-18
 
 ### Added
