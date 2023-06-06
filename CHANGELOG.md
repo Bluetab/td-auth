@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [5.8.0] 2023-06-06
 
 - [TD-5691] Domains and role filter for grant requests
 
