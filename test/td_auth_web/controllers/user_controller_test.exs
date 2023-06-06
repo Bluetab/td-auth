@@ -2,12 +2,13 @@ defmodule TdAuthWeb.UserControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  import TdAuth.TestOperators
+  import TdAuthWeb.Authentication, only: :functions
+
   alias TdAuth.Accounts
   alias TdAuth.Accounts.User
   alias TdAuth.Auth.AccessToken
   alias TdAuth.CacheHelpers
-
-  import TdAuthWeb.Authentication, only: :functions
 
   @create_attrs %{
     password: "some password_hash",
@@ -59,7 +60,7 @@ defmodule TdAuthWeb.UserControllerTest do
                |> validate_resp_schema(schema, "UsersResponseData")
                |> json_response(:ok)
 
-      assert [%{"role" => "admin"}, %{"role" => "service"}] = data
+      assert ["admin", "service"] <|> Enum.map(data, & &1["role"])
     end
 
     @tag authentication: [role: :admin]
