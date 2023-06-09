@@ -1,5 +1,14 @@
 # TdAuth
 
+## Environment variables
+
+### SSL conection
+
+- DB_SSL: boolean value, to enable TSL config, by default is false.
+- DB_SSL_CACERTFILE: path of the certification authority cert file "/path/to/ca.crt", required when DB_SSL is true.
+- DB_SSL_VERSION: available versions are tlsv1.2, tlsv1.3 by default is tlsv1.2.
+
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
