@@ -1,5 +1,5 @@
 variables:
-  VERSION: "5.9.1" # used for alpha builds
+  VERSION: "5.10.1" # used for alpha builds
   APP_NAME: "td_auth"
   COMPOSE_FILE: "ci/docker-compose.yml"
   COMPOSE_PROJECT_NAME: "${APP_NAME}_${CI_JOB_ID}"
@@ -39,7 +39,6 @@ publish:
   stage: publish
   only:
     - develop
-    - main
     - tags
   tags:
     - docker
@@ -52,7 +51,6 @@ acceptance:
   stage: acceptance
   only:
     - develop
-    - main
     - tags
   tags:
     - docker-compose
@@ -85,7 +83,6 @@ deploy:
     - kubectl
   only:
     - develop
-    - main
     - tags
   dependencies: []
   script:
