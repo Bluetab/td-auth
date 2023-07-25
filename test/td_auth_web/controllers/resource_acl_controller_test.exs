@@ -2,7 +2,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
-  import Routes, only: [resource_acl_path: 4, resource_acl_path: 5]
+  import Routes, only: [acl_path: 4, acl_path: 5]
 
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
@@ -26,9 +26,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
 
       assert %{"_embedded" => embedded, "_links" => _links} =
                conn
-               |> get(
-                 resource_acl_path(conn, :show, Inflex.pluralize(resource_type), resource_id)
-               )
+               |> get(acl_path(conn, :show, Inflex.pluralize(resource_type), resource_id))
                |> validate_resp_schema(schema, "ResourceAclEntriesResponse")
                |> json_response(:ok)
 
@@ -41,9 +39,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
 
       assert %{"_embedded" => embedded} =
                conn
-               |> get(
-                 resource_acl_path(conn, :show, Inflex.pluralize(resource_type), resource_id)
-               )
+               |> get(acl_path(conn, :show, Inflex.pluralize(resource_type), resource_id))
                |> json_response(:ok)
 
       assert %{"acl_entries" => [acl_entry]} = embedded
@@ -77,7 +73,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       conn1 =
         post(
           conn,
-          resource_acl_path(
+          acl_path(
             conn,
             :create,
             Inflex.pluralize(resource_type),
@@ -88,7 +84,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
 
       assert response(conn1, :see_other)
       assert [location] = get_resp_header(conn1, "location")
-      assert location == "/api/domains/#{resource_id}/acl_entries"
+      assert location == "/api/acl_entries/domains/#{resource_id}"
 
       assert %{"_embedded" => embedded, "_links" => _links} =
                conn
@@ -113,7 +109,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       }
 
       assert conn
-             |> post(resource_acl_path(conn, :create, "domains", "1"), params)
+             |> post(acl_path(conn, :create, "domains", "1"), params)
              |> json_response(:forbidden)
     end
   end

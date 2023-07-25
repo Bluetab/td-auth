@@ -68,7 +68,7 @@ defmodule TdAuthWeb.ResourceAclController do
     with {:can, true} <- {:can, can?(claims, create(acl_resource))},
          {:ok, _} <- AclEntries.create_acl_entry(acl_entry_params) do
       conn
-      |> put_resp_header("location", resource_acl_path(resource_type, resource_id))
+      |> put_resp_header("location", acl_path(resource_type, resource_id))
       |> send_resp(:see_other, "")
     end
   end
@@ -108,7 +108,7 @@ defmodule TdAuthWeb.ResourceAclController do
          acl_entries
        ) do
     self = %{
-      href: resource_acl_path(resource_type, resource_id),
+      href: acl_path(resource_type, resource_id),
       methods: methods(claims, acl_resource)
     }
 
@@ -135,8 +135,8 @@ defmodule TdAuthWeb.ResourceAclController do
     ["GET"] ++ if can?(claims, create(acl_resource)), do: ["POST"], else: []
   end
 
-  defp resource_acl_path(resource_type, resource_id) do
-    Routes.resource_acl_path(Endpoint, :show, Inflex.pluralize(resource_type), resource_id)
+  defp acl_path(resource_type, resource_id) do
+    Routes.acl_path(Endpoint, :show, Inflex.pluralize(resource_type), resource_id)
   end
 
   defp acl_entry_path(acl_entry) do
