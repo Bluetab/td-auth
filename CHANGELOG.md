@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.12.0] 2023-08-16
+
+## Changed
+
+- [TD-5468] Change the resource_acl_path to acl_path for kong update version
+
 ## [5.10.0] 2023-07-06
 
 ## Changed

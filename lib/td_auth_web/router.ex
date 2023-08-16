@@ -2,12 +2,12 @@ defmodule TdAuthWeb.Router do
   use TdAuthWeb, :router
 
   pipeline :api_unsecured do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
   end
 
   pipeline :api_auth do
-    plug TdAuth.Auth.Pipeline.Secure
-    plug :accepts, ["json"]
+    plug(TdAuth.Auth.Pipeline.Secure)
+    plug(:accepts, ["json"])
   end
 
   scope "/api/swagger" do
@@ -15,7 +15,7 @@ defmodule TdAuthWeb.Router do
   end
 
   scope "/api", TdAuthWeb do
-    pipe_through :api_unsecured
+    pipe_through(:api_unsecured)
     get("/auth", AuthController, :index)
     get("/ping", PingController, :ping)
     post("/sessions", SessionController, :create)
@@ -24,12 +24,12 @@ defmodule TdAuthWeb.Router do
   end
 
   scope "/", TdAuthWeb do
-    pipe_through :api_unsecured
+    pipe_through(:api_unsecured)
     post("/callback", SessionController, :create)
   end
 
   scope "/api", TdAuthWeb do
-    pipe_through :api_auth
+    pipe_through(:api_auth)
 
     get("/sessions", SessionController, :ping)
     post("/sessions/refresh", SessionController, :refresh)
@@ -48,7 +48,7 @@ defmodule TdAuthWeb.Router do
 
     resources("/permissions", PermissionController, except: [:new, :edit, :update])
 
-    resources "/permission_groups", PermissionGroupController, except: [:edit]
+    resources("/permission_groups", PermissionGroupController, except: [:edit])
 
     resources "/roles", RoleController, except: [:edit] do
       resources("/permissions", RolePermissionController,
@@ -57,13 +57,11 @@ defmodule TdAuthWeb.Router do
       )
     end
 
-    resources("/:resource_type", ResourceController, only: [:show]) do
-      resources("/acl_entries", ResourceAclController,
-        singleton: true,
-        only: [:show, :create],
-        name: "acl"
-      )
-    end
+    resources("/acl_entries/:resource_type/:resource_id", ResourceAclController,
+      singleton: true,
+      only: [:show, :create],
+      name: "acl"
+    )
   end
 
   def swagger_info do
