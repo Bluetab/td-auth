@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- [TD-6079] Allow all users to get roles
+
 ## [5.12.0] 2023-08-16
 
 ## Changed
