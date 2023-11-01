@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## Added
+
+- [TD-6059] Added permissions for QualityControls
+
 ### Fixed
 
 - [TD-6079] Allow all users to get roles
