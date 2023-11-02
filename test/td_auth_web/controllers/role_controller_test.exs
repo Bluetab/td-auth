@@ -25,11 +25,18 @@ defmodule TdAuthWeb.RoleControllerTest do
     end
 
     @tag authentication: [role: :user]
-    test "user account cannot view roles", %{conn: conn} do
-      assert %{"errors" => _} =
+    test "user account can view roles", %{conn: conn} do
+      assert %{"data" => [_role]} =
                conn
                |> get(Routes.role_path(conn, :index))
-               |> json_response(:forbidden)
+               |> json_response(:ok)
+    end
+
+    test "non-authenticated requests cannot view roles", %{conn: conn} do
+      assert %{"message" => "unauthorized"} =
+               conn
+               |> get(Routes.role_path(conn, :index))
+               |> json_response(:unauthorized)
     end
   end
 

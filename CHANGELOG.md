@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.17.0] 2023-11-02
+
+## Added
+
+- [TD-6059] Added permissions for QualityControls
+
+### Fixed
+
+- [TD-6079] Allow all users to get roles
+
 ## [5.12.0] 2023-08-16
 
 ## Changed

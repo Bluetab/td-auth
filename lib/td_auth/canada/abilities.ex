@@ -32,9 +32,8 @@ defmodule TdBg.Canada.Abilities do
       authorized?(claims, :delete_acl_entry, domain_id)
     end
 
-    def can?(%Claims{jti: jti}, :view, Role) do
-      Permissions.has_permission?(jti, :create_acl_entry)
-    end
+    # All logged in users can list roles
+    def can?(%Claims{}, :view, Role), do: true
 
     def can?(%Claims{}, _action, _entity), do: false
 

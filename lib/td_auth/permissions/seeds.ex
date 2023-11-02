@@ -76,6 +76,12 @@ defmodule TdAuth.Permissions.Seeds do
       "view_quality_rule",
       "manage_quality_rule"
     ],
+    "quality_control" => [
+      "view_quality_controls",
+      "create_quality_controls",
+      "publish_quality_controls",
+      "deprecate_quality_controls"
+    ],
     "quality_implementation_workflow_management" => [
       # new, edit, submit for approval, delete (draft/rejected)
       "manage_basic_implementations",
