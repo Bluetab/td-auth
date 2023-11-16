@@ -16,3 +16,5 @@ priv/cert
 local
 data/
 config/local.exs
+
+.tool-versions
