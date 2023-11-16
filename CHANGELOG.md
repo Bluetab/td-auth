@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+## Added
+
+- [TD-6140] Added permissions for Ai suggestions
+
 ## [5.17.0] 2023-11-02
 
 ## Added
