@@ -68,6 +68,7 @@ defmodule TdAuth.Permissions.Seeds do
       "reject_structure_note",
       "unreject_structure_note",
       "deprecate_structure_note",
+      "ai_structure_note",
       "publish_structure_note",
       "delete_structure_note",
       "publish_structure_note_from_draft"
