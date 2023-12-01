@@ -5,6 +5,7 @@
 ## Added
 
 - [TD-6140] Added permissions for Ai suggestions
+- [TD-5505] Added permissions for `manage_grant_removal` and `manage_foreign_grant_removal`
 
 ## [5.17.0] 2023-11-02
 
