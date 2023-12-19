@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+## Added
+
+- [TD-6152] Permissions for QX executions
+
 ## [5.19.0] 2023-11-28
 
 ## Added
