@@ -81,7 +81,8 @@ defmodule TdAuth.Permissions.Seeds do
       "view_quality_controls",
       "create_quality_controls",
       "publish_quality_controls",
-      "deprecate_quality_controls"
+      "deprecate_quality_controls",
+      "execute_quality_controls"
     ],
     "quality_implementation_workflow_management" => [
       # new, edit, submit for approval, delete (draft/rejected)
@@ -142,7 +143,8 @@ defmodule TdAuth.Permissions.Seeds do
     "grants" => [
       "view_grants",
       "create_grant_request",
-      "request_grant_removal",
+      "manage_grant_removal",
+      "manage_foreign_grant_removal",
       "create_foreign_grant_request",
       "allow_foreign_grant_request"
     ],

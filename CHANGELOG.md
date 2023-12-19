@@ -1,10 +1,17 @@
 # Changelog
 
+## [5.20.0] 2023-12-19
+
+## Added
+
+- [TD-6152] Permissions for QX executions
+
 ## [5.19.0] 2023-11-28
 
 ## Added
 
 - [TD-6140] Added permissions for Ai suggestions
+- [TD-5505] Added permissions for `manage_grant_removal` and `manage_foreign_grant_removal`
 
 ## [5.17.0] 2023-11-02
 
