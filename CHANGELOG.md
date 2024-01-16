@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+## Added
+
+- [TD-6195] Permissions for Business Concept Ai Suggestions
+
 ## [5.20.0] 2023-12-19
 
 ## Added
