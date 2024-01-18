@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.0] 2024-01-17
+
+## Added
+
+- [TD-6195] Permissions for Business Concept Ai Suggestions
+- [TD-6336] Get test-truedat-eks config on deploy stage
+
 ## [5.20.0] 2023-12-19
 
 ## Added
