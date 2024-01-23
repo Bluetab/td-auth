@@ -61,7 +61,7 @@ defmodule TdAuth.Mixfile do
       {:bcrypt_elixir, "~> 2.0"},
       {:cors_plug, "~> 2.0"},
       {:httpoison, "~> 1.6"},
-      {:phoenix_swagger, "~> 0.8"},
+      {:phoenix_swagger, git: "https://github.com/Bluetab/phx_swagger.git", tag: "6.0.0"},
       {:ex_json_schema, "~> 0.6"},
       {:inflex, "~> 2.0"},
       {:exldap, "~> 0.6"},
