@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.2.0] 2024-02-26
+
+### Fixed
+
+- [TD-6425] Ensure SSL if configured for release migration
+
 ## [6.0.0] 2024-01-17
 
 ## Added
