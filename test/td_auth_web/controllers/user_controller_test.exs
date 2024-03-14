@@ -60,7 +60,7 @@ defmodule TdAuthWeb.UserControllerTest do
                |> validate_resp_schema(schema, "UsersResponseData")
                |> json_response(:ok)
 
-      assert ["admin", "service"] <|> Enum.map(data, & &1["role"])
+      assert ["admin", "service"] ||| Enum.map(data, & &1["role"])
     end
 
     @tag authentication: [role: :admin]

@@ -16,11 +16,32 @@ defmodule TdAuth.SessionsTest do
       Permissions.Seeds.run(nil)
       permissions_count = 5
       %{id: domain_id} = CacheHelpers.put_domain()
-      permissions = Permissions.list_permissions() |> Enum.take_random(permissions_count)
-      role = insert(:role, is_default: true, permissions: permissions)
+      structure_id = System.unique_integer([:positive])
+      domain_permissions = Permissions.list_permissions() |> Enum.take_random(permissions_count)
 
-      %{user: user} =
-        insert(:acl_entry, principal_type: :user, role: role, resource_id: domain_id)
+      structure_permissions =
+        Permissions.list_permissions() |> Enum.take_random(permissions_count)
+
+      domain_role = insert(:role, is_default: true, permissions: domain_permissions)
+      structure_role = insert(:role, permissions: structure_permissions)
+
+      _domain_acl =
+        %{user: user} =
+        insert(:acl_entry,
+          principal_type: :user,
+          role: domain_role,
+          resource_type: "domain",
+          resource_id: domain_id
+        )
+
+      _structure_acl =
+        insert(:acl_entry,
+          principal_type: :user,
+          user_id: user.id,
+          role: structure_role,
+          resource_type: "structure",
+          resource_id: structure_id
+        )
 
       {:ok, %{token: _, refresh_token: _, claims: %{"jti" => jti}}} = Sessions.create(user, "foo")
 

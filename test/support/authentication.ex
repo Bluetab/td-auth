@@ -62,4 +62,14 @@ defmodule TdAuthWeb.Authentication do
 
     {:ok, status_code}
   end
+
+  def assign_permissions(state, permissions, domain_params \\ %{})
+
+  def assign_permissions({:ok, %{claims: claims} = state}, [_ | _] = permissions, domain_params) do
+    %{id: domain_id} = domain = TdAuth.CacheHelpers.put_domain(domain_params || %{})
+    TdAuth.CacheHelpers.put_session_permissions(claims, domain_id, permissions)
+    {:ok, Map.put(state, :domain, domain)}
+  end
+
+  def assign_permissions(state, _, _), do: state
 end

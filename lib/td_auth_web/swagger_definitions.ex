@@ -4,9 +4,7 @@ defmodule TdAuthWeb.SwaggerDefinitions do
   """
   import PhoenixSwagger
 
-  alias TdAuth.Permissions.Constants
-
-  @custom_prefix Constants.custom_prefix()
+  @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
   def session_swagger_definitions do
     %{

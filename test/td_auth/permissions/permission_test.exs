@@ -1,10 +1,9 @@
 defmodule TdAuth.Permissions.PermissionTest do
   use TdAuth.DataCase
 
-  alias TdAuth.Permissions.Constants
   alias TdAuth.Permissions.Permission
 
-  @custom_prefix Constants.custom_prefix()
+  @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
   describe "Permission.changeset_external/1" do
     test "casts valid parameters" do

@@ -59,7 +59,7 @@ defmodule TdAuth.Permissions.AclEntry do
     |> put_nil_principal(params)
     |> validate_required([:resource_type, :resource_id, :role_id])
     |> validate_length(:description, max: 120)
-    |> validate_inclusion(:resource_type, ["domain"])
+    |> validate_inclusion(:resource_type, ["domain", "structure"])
     |> foreign_key_constraint(:group_id, name: :acl_entries_group_id_fkey)
     |> foreign_key_constraint(:role_id, name: :acl_entries_role_id_fkey)
     |> foreign_key_constraint(:user_id, name: :acl_entries_user_id_fkey)

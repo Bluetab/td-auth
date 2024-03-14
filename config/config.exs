@@ -7,6 +7,7 @@ import Config
 
 # Environment
 config :td_auth, :env, Mix.env()
+config :td_cluster, :env, Mix.env()
 
 # General application configuration
 config :td_auth,
@@ -27,13 +28,15 @@ config :td_auth, TdAuthWeb.Endpoint,
 
 config :td_auth, TdAuth.Repo, pool_size: 4
 
+config :td_auth, custom_permissions_prefix: "custom."
+
 # Configures Elixir's Logger
 # set EX_LOGGER_FORMAT environment variable to override Elixir's Logger format
 # (without the 'end of line' character)
 # EX_LOGGER_FORMAT='$date $time [$level] $message'
 config :logger, :console,
   format:
-    (System.get_env("EX_LOGGER_FORMAT") || "$date\T$time\Z [$level]$levelpad $metadata$message") <>
+    (System.get_env("EX_LOGGER_FORMAT") || "$date\T$time\Z [$level] $metadata$message") <>
       "\n",
   level: :info,
   metadata: [:pid, :module],

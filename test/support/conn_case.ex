@@ -49,8 +49,9 @@ defmodule TdAuthWeb.ConnCase do
 
       auth_opts ->
         :user
-        |> insert(auth_opts)
+        |> insert(Keyword.delete(auth_opts, :permissions))
         |> create_user_auth_conn()
+        |> assign_permissions(auth_opts[:permissions])
     end
   end
 end

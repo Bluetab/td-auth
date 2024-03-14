@@ -1,6 +1,5 @@
 {:ok, _} = Application.ensure_all_started(:ex_machina)
-
+Mox.defmock(MockClusterHandler, for: TdCluster.ClusterHandler)
 TdCache.Redix.del!()
 ExUnit.start()
-
 Ecto.Adapters.SQL.Sandbox.mode(TdAuth.Repo, :manual)

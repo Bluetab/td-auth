@@ -2,12 +2,12 @@ defmodule TdAuth.Permissions.SeedsTest do
   use TdAuth.DataCase
 
   alias TdAuth.Permissions
-  alias TdAuth.Permissions.Constants
+
   alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.PermissionGroup
   alias TdAuth.Permissions.Seeds
 
-  @custom_prefix Constants.custom_prefix()
+  @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
   test "run/1: obsolete_permissions and obsolete_groups do not delete custom permissions/groups" do
     permission_group = insert(:permission_group, name: "#{@custom_prefix}permission_group")

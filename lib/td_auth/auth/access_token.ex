@@ -19,7 +19,11 @@ defmodule TdAuth.Auth.AccessToken do
   def new(%User{} = user, auth_method_or_claims) do
     default_permissions = Permissions.default_permissions()
     user_permissions = Permissions.user_permissions(user)
-    permission_groups = permission_groups(user, Map.keys(user_permissions) ++ default_permissions)
+
+    uniq_user_permissions =
+      user_permissions |> Map.values() |> Enum.flat_map(&Map.keys(&1)) |> Enum.uniq()
+
+    permission_groups = permission_groups(user, uniq_user_permissions ++ default_permissions)
     {:ok, claims} = claims(user, permission_groups, auth_method_or_claims)
 
     case encode_and_sign(claims) do
