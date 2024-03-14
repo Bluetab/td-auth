@@ -6,6 +6,8 @@ defmodule TdAuthWeb.UserSearchControllerTest do
 
   alias TdAuth.CacheHelpers
 
+  @max_results Application.compile_env(:td_auth, TdAuthWeb.UserSearchController)[:max_results]
+
   describe "POST /api/users/search" do
     @tag authentication: [role: :admin]
     test "will return users with essencial information", %{
@@ -30,8 +32,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       conn: conn,
       swagger_schema: schema
     } do
-      max_results = Application.get_env(:td_auth, TdAuthWeb.UserSearchController)[:max_results]
-      more_than_max = max_results + 5
+      more_than_max = @max_results + 5
       1..more_than_max |> Enum.each(fn _ -> insert(:user) end)
 
       assert %{"data" => data} =
@@ -40,7 +41,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
-      assert Enum.count(data) == max_results
+      assert Enum.count(data) == @max_results
     end
 
     @tag authentication: [role: :admin]
@@ -120,7 +121,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
-      assert [user_id_1, user_id_2] <|> Enum.map(data, & &1["id"])
+      assert [user_id_1, user_id_2] ||| Enum.map(data, & &1["id"])
     end
 
     @tag authentication: [role: :user]
@@ -336,7 +337,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                |> post(Routes.user_search_path(conn, :create, %{roles: [role_id_2]}))
                |> json_response(:ok)
 
-      assert [user_id_2, user_id_3] <|> Enum.map(data, & &1["id"])
+      assert [user_id_2, user_id_3] ||| Enum.map(data, & &1["id"])
 
       assert %{"data" => data} =
                conn
@@ -429,7 +430,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
-      assert [user_id_1, user_id_2, user_id_4] <|> Enum.map(data, & &1["id"])
+      assert [user_id_1, user_id_2, user_id_4] ||| Enum.map(data, & &1["id"])
     end
   end
 end

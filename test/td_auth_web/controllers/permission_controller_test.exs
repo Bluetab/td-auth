@@ -2,9 +2,7 @@ defmodule TdAuthWeb.PermissionControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
-  alias TdAuth.Permissions.Constants
-
-  @custom_prefix Constants.custom_prefix()
+  @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
   setup tags do
     context =

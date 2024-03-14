@@ -53,7 +53,7 @@ defmodule TdAuth.Permissions.RoleLoader do
     entries =
       AclEntries.list_acl_entries(%{
         updated_since: last_updated_at,
-        resource_type: "domain",
+        resource_types: ["domain", "structure"],
         preload: [:role, group: :users]
       })
       |> Enum.flat_map(&to_entries/1)
@@ -61,8 +61,14 @@ defmodule TdAuth.Permissions.RoleLoader do
     entries
     |> Enum.group_by(& &1.user_id)
     |> Enum.each(fn {user_id, entries} ->
-      domain_ids_by_role = Enum.group_by(entries, & &1.role, & &1.domain_id)
-      {:ok, _} = UserCache.put_roles(user_id, domain_ids_by_role)
+      entries
+      |> Enum.group_by(& &1.resource_type)
+      |> Enum.map(fn {resource_type, group} ->
+        {resource_type, Enum.group_by(group, & &1.role, & &1.resource_id)}
+      end)
+      |> Enum.map(fn {resource_type, resource_ids_by_role} ->
+        {:ok, _} = UserCache.put_roles(user_id, resource_ids_by_role, resource_type)
+      end)
     end)
 
     entries
@@ -85,7 +91,21 @@ defmodule TdAuth.Permissions.RoleLoader do
     [to_entry(acl_entry, user_id)]
   end
 
-  defp to_entry(%{role: %{name: role}, resource_id: domain_id, updated_at: ts}, user_id) do
-    %{user_id: user_id, role: role, domain_id: domain_id, updated_at: ts}
+  defp to_entry(
+         %{
+           role: %{name: role},
+           resource_type: resource_type,
+           resource_id: resource_id,
+           updated_at: ts
+         },
+         user_id
+       ) do
+    %{
+      user_id: user_id,
+      role: role,
+      resource_type: resource_type,
+      resource_id: resource_id,
+      updated_at: ts
+    }
   end
 end

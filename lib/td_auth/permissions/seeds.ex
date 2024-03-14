@@ -5,12 +5,11 @@ defmodule TdAuth.Permissions.Seeds do
 
   use Task
 
-  alias TdAuth.Permissions.Constants
   alias TdAuth.Permissions.Permission
   alias TdAuth.Permissions.PermissionGroup
   alias TdAuth.Repo
 
-  @custom_prefix Constants.custom_prefix()
+  @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
   import Ecto.Query
 
@@ -152,6 +151,9 @@ defmodule TdAuth.Permissions.Seeds do
     "grants_management" => [
       "manage_grants",
       "approve_grant_request"
+    ],
+    "structures_membership" => [
+      "manage_structure_acl_entry"
     ]
   }
 

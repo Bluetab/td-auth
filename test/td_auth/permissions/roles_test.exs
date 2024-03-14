@@ -1,11 +1,10 @@
 defmodule TdAuth.Permissions.RoleTest do
   use TdAuth.DataCase
 
-  alias TdAuth.Permissions.Constants
   alias TdAuth.Permissions.RolePermission
   alias TdAuth.Permissions.Roles
 
-  @custom_prefix Constants.custom_prefix()
+  @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
   setup do
     role = insert(:role, permissions: [build(:permission)])

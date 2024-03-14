@@ -45,7 +45,7 @@ defmodule TdAuth.Auth.AccessTokenTest do
 
       assert %{"amr" => ["pwd"], "entitlements" => ["p"], "groups" => groups} = claims
       assert length(groups) > 0
-      assert Enum.count(user_permissions) == permissions_count
+      assert Enum.count(user_permissions["domain"]) == permissions_count
     end
   end
 

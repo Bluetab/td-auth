@@ -2,6 +2,8 @@ defmodule TdAuthWeb.AclEntryControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  alias TdCluster.TestHelpers.TdDdMock
+
   import Routes, only: [acl_entry_path: 2, acl_entry_path: 3]
 
   setup do
@@ -77,6 +79,90 @@ defmodule TdAuthWeb.AclEntryControllerTest do
                "user_id" => ^user_id,
                "resource_id" => ^resource_id,
                "resource_type" => "domain",
+               "role_id" => ^role_id,
+               "description" => ^description
+             } = data
+    end
+
+    @tag authentication: [
+           role: :user,
+           permissions: [:manage_structure_acl_entry]
+         ]
+    test "renders acl_entry when data is valid for structure resource type", %{
+      conn: conn,
+      domain: %{id: allowed_domain_id}
+    } do
+      %{id: user_id} = insert(:user)
+      %{id: role_id} = insert(:role)
+      %{id: forbidden_domain_id} = build(:domain)
+
+      allowed_structure_id = System.unique_integer([:positive])
+      forbidden_structure_id = System.unique_integer([:positive])
+
+      allowed_data_structure_version = %{
+        data_structure_id: allowed_structure_id,
+        name: "data_structure_name",
+        data_structure: %{
+          id: allowed_structure_id,
+          domain_ids: [allowed_domain_id]
+        }
+      }
+
+      forbidden_data_structure_version = %{
+        data_structure_id: forbidden_structure_id,
+        name: "data_structure_name",
+        data_structure: %{
+          id: forbidden_structure_id,
+          domain_ids: [forbidden_domain_id]
+        }
+      }
+
+      description = "a new ACL to be created"
+
+      allowed_acl_entry_attrs = %{
+        user_id: user_id,
+        role_id: role_id,
+        resource_type: "structure",
+        resource_id: allowed_structure_id,
+        description: description
+      }
+
+      forbidden_acl_entry_attrs = %{
+        user_id: user_id,
+        role_id: role_id,
+        resource_type: "structure",
+        resource_id: forbidden_structure_id,
+        description: description
+      }
+
+      TdDdMock.get_latest_structure_version(
+        &Mox.expect/4,
+        to_string(forbidden_structure_id),
+        {:ok, forbidden_data_structure_version}
+      )
+
+      TdDdMock.get_latest_structure_version(
+        &Mox.expect/4,
+        to_string(allowed_structure_id),
+        {:ok, allowed_data_structure_version}
+      )
+
+      assert %{"errors" => _} =
+               conn
+               |> post(acl_entry_path(conn, :create), acl_entry: forbidden_acl_entry_attrs)
+               |> json_response(:forbidden)
+
+      assert %{"data" => data} =
+               conn
+               |> post(acl_entry_path(conn, :create), acl_entry: allowed_acl_entry_attrs)
+               |> json_response(:created)
+
+      assert %{
+               "id" => _,
+               "group_id" => nil,
+               "user_id" => ^user_id,
+               "resource_id" => ^allowed_structure_id,
+               "resource_type" => "structure",
                "role_id" => ^role_id,
                "description" => ^description
              } = data

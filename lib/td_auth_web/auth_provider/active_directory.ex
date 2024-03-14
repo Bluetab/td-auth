@@ -122,10 +122,6 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
     Application.get_env(:td_auth, :ad)[:server]
   end
 
-  # defp get_ad_base do
-  #   Application.get_env(:td_auth, :ad)[:base]
-  # end
-
   defp get_ad_port do
     port = Application.get_env(:td_auth, :ad)[:port]
     String.to_integer(port)

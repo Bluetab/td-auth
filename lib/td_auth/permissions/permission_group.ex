@@ -7,10 +7,9 @@ defmodule TdAuth.Permissions.PermissionGroup do
 
   import Ecto.Changeset
 
-  alias TdAuth.Permissions.Constants
   alias TdAuth.Permissions.Permission
 
-  @custom_prefix Constants.custom_prefix()
+  @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
   schema "permission_groups" do
     field(:name, :string)
