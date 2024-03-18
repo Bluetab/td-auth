@@ -6,10 +6,10 @@ defmodule TdAuth.Mixfile do
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "6.2.0-local"
+          nil -> "6.3.0-local"
           v -> v
         end,
-      elixir: "~> 1.12",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers() ++ [:phoenix_swagger],
       start_permanent: Mix.env() == :prod,
@@ -68,14 +68,16 @@ defmodule TdAuth.Mixfile do
       {:openid_connect, "~> 0.2.0"},
       {:esaml, "~> 4.4"},
       {:quantum, "~> 3.0"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "4.56.0", override: true},
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "6.3.0"},
+      {:td_cluster, git: "https://github.com/Bluetab/td-cluster.git", tag: "5.19.0"},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:cabbage,
        git: "https://github.com/Bluetab/cabbage", branch: "feature/background", only: :test},
       {:ex_machina, "~> 2.3", only: :test},
       {:assertions, "~> 0.15", only: :test},
-      {:sobelow, "~> 0.11", only: [:dev, :test]}
+      {:sobelow, "~> 0.11", only: [:dev, :test]},
+      {:mox, "~> 1.0", only: :test}
     ]
   end
 

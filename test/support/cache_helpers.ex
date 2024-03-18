@@ -25,6 +25,13 @@ defmodule TdAuth.CacheHelpers do
     user
   end
 
+  def put_group(%{} = group) do
+    %{id: id} = group = maybe_put_id(group)
+    on_exit(fn -> UserCache.delete_group(id) end)
+    UserCache.put_group(group)
+    group
+  end
+
   defp maybe_put_id(%{id: id} = map) when not is_nil(id), do: map
   defp maybe_put_id(%{} = map), do: Map.put(map, :id, System.unique_integer([:positive]))
 
@@ -41,7 +48,10 @@ defmodule TdAuth.CacheHelpers do
   end
 
   def put_sessions_permissions(session_id, exp, domain_ids_by_permission) do
-    on_exit(fn -> Redix.del!("session:#{session_id}:permissions") end)
-    Permissions.cache_session_permissions!(session_id, exp, domain_ids_by_permission)
+    on_exit(fn -> Redix.del!("session:#{session_id}:domain:permissions") end)
+
+    Permissions.cache_session_permissions!(session_id, exp, %{
+      "domain" => domain_ids_by_permission
+    })
   end
 end

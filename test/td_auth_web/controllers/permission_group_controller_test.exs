@@ -1,11 +1,10 @@
 defmodule TdAuthWeb.PermissionGroupControllerTest do
   use TdAuthWeb.ConnCase
 
-  alias TdAuth.Permissions.Constants
   alias TdAuth.Permissions.PermissionGroup
 
   @invalid_attrs %{name: nil}
-  @custom_prefix Constants.custom_prefix()
+  @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
   @create_attrs %{name: "#{@custom_prefix}group name"}
   @update_attrs %{name: "#{@custom_prefix}new_group_name"}
 

@@ -26,7 +26,6 @@ config :td_auth, TdAuth.Repo,
 # Redis configuration
 config :td_cache, redis_host: "redis"
 
-
 # Truedat JWT access token and refreh token for dev
 # 24h
 config :td_auth, TdAuth.Auth.AccessToken, ttl_seconds: 60 * 60 * 24

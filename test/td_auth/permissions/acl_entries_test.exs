@@ -66,6 +66,30 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       assert role_name in AclCache.get_acl_roles("domain", resource_id)
     end
 
+    test "create_acl_entry/1 with valid params for structure resource_type creates an ACL entry and refreshes cache" do
+      %{id: user_id} = user = insert(:user)
+      %{id: group_id} = group = insert(:group, users: [user])
+      %{id: role_id, name: role_name} = insert(:role)
+      CacheHelpers.put_user(user)
+      CacheHelpers.put_group(group)
+      resource_type = "structure"
+
+      %{resource_id: resource_id} =
+        acl_group_params = %{
+          resource_id: System.unique_integer([:positive]),
+          resource_type: resource_type,
+          role_id: role_id,
+          group_id: group_id
+        }
+
+      assert {:ok, group_acl_entry = %AclEntry{}} = AclEntries.create_acl_entry(acl_group_params)
+      assert_changed(group_acl_entry, acl_group_params)
+      assert user_id in AclCache.get_acl_role_users(resource_type, resource_id, role_name)
+      assert role_name in AclCache.get_acl_roles(resource_type, resource_id)
+      assert group_id in AclCache.get_acl_role_groups(resource_type, resource_id, role_name)
+      assert role_name in AclCache.get_acl_group_roles(resource_type, resource_id)
+    end
+
     test "create_acl_entry/1 enforces unique constraint on user_id and resource" do
       assert {:error, %Changeset{errors: errors}} =
                :acl_entry

@@ -2,6 +2,8 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  alias TdCluster.TestHelpers.TdDdMock
+
   import Routes, only: [acl_path: 4, acl_path: 5]
 
   setup_all do
@@ -15,14 +17,16 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
     {:ok, conn: conn, acl_entry: acl_entry}
   end
 
-  describe "GET /api/:resource_type/:resource_id/acl_entries" do
+  describe "GET /api/acl_entries/:resource_type/:resource_id" do
     @tag authentication: [role: :admin]
     test "returns OK and body on success", %{
       conn: conn,
-      acl_entry: acl_entry,
       swagger_schema: schema
     } do
-      %{resource_type: resource_type, resource_id: resource_id} = acl_entry
+      resource_type = "domain_or_structure_type"
+
+      %{resource_type: ^resource_type, resource_id: resource_id} =
+        insert(:acl_entry, resource_type: resource_type, principal_type: :user)
 
       assert %{"_embedded" => embedded, "_links" => _links} =
                conn
@@ -31,6 +35,72 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
                |> json_response(:ok)
 
       assert %{"acl_entries" => [_acl_entry]} = embedded
+    end
+
+    @tag authentication: [
+           role: :user,
+           permissions: [:view_data_structure]
+         ]
+    test "list acl_entries for a structure only when user has permissions to view the structure on its domain",
+         %{
+           conn: conn,
+           domain: %{id: allowed_domain_id}
+         } do
+      insert(:user)
+      insert(:role)
+      %{id: forbidden_domain_id} = build(:domain)
+
+      allowed_structure_id = System.unique_integer([:positive])
+      forbidden_structure_id = System.unique_integer([:positive])
+
+      allowed_data_structure_version = %{
+        data_structure_id: allowed_structure_id,
+        name: "allowed_data_structure",
+        data_structure: %{
+          id: allowed_structure_id,
+          domain_ids: [allowed_domain_id]
+        }
+      }
+
+      forbidden_data_structure_version = %{
+        data_structure_id: forbidden_structure_id,
+        name: "forbidden_data_structure",
+        data_structure: %{
+          id: forbidden_structure_id,
+          domain_ids: [forbidden_domain_id]
+        }
+      }
+
+      TdDdMock.get_latest_structure_version(
+        &Mox.expect/4,
+        to_string(forbidden_structure_id),
+        {:ok, forbidden_data_structure_version}
+      )
+
+      for _ <- 1..4 do
+        TdDdMock.get_latest_structure_version(
+          &Mox.expect/4,
+          to_string(allowed_structure_id),
+          {:ok, allowed_data_structure_version}
+        )
+      end
+
+      insert(:acl_entry, resource_type: "structure", resource_id: allowed_structure_id)
+
+      _not_allowed_acl_entry =
+        insert(:acl_entry, resource_type: "structure", resource_id: forbidden_structure_id)
+
+      assert %{"errors" => _} =
+               conn
+               |> get(acl_path(conn, :show, "structure", forbidden_structure_id))
+               |> json_response(:forbidden)
+
+      assert %{"_embedded" => embedded, "_links" => _links} =
+               conn
+               |> get(acl_path(conn, :show, "structure", allowed_structure_id))
+               |> json_response(:ok)
+
+      assert %{"acl_entries" => [_]} = embedded
     end
 
     @tag authentication: [role: :admin]

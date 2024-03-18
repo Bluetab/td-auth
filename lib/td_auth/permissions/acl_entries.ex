@@ -107,6 +107,7 @@ defmodule TdAuth.Permissions.AclEntries do
   defp build_query(queryable, clauses) do
     Enum.reduce(clauses, queryable, fn
       {:resource_type, resource_type}, q -> where(q, resource_type: ^resource_type)
+      {:resource_types, resource_types}, q -> where(q, [e], e.resource_type in ^resource_types)
       {:resource_id, {:not_in, ids}}, q -> where(q, [e], e.resource_id not in ^ids)
       {:resource_id, {:in, ids}}, q -> where(q, [e], e.resource_id in ^ids)
       {:resource_id, resource_id}, q -> where(q, resource_id: ^resource_id)

@@ -12,6 +12,7 @@ defmodule TdAuth.Permissions do
   alias TdAuth.Repo
 
   @default_preloads :permission_group
+  @allowed_resource_types ["domain", "structure"]
 
   def list_permissions(opts \\ [preload: @default_preloads]) do
     filter_clauses = Keyword.put_new(opts, :preload, @default_preloads)
@@ -134,11 +135,23 @@ defmodule TdAuth.Permissions do
     |> join(:inner, [p], r in assoc(p, :roles))
     |> join(:inner, [_, r], a in assoc(r, :acl_entries))
     |> join(:left, [_, _, a], ug in "users_groups", on: ug.group_id == a.group_id)
-    |> where([_, _, a], a.resource_type == "domain")
+    |> where([_, _, a], a.resource_type in @allowed_resource_types)
     |> where([_, _, a, ug], fragment("coalesce(?, ?)", a.user_id, ug.user_id) == ^user_id)
-    |> select([p, _, a, _], {p.name, a.resource_id})
+    |> select([p, _, a, _], {a.resource_type, p.name, a.resource_id})
     |> Repo.all()
-    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+    |> Enum.reduce(%{}, fn {resource_type, permission_name, resource_id}, acc ->
+      acc_case = Map.get(acc, resource_type, %{})
+
+      Map.put(
+        acc,
+        resource_type,
+        Map.put(
+          acc_case,
+          permission_name,
+          Map.get(acc_case, permission_name, []) ++ [resource_id]
+        )
+      )
+    end)
   end
 
   @spec group_names(list(binary)) :: list(binary)

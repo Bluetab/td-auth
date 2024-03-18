@@ -2,6 +2,8 @@ defmodule TdAuthWeb.GroupSearchControllerTest do
   use TdAuthWeb.ConnCase
   use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
+  @max_results Application.compile_env(:td_auth, TdAuthWeb.GroupSearchController)[:max_results]
+
   describe "POST /api/groups/search" do
     @tag authentication: [role: :admin]
     test "will return groups with essencial information", %{
@@ -24,8 +26,7 @@ defmodule TdAuthWeb.GroupSearchControllerTest do
       conn: conn,
       swagger_schema: schema
     } do
-      max_results = Application.get_env(:td_auth, TdAuthWeb.GroupSearchController)[:max_results]
-      more_than_max = max_results + 5
+      more_than_max = @max_results + 5
       1..more_than_max |> Enum.each(fn i -> insert(:group, name: "group#{i}") end)
 
       assert %{"data" => data} =
@@ -34,7 +35,7 @@ defmodule TdAuthWeb.GroupSearchControllerTest do
                |> validate_resp_schema(schema, "GroupsResponseData")
                |> json_response(:ok)
 
-      assert Enum.count(data) == max_results
+      assert Enum.count(data) == @max_results
     end
 
     @tag authentication: [role: :admin]

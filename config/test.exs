@@ -42,3 +42,6 @@ config :bcrypt_elixir, log_rounds: 4
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+config :td_cluster, TdCluster.ClusterHandler, MockClusterHandler
+config :td_cluster, groups: [:auth]
