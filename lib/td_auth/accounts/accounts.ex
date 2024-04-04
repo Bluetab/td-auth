@@ -43,9 +43,14 @@ defmodule TdAuth.Accounts do
   end
 
   defp apply_list_users_opts(queryable, filter_clauses) do
-    queryable = prepare_joins(queryable, filter_clauses)
+    filtered_filter_clauses =
+      filter_clauses
+      |> Keyword.get(:permission_on_domains)
+      |> permission_in_default_rol(filter_clauses)
 
-    Enum.reduce(filter_clauses, queryable, fn
+    queryable = prepare_joins(queryable, filtered_filter_clauses)
+
+    Enum.reduce(filtered_filter_clauses, queryable, fn
       {:role, role}, q ->
         where(q, role: ^role)
 
@@ -96,6 +101,22 @@ defmodule TdAuth.Accounts do
       on: ae.group_id == ug.group_id or ae.user_id == u.id
     )
     |> where([ae: ae], ae.resource_type == "domain")
+  end
+
+  def permission_in_default_rol(nil, filter_clauses), do: filter_clauses
+
+  def permission_in_default_rol({permission, _}, filter_clauses) do
+    RolePermission
+    |> join(:left, [rp], r in assoc(rp, :role))
+    |> join(:left, [rp], p in assoc(rp, :permission))
+    |> where([rp, r, p], p.name == ^permission)
+    |> where([rp, r, p], r.is_default == true)
+    |> select([rp, r, p], %{rol_id: rp.role_id, permission_id: rp.permission_id})
+    |> Repo.one()
+    |> case do
+      nil -> filter_clauses
+      _ -> Keyword.delete(filter_clauses, :permission_on_domains)
+    end
   end
 
   @doc """
