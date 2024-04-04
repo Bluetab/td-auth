@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- [TD-6386] Users listing with Default Role Permissions
+
 ## [6.3.0] 2024-03-18
 
 ### Added
