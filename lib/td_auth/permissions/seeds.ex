@@ -140,8 +140,10 @@ defmodule TdAuth.Permissions.Seeds do
       "delete_acl_entry",
       "update_acl_entry"
     ],
+    "grants_visualization" => [
+      "view_grants"
+    ],
     "grants" => [
-      "view_grants",
       "create_grant_request",
       "manage_grant_removal",
       "manage_foreign_grant_removal",

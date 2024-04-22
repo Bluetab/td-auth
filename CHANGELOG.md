@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+## Added
+
+- [TD-5520] Added new permissions group to visualize grants
+
 ## [6.4.0] 2024-04-09
 
 ### Fixed
