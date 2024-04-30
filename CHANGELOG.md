@@ -6,6 +6,10 @@
 
 - [TD-5520] Added new permissions group to visualize grants
 
+### Fixed
+
+- [TD-5495] Foreing keys columns should match original ID columns in all tables
+
 ## [6.4.0] 2024-04-09
 
 ### Fixed
