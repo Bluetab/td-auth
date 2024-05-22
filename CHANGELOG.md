@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.5.2] 2024-05-22
+
+### Added
+
+- [TD-6619] Add ad sslops and remove environment variables for booleans
+
 ## [6.5.1] 2024-05-22
 
 ### Fixed
