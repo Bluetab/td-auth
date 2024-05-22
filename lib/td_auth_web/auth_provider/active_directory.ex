@@ -37,7 +37,13 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   end
 
   defp ldap_open do
-    Exldap.open(get_ad_server(), get_ad_port(), get_ad_ssl(), get_ad_connection_timeout())
+    Exldap.open(
+      get_ad_server(),
+      get_ad_port(),
+      get_ad_ssl(),
+      get_ad_connection_timeout(),
+      get_ad_sslopts()
+    )
   end
 
   defp ldap_verify(conn, user_dn, password) do
