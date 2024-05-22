@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.5.3] 2024-05-22
+
+### Fixed
+
+- [TD-6619] Function typo
+
 ## [6.5.2] 2024-05-22
 
 ### Added
