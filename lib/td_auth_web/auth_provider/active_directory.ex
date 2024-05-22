@@ -86,15 +86,15 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
     end
   end
 
-  defp ldap_connect do
+  def ldap_connect do
     Exldap.connect(
-      get_ad_server(),
-      get_ad_port(),
-      get_ad_ssl(),
-      get_ad_user_dn(),
-      get_ad_password(),
-      get_ad_connection_timeout(),
-      get_ad_sslops()
+      get_ad_server() |> IO.inspect(label: "server"),
+      get_ad_port() |> IO.inspect(label: "port"),
+      get_ad_ssl() |> IO.inspect(label: "ssl"),
+      get_ad_user_dn() |> IO.inspect(label: "user"),
+      get_ad_password() |> IO.inspect(label: "password"),
+      get_ad_connection_timeout() |> IO.inspect(label: "timeout"),
+      get_ad_sslopts() |> IO.inspect(label: "sslopts")
     )
   end
 
@@ -145,10 +145,10 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
     Application.get_env(:td_auth, :ad)[:search_path]
   end
 
-  def get_ad_sslops do
-    case Application.get_env(:td_auth, :ad)[:sslops] do
+  def get_ad_sslopts do
+    case Application.get_env(:td_auth, :ad)[:sslopts] do
       nil -> []
-      sslops -> sslops
+      sslopts -> sslopts
     end
   end
 
