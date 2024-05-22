@@ -1,8 +1,14 @@
 # Changelog
 
+## [6.5.1] 2024-05-22
+
+### Fixed
+
+- [TD-6619] Environment variables for booleans in td-auth
+
 ## [6.5.0] 2024-04-30
 
-## Added
+### Added
 
 - [TD-5520] Added new permissions group to visualize grants
 
