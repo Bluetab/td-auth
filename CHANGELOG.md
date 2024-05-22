@@ -1,8 +1,33 @@
 # Changelog
 
+## [6.6.0] 2024-05-22
+## [6.5.4] 2024-05-22
+
+### Fixed
+
+- [TD-6619]  add sslopt to exladp.open
+
+## [6.5.3] 2024-05-22
+
+### Fixed
+
+- [TD-6619] Function typo
+
+## [6.5.2] 2024-05-22
+
+### Added
+
+- [TD-6619] Add ad sslops and remove environment variables for booleans
+
+## [6.5.1] 2024-05-22
+
+### Fixed
+
+- [TD-6619] Environment variables for booleans in td-auth
+
 ## [6.5.0] 2024-04-30
 
-## Added
+### Added
 
 - [TD-5520] Added new permissions group to visualize grants
 

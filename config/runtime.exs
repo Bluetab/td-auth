@@ -71,7 +71,8 @@ if config_env() == :prod do
     user_dn: System.get_env("AD_USER_DN"),
     password: System.get_env("AD_PASSWORD"),
     connection_timeout: System.get_env("AD_CONNECTION_TIMEOUT"),
-    search_path: System.get_env("AD_SEARCH_PATH")
+    search_path: System.get_env("AD_SEARCH_PATH"),
+    sslopts: [cacertfile: System.get_env("AD_CERT_PEM_FILE"), verify: :verify_peer]
 
   config :td_auth, :openid_connect_providers,
     oidc: [
