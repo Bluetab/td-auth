@@ -93,7 +93,8 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
       get_ad_ssl(),
       get_ad_user_dn(),
       get_ad_password(),
-      get_ad_connection_timeout()
+      get_ad_connection_timeout(),
+      get_ad_sslops()
     )
   end
 
@@ -142,6 +143,13 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
 
   defp get_ad_search_path do
     Application.get_env(:td_auth, :ad)[:search_path]
+  end
+
+  def get_ad_sslops do
+    case Application.get_env(:td_auth, :ad)[:sslops] do
+      nil -> []
+      sslops -> sslops
+    end
   end
 
   def get_ad_connection_timeout do

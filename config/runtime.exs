@@ -54,7 +54,7 @@ if config_env() == :prod do
     server: System.get_env("LDAP_SERVER"),
     base: System.get_env("LDAP_BASE"),
     port: System.get_env("LDAP_PORT"),
-    ssl: System.get_env("LDAP_SSL", "") |> String.downcase() == "true",
+    ssl: System.get_env("LDAP_SSL", ""),
     user_dn: System.get_env("LDAP_USER_DN"),
     password: System.get_env("LDAP_PASSWORD"),
     connection_timeout: System.get_env("LDAP_CONNECTION_TIMEOUT"),
@@ -67,11 +67,12 @@ if config_env() == :prod do
     server: System.get_env("AD_SERVER"),
     base: System.get_env("AD_BASE"),
     port: System.get_env("AD_PORT"),
-    ssl: System.get_env("AD_SSL", "") |> String.downcase() == "true",
+    ssl: System.get_env("AD_SSL", ""),
     user_dn: System.get_env("AD_USER_DN"),
     password: System.get_env("AD_PASSWORD"),
     connection_timeout: System.get_env("AD_CONNECTION_TIMEOUT"),
-    search_path: System.get_env("AD_SEARCH_PATH")
+    search_path: System.get_env("AD_SEARCH_PATH"),
+    sslopts: [cacertfile: System.get_env("AD_CERT_PEM_FILE"), verify: :verify_peer]
 
   config :td_auth, :openid_connect_providers,
     oidc: [
