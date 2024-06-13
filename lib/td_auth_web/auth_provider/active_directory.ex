@@ -153,7 +153,7 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
 
   def get_ad_sslopts do
     case Application.get_env(:td_auth, :ad)[:sslopts] do
-      nil -> []
+      [cacertfile: nil, verify: :verify_peer] -> []
       sslopts -> sslopts
     end
   end

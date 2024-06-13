@@ -1,11 +1,17 @@
 # Changelog
 
+## [6.7.0] 2024-06-13
+
+### Fixed
+
+  - [TD-6619] Fix pattern matching for empty sslopts
+
 ## [6.6.0] 2024-05-22
 ## [6.5.4] 2024-05-22
 
 ### Fixed
 
-- [TD-6619]  add sslopt to exladp.open
+- [TD-6619] Add sslopt to exladp.open
 
 ## [6.5.3] 2024-05-22
 
