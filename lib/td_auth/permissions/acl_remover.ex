@@ -13,7 +13,10 @@ defmodule TdAuth.Permissions.AclRemover do
       {count, _entries} =
         AclEntries.delete_acl_entries(resource_type: "domain", resource_id: {:in, domain_ids})
 
-      Logger.info("Deleted #{count} entries")
+      {structure_count, _entries} =
+        AclEntries.delete_acl_entries(resource_type: "structure", resource_id: {:in, domain_ids})
+
+      Logger.info("Deleted #{count} domain and #{structure_count} structure entries")
     end
   end
 end

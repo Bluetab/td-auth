@@ -6,8 +6,13 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
   import Routes, only: [acl_entry_path: 2, acl_entry_path: 3]
 
-  setup do
+  setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
+    start_supervised!(TdAuth.Permissions.RoleLoader)
+    :ok
+  end
+
+  setup do
     [acl_entry: insert(:acl_entry, principal_type: :user)]
   end
 

@@ -29,19 +29,20 @@ defmodule TdAuth.Permissions.RoleLoaderTest do
       assert {:ok, nil} = RoleLoader.put_permission_roles()
     end
 
-    test "put_roles/1 updates cache and returns latest updated_at" do
+    test "reload_roles/1 updates all acl entries in cache" do
       %{id: user_id} = insert(:user)
 
-      %{updated_at: _ts, role: %{name: role_name}, resource_id: resource_id} =
+      %{role: %{name: role_name}, resource_id: resource_id} =
         insert(:acl_entry, resource_type: "domain", user_id: user_id, group_id: nil)
 
-      %{updated_at: _ts, role: %{name: role_name_2}, resource_id: resource_id_2} =
+      %{role: %{name: role_name_2}, resource_id: resource_id_2} =
         insert(:acl_entry, resource_type: "domain", user_id: user_id, group_id: nil)
 
-      %{updated_at: ts, role: %{name: structure_role_name}, resource_id: structure_resource_id} =
+      %{role: %{name: structure_role_name}, resource_id: structure_resource_id} =
         insert(:acl_entry, resource_type: "structure", user_id: user_id, group_id: nil)
 
-      assert RoleLoader.put_roles(nil) == ts
+      resources = RoleLoader.put_roles(reload_roles: true)
+      assert length(resources) == 3
 
       assert UserCache.get_roles(user_id) ==
                {:ok, %{role_name => [resource_id], role_name_2 => [resource_id_2]}}
@@ -52,10 +53,11 @@ defmodule TdAuth.Permissions.RoleLoaderTest do
       assert %{id: group_id, users: [%{id: user_id}, %{id: user_id2}]} =
                insert(:group, users: [build(:user), build(:user)])
 
-      %{updated_at: ts2, role: %{name: role_name}, resource_id: resource_id} =
+      %{role: %{name: role_name}, resource_id: resource_id} =
         insert(:acl_entry, group_id: group_id, user_id: nil)
 
-      assert RoleLoader.put_roles(ts) == ts2
+      new_resources = RoleLoader.put_roles(reload_roles: true)
+      assert length(new_resources) == 5
 
       assert UserCache.get_roles(user_id) == {:ok, %{role_name => [resource_id]}}
       assert UserCache.get_roles(user_id2) == {:ok, %{role_name => [resource_id]}}

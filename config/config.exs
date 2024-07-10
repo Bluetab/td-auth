@@ -118,8 +118,8 @@ config :td_auth, TdAuth.Scheduler,
       run_strategy: Quantum.RunStrategy.Local
     ],
     [
-      schedule: "@minutely",
-      task: {TdAuth.Permissions.RoleLoader, :load_roles, []},
+      schedule: "@reboot",
+      task: {TdAuth.Permissions.RoleLoader, :load_roles, [[reload_roles: true]]},
       run_strategy: Quantum.RunStrategy.Local
     ]
   ]
