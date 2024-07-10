@@ -5,6 +5,7 @@ defmodule TdAuth.Permissions.AclEntries do
 
   alias TdAuth.Permissions.AclEntry
   alias TdAuth.Permissions.AclLoader
+  alias TdAuth.Permissions.RoleLoader
   alias TdAuth.Permissions.Roles
   alias TdAuth.Repo
 
@@ -35,10 +36,19 @@ defmodule TdAuth.Permissions.AclEntries do
     |> refresh_cache()
   end
 
+  def delete_acl_entry(%AclEntry{group_id: group_id} = acl_entry)
+      when not is_nil(group_id) do
+    acl_entry
+    |> Repo.preload([:role, group: [:users]])
+    |> Repo.delete()
+    |> delete_user_role_from_cache()
+  end
+
   def delete_acl_entry(%AclEntry{} = acl_entry) do
     acl_entry
+    |> Repo.preload(:role)
     |> Repo.delete()
-    |> refresh_cache()
+    |> delete_user_role_from_cache()
   end
 
   def delete_acl_entries(clauses) do
@@ -128,10 +138,25 @@ defmodule TdAuth.Permissions.AclEntries do
   defp refresh_cache(%{resource_type: resource_type, resource_id: resource_id} = acl_entry) do
     AclLoader.refresh(resource_type, resource_id)
     AclLoader.refresh_group(resource_type, resource_id)
+    RoleLoader.load_roles(acl_entry)
     {:ok, acl_entry}
   end
 
   defp refresh_cache(changeset), do: changeset
+
+  defp delete_user_role_from_cache({:ok, struct}), do: delete_user_role_from_cache(struct)
+
+  defp delete_user_role_from_cache(
+         %{resource_type: resource_type, resource_id: resource_id} = acl_entry
+       ) do
+    AclLoader.refresh(resource_type, resource_id)
+    AclLoader.refresh_group(resource_type, resource_id)
+
+    RoleLoader.delete_roles(acl_entry)
+    {:ok, acl_entry}
+  end
+
+  defp delete_user_role_from_cache(changeset), do: changeset
 
   defp delete_from_cache({:ok, struct}), do: delete_from_cache(struct)
 
