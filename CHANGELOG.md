@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.9.0] 2024-07-26 
+
+### Changed
+
+- [TD-6602] Update cache when ACL resource is created, edited or deleted
+
 ## [6.7.0] 2024-06-13
 
 ### Fixed

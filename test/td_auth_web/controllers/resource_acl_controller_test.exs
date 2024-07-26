@@ -7,6 +7,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
   import Routes, only: [acl_path: 4, acl_path: 5]
 
   setup_all do
+    start_supervised!(TdAuth.Permissions.RoleLoader)
     start_supervised!(TdAuth.Accounts.UserLoader)
     :ok
   end
@@ -14,7 +15,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
   setup %{conn: conn} do
     conn = put_req_header(conn, "accept", "application/json")
     acl_entry = insert(:acl_entry, principal_type: :user)
-    {:ok, conn: conn, acl_entry: acl_entry}
+    [conn: conn, acl_entry: acl_entry]
   end
 
   describe "GET /api/acl_entries/:resource_type/:resource_id" do
