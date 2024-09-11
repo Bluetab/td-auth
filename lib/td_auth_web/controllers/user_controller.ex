@@ -31,6 +31,15 @@ defmodule TdAuthWeb.UserController do
     end
   end
 
+  def agents(conn, _params) do
+    current_resource = conn.assigns[:current_resource]
+
+    with {:can, true} <- {:can, can?(current_resource, view(User))},
+         users <- Accounts.list_users(role: :agent, preload: :groups) do
+      render(conn, "index.json", users: users)
+    end
+  end
+
   swagger_path :create do
     description("Creates a User")
     produces("application/json")
