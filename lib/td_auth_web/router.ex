@@ -37,6 +37,7 @@ defmodule TdAuthWeb.Router do
 
     resources("/users/search", UserSearchController, only: [:create], singleton: true)
 
+    get("/users/agents", UserController, :agents)
     resources("/users", UserController, except: [:new, :edit])
 
     resources("/password", PasswordController, only: [:update], singleton: true)

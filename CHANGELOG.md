@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- [TD-6184] Role for Agents, and remove role_type fro users
+
 ## [6.9.0] 2024-07-26 
 
 ### Changed

@@ -22,7 +22,7 @@ defmodule TdAuth.Accounts.User do
     field(:old_password, :string, virtual: true)
     field(:email, :string)
     field(:full_name, :string, default: "")
-    field(:role, Ecto.Enum, values: [:admin, :user, :service], default: :user)
+    field(:role, Ecto.Enum, values: [:admin, :user, :service, :agent], default: :user)
     has_many(:acl_entries, AclEntry)
     many_to_many(:groups, Group, join_through: "users_groups", on_replace: :delete)
 
