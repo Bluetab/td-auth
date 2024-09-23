@@ -129,6 +129,22 @@ defmodule TdAuthWeb.UserControllerTest do
     end
   end
 
+  describe "GET /api/users/agents" do
+    @tag authentication: [role: :admin]
+    test "lists all agents users", %{
+      conn: conn
+    } do
+      %{user_name: user_name} = insert(:user, role: :agent)
+
+      assert %{"data" => data} =
+               conn
+               |> get(Routes.user_path(conn, :agents))
+               |> json_response(:ok)
+
+      assert [%{"user_name" => ^user_name, "role" => "agent"}] = data
+    end
+  end
+
   describe "POST /api/users" do
     @tag authentication: [role: :user]
     test "returns forbidden for a non-admin user", %{conn: conn} do
