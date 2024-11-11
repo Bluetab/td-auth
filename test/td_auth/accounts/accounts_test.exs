@@ -30,9 +30,8 @@ defmodule TdAuth.AccountsTest do
     end
 
     test "list_users/1 filter users by parametes" do
-      insert(:user)
-      %{id: id} = insert(:user, role: "service")
-      assert [%{id: ^id}] = Accounts.list_users(role: "service")
+      %{id: id_service} = insert(:user, role: "service")
+      assert [%{id: ^id_service}] = Accounts.list_users(role: "service")
     end
 
     test "list_users/1 filters by permission on domains" do

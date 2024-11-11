@@ -69,15 +69,15 @@ config :td_auth, exldap_module: Exldap
 
 config :td_auth, :ldap,
   server: "localhost",
-  base: "dc=bluetab,dc=net",
   port: "389",
-  ssl: "false",
   user_dn: "cn=admin,dc=bluetab,dc=net",
+  base: "dc=bluetab,dc=net",
   password: "temporal",
-  connection_timeout: "5000",
-  profile_mapping: %{user_name: "cn", full_name: "givenName", email: "mail"},
-  bind_pattern: "cn=%{user_name},ou=people,dc=bluetab,dc=net",
   search_path: "ou=people,dc=bluetab,dc=net",
+  ssl: "false",
+  connection_timeout: "5000",
+  profile_mapping: %{uid: "uid", user_name: "cn", full_name: "givenName", email: "mail"},
+  bind_pattern: "uid=%{uid},cn=%{user_name},ou=people,dc=bluetab,dc=net",
   search_field: "cn"
 
 # ------------ oidc default ----------
@@ -91,14 +91,27 @@ config :td_auth, :auth0,
 # ------------ ad ----------
 
 config :td_auth, :ad,
-  server: "10.0.0.152",
-  base: "DC=dns,DC=activedirectory,DC=io",
-  port: "389",
+  # server: "10.0.0.152",
+  # port: "389",
+  # user_dn: "CN=Administrador,CN=Users,DC=dns,DC=activedirectory,DC=io",
+  # base: "DC=dns,DC=activedirectory,DC=io",
+  # password: "xyzxyz",
+  # search_path: "CN=Users,DC=dns,DC=activedirectory,DC=io",
+
+  server: "localhost",
+  port: "10389",
+  user_dn: "cn=admin,dc=planetexpress,dc=com",
+  base: "dc=planetexpress,dc=com",
+  password: "GoodNewsEveryone",
+  search_path: "ou=people,dc=planetexpress,dc=com",
   ssl: "false",
-  user_dn: "CN=Administrador,CN=Users,DC=dns,DC=activedirectory,DC=io",
-  password: "xyzxyz",
   connection_timeout: "5000",
-  search_path: "CN=Users,DC=dns,DC=activedirectory,DC=io"
+  search_field: "uid",
+  profile_mapping: %{external_id: "uid", full_name: "cn", email: "mail"},
+  sslopts: [
+    cacertfile: nil,
+    verify: :verify_peer
+  ]
 
 config :td_auth, :phoenix_swagger,
   swagger_files: %{
@@ -108,6 +121,7 @@ config :td_auth, :phoenix_swagger,
 config :td_auth, TdAuth.Scheduler,
   jobs: [
     [
+      ## a quitar para subir
       schedule: "@reboot",
       task: {TdAuth.Permissions.AclLoader, :load_cache, []},
       run_strategy: Quantum.RunStrategy.Local
