@@ -302,7 +302,13 @@ defmodule TdAuth.Accounts do
       nil
 
   """
-  def get_group(id), do: Repo.get(Group, id)
+  def get_group(id, opts \\ []) do
+    preload = Keyword.get(opts, :preload, [])
+
+    Group
+    |> preload(^preload)
+    |> Repo.get(id)
+  end
 
   @doc """
   Creates a group.

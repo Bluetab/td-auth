@@ -57,9 +57,20 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       assert [_, _] = AclEntries.list_acl_entries(%{updated_since: nil})
       assert [%{id: ^id}] = AclEntries.list_acl_entries(%{updated_since: last_updated})
     end
+
+    test "list_acl_entries/1 returns a list of all acl entries for a user" do
+      %{id: group_id, users: [%{id: user_id}]} = insert(:group, users: [build(:user)])
+
+      e1 = insert(:acl_entry, user_id: user_id, group_id: nil)
+      e2 = insert(:acl_entry, user_id: nil, group_id: group_id)
+      _another = insert(:acl_entry)
+
+      result = AclEntries.list_acl_entries(%{all_for_user: user_id})
+      assert result ||| [e1, e2]
+    end
   end
 
-  describe "reate_acl_entry/1" do
+  describe "create_acl_entry/1" do
     test "with valid params creates an ACL entry and refreshes cache" do
       %{id: user_id} = user = insert(:user)
       %{id: role_id, name: role_name} = insert(:role)
@@ -92,6 +103,70 @@ defmodule TdAuth.Permissions.AclEntriesTest do
 
       assert role_name in AclCache.get_acl_roles("domain", resource_id)
       assert role_name_2 in AclCache.get_acl_roles("domain", resource_id_2)
+    end
+
+    test "create ACL entry same role diferent domain" do
+      %{id: user_id} = user = insert(:user)
+      %{id: role_id, name: role_name} = insert(:role, name: "foo")
+
+      CacheHelpers.put_user(user)
+
+      %{resource_id: resource_id} =
+        params = %{
+          resource_id: System.unique_integer([:positive]),
+          resource_type: "domain",
+          role_id: role_id,
+          user_id: user_id
+        }
+
+      %{resource_id: resource_id_2} =
+        params_2 = %{
+          resource_id: System.unique_integer([:positive]),
+          resource_type: "domain",
+          role_id: role_id,
+          user_id: user_id
+        }
+
+      assert {:ok, %AclEntry{}} = AclEntries.create_acl_entry(params)
+
+      assert {:ok, %AclEntry{}} = AclEntries.create_acl_entry(params_2)
+
+      assert {:ok, %{^role_name => resource_ids}} = UserCache.get_roles(user_id, "domain")
+
+      assert resource_ids ||| [resource_id, resource_id_2]
+    end
+
+    test "create ACL entry group with same role diferent domain" do
+      %{id: user_id} = user = insert(:user)
+      %{id: role_id, name: role_name} = insert(:role, name: "foo")
+
+      %{id: group_id} = group = insert(:group, users: [user])
+
+      CacheHelpers.put_user(user)
+      CacheHelpers.put_group(group)
+
+      %{resource_id: resource_id} =
+        acl_params = %{
+          resource_id: System.unique_integer([:positive]),
+          resource_type: "domain",
+          role_id: role_id,
+          group_id: group_id
+        }
+
+      %{resource_id: resource_id2} =
+        acl_group_params = %{
+          resource_id: System.unique_integer([:positive]),
+          resource_type: "domain",
+          role_id: role_id,
+          group_id: group_id
+        }
+
+      assert {:ok, _} = AclEntries.create_acl_entry(acl_params)
+      assert {:ok, _} = AclEntries.create_acl_entry(acl_group_params)
+
+      assert {:ok, %{^role_name => resource_ids}} = UserCache.get_roles(user_id, "domain")
+
+      assert resource_ids ||| [resource_id, resource_id2]
     end
 
     test "with valid params for structure resource_type creates an ACL entry and refreshes cache" do
@@ -225,19 +300,17 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       %{resource_id: resource_id2, role: %{name: role_name2}} =
         acl_entry2 = insert(:acl_entry, user_id: user_id, resource_type: "domain", role: role2)
 
-      RoleLoader.load_roles(acl_entry)
-      RoleLoader.load_roles(acl_entry2)
-
-      assert [acl_entry, acl_entry2] <~> AclEntries.list_acl_entries()
+      RoleLoader.refresh_acl_roles(acl_entry)
+      RoleLoader.refresh_acl_roles(acl_entry2)
 
       assert {:ok, %{^role_name => [^resource_id], ^role_name2 => [^resource_id2]}} =
                UserCache.get_roles(user_id, "domain")
 
       assert {:ok, %AclEntry{}} = AclEntries.delete_acl_entry(acl_entry)
 
-      assert [acl_entry2] <~> AclEntries.list_acl_entries()
+      UserCache.get_roles(user_id, "domain")
 
-      assert {:ok, %{^role_name2 => [^resource_id2]}} = UserCache.get_roles(user_id, "domain")
+      assert {:ok, %{role_name2 => [resource_id2]}} == UserCache.get_roles(user_id, "domain")
     end
 
     test "delete group ACL Entry and refresh cache for all members" do
@@ -257,9 +330,9 @@ defmodule TdAuth.Permissions.AclEntriesTest do
       %{id: id2, resource_id: resource_id2, role: %{name: role_name2}} =
         acl_entry2 = insert(:acl_entry, user_id: user_id, resource_type: "domain", role: role2)
 
-      RoleLoader.load_roles(acl_entry)
+      RoleLoader.refresh_acl_roles(acl_entry)
 
-      RoleLoader.load_roles(acl_entry2)
+      RoleLoader.refresh_acl_roles(acl_entry2)
 
       assert {:ok, %{^role_name => [^resource_id], ^role_name2 => [^resource_id2]}} =
                UserCache.get_roles(user_id, "domain")

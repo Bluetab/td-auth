@@ -140,7 +140,7 @@ if config_env() == :prod do
       ],
       [
         schedule: System.get_env("ROLE_LOADER_SCHEDULE", "@reboot"),
-        task: {TdAuth.Permissions.RoleLoader, :load_roles, [reload_roles: true]},
+        task: {TdAuth.Permissions.RoleLoader, :load_roles, []},
         run_strategy: Quantum.RunStrategy.Local
       ]
     ]
