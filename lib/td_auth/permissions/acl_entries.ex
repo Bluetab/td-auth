@@ -116,18 +116,47 @@ defmodule TdAuth.Permissions.AclEntries do
 
   defp build_query(queryable, clauses) do
     Enum.reduce(clauses, queryable, fn
-      {:resource_type, resource_type}, q -> where(q, resource_type: ^resource_type)
-      {:resource_types, resource_types}, q -> where(q, [e], e.resource_type in ^resource_types)
-      {:resource_id, {:not_in, ids}}, q -> where(q, [e], e.resource_id not in ^ids)
-      {:resource_id, {:in, ids}}, q -> where(q, [e], e.resource_id in ^ids)
-      {:resource_id, resource_id}, q -> where(q, resource_id: ^resource_id)
-      {:user_groups, {uid, gids}}, q -> where(q, [e], e.user_id == ^uid or e.group_id in ^gids)
-      {:user_id, user_id}, q -> where(q, user_id: ^user_id)
-      {:group_id, group_id}, q -> where(q, group_id: ^group_id)
-      {:preload, preloads}, q -> preload(q, ^preloads)
-      {:updated_since, nil}, q -> q
-      {:updated_since, ts}, q -> where(q, [e], e.updated_at > ^ts)
-      _, q -> q
+      {:resource_type, resource_type}, q ->
+        where(q, resource_type: ^resource_type)
+
+      {:resource_types, resource_types}, q ->
+        where(q, [e], e.resource_type in ^resource_types)
+
+      {:resource_id, {:not_in, ids}}, q ->
+        where(q, [e], e.resource_id not in ^ids)
+
+      {:resource_id, {:in, ids}}, q ->
+        where(q, [e], e.resource_id in ^ids)
+
+      {:resource_id, resource_id}, q ->
+        where(q, resource_id: ^resource_id)
+
+      {:user_groups, {uid, gids}}, q ->
+        where(q, [e], e.user_id == ^uid or e.group_id in ^gids)
+
+      {:user_id, user_id}, q ->
+        where(q, user_id: ^user_id)
+
+      {:group_id, group_id}, q ->
+        where(q, group_id: ^group_id)
+
+      {:preload, preloads}, q ->
+        preload(q, ^preloads)
+
+      {:updated_since, nil}, q ->
+        q
+
+      {:updated_since, ts}, q ->
+        where(q, [e], e.updated_at > ^ts)
+
+      {:all_for_user, user_id}, q ->
+        q
+        |> join(:left, [acl], g in assoc(acl, :group), as: :group)
+        |> join(:left, [group: g], ug in assoc(g, :users), as: :group_users)
+        |> where([acl, group_users: gu], acl.user_id == ^user_id or gu.id == ^user_id)
+
+      _, q ->
+        q
     end)
   end
 
@@ -138,7 +167,7 @@ defmodule TdAuth.Permissions.AclEntries do
   defp refresh_cache(%{resource_type: resource_type, resource_id: resource_id} = acl_entry) do
     AclLoader.refresh(resource_type, resource_id)
     AclLoader.refresh_group(resource_type, resource_id)
-    RoleLoader.load_roles(acl_entry)
+    RoleLoader.refresh_acl_roles(acl_entry)
     {:ok, acl_entry}
   end
 
@@ -152,7 +181,7 @@ defmodule TdAuth.Permissions.AclEntries do
     AclLoader.refresh(resource_type, resource_id)
     AclLoader.refresh_group(resource_type, resource_id)
 
-    RoleLoader.delete_roles(acl_entry)
+    RoleLoader.refresh_acl_roles(acl_entry)
     {:ok, acl_entry}
   end
 
