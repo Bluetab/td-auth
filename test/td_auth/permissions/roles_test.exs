@@ -1,12 +1,17 @@
 defmodule TdAuth.Permissions.RoleTest do
   use TdAuth.DataCase
 
+  alias TdAuth.Permissions.RoleLoader
   alias TdAuth.Permissions.RolePermission
   alias TdAuth.Permissions.Roles
+  alias TdCache.UserCache
 
   @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
   setup do
+    start_supervised!(TdAuth.Permissions.RoleLoader)
+    on_exit(fn -> UserCache.refresh_all_roles(%{}) end)
+
     role = insert(:role, permissions: [build(:permission)])
     permissions = Enum.map(1..20, fn _ -> insert(:permission) end)
     [permissions: permissions, role: role]
@@ -96,6 +101,21 @@ defmodule TdAuth.Permissions.RoleTest do
       %{id: role_id} = role = insert(:role)
       assert {:ok, %{role: role}} = Roles.delete_role(role)
       assert %{__meta__: %{state: :deleted}, id: ^role_id} = role
+    end
+
+    test "deletes the role, related acl_entries and refreshed the cache" do
+      %{name: role_name} = role = insert(:role)
+
+      %{user_id: user_id, resource_type: resource_type, resource_id: resource_id} =
+        acl_entry = insert(:acl_entry, role: role, principal_type: :user)
+
+      assert {:ok, [0, 1]} = RoleLoader.refresh_resource_roles(acl_entry)
+
+      assert {:ok, %{^role_name => [^resource_id]}} = UserCache.get_roles(user_id, resource_type)
+
+      assert {:ok, _} = Roles.delete_role(role)
+
+      assert {:ok, nil} = UserCache.get_roles(user_id, resource_type)
     end
   end
 
