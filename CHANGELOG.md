@@ -1,6 +1,16 @@
 # Changelog
 
-## [Unreleased]
+## [6.15.0] 2024-11-27
+
+### Added
+
+- [TD-6811] Add uid field to LDAP integration
+
+### Fixed
+
+- [TD-6950] Fix add and delete user role functionality
+
+## [6.12.0] 2024-09-23
 
 ### Added
 
