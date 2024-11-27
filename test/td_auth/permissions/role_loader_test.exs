@@ -5,6 +5,12 @@ defmodule TdAuth.Permissions.RoleLoaderTest do
   alias TdCache.Permissions
   alias TdCache.UserCache
 
+  setup do
+    # Clean up all user_roles
+    on_exit(fn -> UserCache.refresh_all_roles(%{}) end)
+    :ok
+  end
+
   describe "RoleLoader" do
     test "server starts and " do
       assert {:ok, _pid} = start_supervised(RoleLoader)
@@ -29,7 +35,7 @@ defmodule TdAuth.Permissions.RoleLoaderTest do
       assert {:ok, nil} = RoleLoader.put_permission_roles()
     end
 
-    test "reload_roles/1 updates all acl entries in cache" do
+    test "refresh_all_user_roles/1 updates all acl entries in cache" do
       %{id: user_id} = insert(:user)
 
       %{role: %{name: role_name}, resource_id: resource_id} =
@@ -41,8 +47,7 @@ defmodule TdAuth.Permissions.RoleLoaderTest do
       %{role: %{name: structure_role_name}, resource_id: structure_resource_id} =
         insert(:acl_entry, resource_type: "structure", user_id: user_id, group_id: nil)
 
-      resources = RoleLoader.put_roles(reload_roles: true)
-      assert length(resources) == 3
+      assert {:ok, [2, 1]} = RoleLoader.refresh_all_user_roles()
 
       assert UserCache.get_roles(user_id) ==
                {:ok, %{role_name => [resource_id], role_name_2 => [resource_id_2]}}
@@ -56,11 +61,82 @@ defmodule TdAuth.Permissions.RoleLoaderTest do
       %{role: %{name: role_name}, resource_id: resource_id} =
         insert(:acl_entry, group_id: group_id, user_id: nil)
 
-      new_resources = RoleLoader.put_roles(reload_roles: true)
-      assert length(new_resources) == 5
+      assert {:ok, [2, 2, 1, 1, 1]} = RoleLoader.refresh_all_user_roles()
 
       assert UserCache.get_roles(user_id) == {:ok, %{role_name => [resource_id]}}
       assert UserCache.get_roles(user_id2) == {:ok, %{role_name => [resource_id]}}
+    end
+
+    test "refresh_resource_roles/1 updates all acl entries for user and resource_type" do
+      %{id: user_id} = insert(:user)
+
+      %{role: %{name: role_name}, resource_id: resource_id} =
+        insert(:acl_entry, resource_type: "domain", user_id: user_id, group_id: nil)
+
+      %{role: %{name: role_name_2}, resource_id: resource_id_2} =
+        domain_acl_entry =
+        insert(:acl_entry, resource_type: "domain", user_id: user_id, group_id: nil)
+
+      %{role: %{name: structure_role_name}, resource_id: structure_resource_id} =
+        structure_acl_entry =
+        insert(:acl_entry, resource_type: "structure", user_id: user_id, group_id: nil)
+
+      assert {:ok, [0, 2]} = RoleLoader.refresh_resource_roles(domain_acl_entry)
+
+      assert UserCache.get_roles(user_id) ==
+               {:ok, %{role_name => [resource_id], role_name_2 => [resource_id_2]}}
+
+      assert UserCache.get_roles(user_id, "structure") == {:ok, nil}
+
+      assert {:ok, [0, 1]} = RoleLoader.refresh_resource_roles(structure_acl_entry)
+
+      assert UserCache.get_roles(user_id, "structure") ==
+               {:ok, %{structure_role_name => [structure_resource_id]}}
+
+      %{role: %{name: structure_role_name_2}, resource_id: structure_resource_id_2} =
+        structure_acl_entry_2 =
+        insert(:acl_entry, resource_type: "structure", user_id: user_id, group_id: nil)
+
+      assert {:ok, [1, 2]} = RoleLoader.refresh_resource_roles(structure_acl_entry_2)
+
+      assert UserCache.get_roles(user_id, "structure") ==
+               {:ok,
+                %{
+                  structure_role_name => [structure_resource_id],
+                  structure_role_name_2 => [structure_resource_id_2]
+                }}
+    end
+
+    test "refresh_resource_roles/1 updates all acl entries when updated from user acl" do
+      assert %{id: group_id, users: [%{id: user_id}]} = insert(:group, users: [build(:user)])
+
+      %{role: %{name: role_name}, resource_id: resource_id} =
+        user_acl_entry =
+        insert(:acl_entry, resource_type: "domain", user_id: user_id, group_id: nil)
+
+      %{role: %{name: role_name_2}, resource_id: resource_id_2} =
+        insert(:acl_entry, resource_type: "domain", user_id: nil, group_id: group_id)
+
+      assert {:ok, [0, 2]} = RoleLoader.refresh_resource_roles(user_acl_entry)
+
+      assert UserCache.get_roles(user_id) ==
+               {:ok, %{role_name => [resource_id], role_name_2 => [resource_id_2]}}
+    end
+
+    test "refresh_resource_roles/1 updates all acl entries when updated from group acl" do
+      assert %{id: group_id, users: [%{id: user_id}]} = insert(:group, users: [build(:user)])
+
+      %{role: %{name: role_name}, resource_id: resource_id} =
+        insert(:acl_entry, resource_type: "domain", user_id: user_id, group_id: nil)
+
+      %{role: %{name: role_name_2}, resource_id: resource_id_2} =
+        group_acl_entry =
+        insert(:acl_entry, resource_type: "domain", user_id: nil, group_id: group_id)
+
+      assert [{:ok, [0, 2]}] = RoleLoader.refresh_resource_roles(group_acl_entry)
+
+      assert UserCache.get_roles(user_id) ==
+               {:ok, %{role_name => [resource_id], role_name_2 => [resource_id_2]}}
     end
 
     test "put_default_permissions/1 updates default permissions in cache" do

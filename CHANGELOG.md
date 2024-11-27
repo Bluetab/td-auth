@@ -1,12 +1,32 @@
 # Changelog
 
+## [6.15.0] 2024-11-27
+
+### Added
+
+- [TD-6811] Add uid field to LDAP integration
+
+### Fixed
+
+- [TD-6950] Fix add and delete user role functionality
+
+## [6.12.0] 2024-09-23
+
+### Added
+
+- [TD-6811] Add uid field to LDAP integration
+
+### Fixed
+
+- [TD-6950] Fix add and delete user role functionality
+
 ## [6.12.0] 2024-09-23
 
 ### Added
 
 - [TD-6184] Role for Agents, and remove role_type fro users
 
-## [6.9.0] 2024-07-26 
+## [6.9.0] 2024-07-26
 
 ### Changed
 
@@ -16,9 +36,10 @@
 
 ### Fixed
 
-  - [TD-6619] Fix pattern matching for empty sslopts
+- [TD-6619] Fix pattern matching for empty sslopts
 
 ## [6.6.0] 2024-05-22
+
 ## [6.5.4] 2024-05-22
 
 ### Fixed

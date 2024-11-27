@@ -5,6 +5,7 @@ defmodule TdAuth.Permissions.RoleLoader do
 
   use GenServer
 
+  alias TdAuth.Accounts
   alias TdAuth.Permissions
   alias TdAuth.Permissions.AclEntries
   alias TdAuth.Permissions.AclEntry
@@ -16,16 +17,12 @@ defmodule TdAuth.Permissions.RoleLoader do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def load_roles(opts) when is_list(opts) do
-    GenServer.cast(__MODULE__, {:load_roles, opts})
+  def load_roles do
+    GenServer.cast(__MODULE__, {:refresh_all_user_roles})
   end
 
-  def load_roles(%AclEntry{} = acl_entry, opts \\ []) do
-    GenServer.call(__MODULE__, {:load_roles, acl_entry, opts})
-  end
-
-  def delete_roles(%AclEntry{} = acl_entry) do
-    GenServer.call(__MODULE__, {:delete_roles, acl_entry})
+  def refresh_acl_roles(%AclEntry{} = acl_entry) do
+    GenServer.call(__MODULE__, {:refresh_resource_roles, acl_entry})
   end
 
   # GenServer callbacks
@@ -36,34 +33,22 @@ defmodule TdAuth.Permissions.RoleLoader do
   end
 
   @impl true
-  def handle_cast({:load_roles, opts}, state) do
+  def handle_cast({:refresh_all_user_roles}, state) do
     {:ok, _} = put_permission_roles()
     {:ok, _} = put_default_permissions()
-    put_roles(opts)
+    refresh_all_user_roles()
     {:noreply, state}
   end
 
   @impl true
-  def handle_call({:load_roles, acl_entry, opts}, _from, state) do
+  def handle_call({:refresh_resource_roles, acl_entry}, _from, state) do
     {:ok, _} = put_permission_roles()
     {:ok, _} = put_default_permissions()
 
-    reply = put_roles(acl_entry, opts)
+    reply = refresh_resource_roles(acl_entry)
 
     {:reply, reply, state}
   end
-
-  @impl true
-  def handle_call({:delete_roles, acl_entry}, _from, state) do
-    {:ok, _} = put_permission_roles()
-    {:ok, _} = put_default_permissions()
-
-    reply = do_deleted_roles(acl_entry)
-
-    {:reply, reply, state}
-  end
-
-  # Private functions (should only be used by this module or tests)
 
   def put_default_permissions do
     perms = Permissions.default_permissions()
@@ -77,76 +62,45 @@ defmodule TdAuth.Permissions.RoleLoader do
     |> cache_permissions_roles()
   end
 
-  def put_roles(opts) do
-    AclEntries.list_acl_entries(%{
-      resource_types: ["domain", "structure"],
-      preload: [:role, group: :users]
-    })
+  def refresh_all_user_roles do
+    %{preload: [:role, group: :users]}
+    |> AclEntries.list_acl_entries()
     |> Enum.flat_map(&to_entries/1)
-    |> do_put_roles(opts)
+    |> Enum.group_by(& &1.user_id)
+    |> Enum.into(%{}, fn {user_id, entries} ->
+      {user_id,
+       entries
+       |> Enum.group_by(& &1.resource_type)
+       |> Enum.into(%{}, fn {resource_type, group} ->
+         {resource_type, Enum.group_by(group, & &1.role, & &1.resource_id)}
+       end)}
+    end)
+    |> UserCache.refresh_all_roles()
   end
 
-  def put_roles(
-        %AclEntry{user_id: user_id, resource_type: resource_type, resource_id: resource_id},
-        opts
-      )
-      when not is_nil(user_id) do
-    AclEntries.list_acl_entries(%{
-      resource_types: [resource_type],
-      user_id: user_id,
-      resource_id: resource_id,
-      preload: [:role, group: :users]
-    })
-    |> Enum.flat_map(&to_entries/1)
-    |> do_put_roles(opts)
-  end
+  def refresh_resource_roles(%AclEntry{user_id: user_id, resource_type: resource_type})
+      when not is_nil(user_id),
+      do: refresh_resource_roles(user_id, resource_type)
 
-  def put_roles(
-        %AclEntry{group_id: group_id, resource_type: resource_type, resource_id: resource_id},
-        opts
-      )
+  def refresh_resource_roles(%AclEntry{group_id: group_id, resource_type: resource_type})
       when not is_nil(group_id) do
-    AclEntries.list_acl_entries(%{
-      resource_types: [resource_type],
-      group_id: group_id,
-      resource_id: resource_id,
-      preload: [:role, group: :users]
-    })
-    |> Enum.flat_map(&to_entries/1)
-    |> do_put_roles(opts)
+    group_id
+    |> Accounts.get_group(preload: :users)
+    |> Map.get(:users)
+    |> Enum.map(&refresh_resource_roles(&1.id, resource_type))
   end
 
-  def do_put_roles(entries, opts) do
-    entries
-    |> Enum.group_by(& &1.user_id)
-    |> Enum.each(fn {user_id, entries} ->
-      entries
-      |> Enum.group_by(& &1.resource_type)
-      |> Enum.map(fn {resource_type, group} ->
-        {resource_type, Enum.group_by(group, & &1.role, & &1.resource_id)}
-      end)
-      |> Enum.map(fn {resource_type, resource_ids_by_role} ->
-        {:ok, _} = UserCache.put_roles(user_id, resource_ids_by_role, resource_type, opts)
-      end)
-    end)
+  def refresh_resource_roles(user_id, resource_type) do
+    entries =
+      AclEntries.list_acl_entries(%{
+        resource_types: [resource_type],
+        all_for_user: user_id,
+        preload: [:role]
+      })
+      |> Enum.map(&to_entry(&1, user_id))
+      |> Enum.group_by(& &1.role, & &1.resource_id)
 
-    entries
-  end
-
-  def do_deleted_roles(acl_entry) do
-    acl_entry
-    |> to_entries()
-    |> Enum.group_by(& &1.user_id)
-    |> Enum.each(fn {user_id, entries} ->
-      entries
-      |> Enum.group_by(& &1.resource_type)
-      |> Enum.map(fn {resource_type, group} ->
-        {resource_type, Enum.group_by(group, & &1.role, & &1.resource_id)}
-      end)
-      |> Enum.map(fn {resource_type, resource_ids_by_role} ->
-        {:ok, _} = UserCache.delete_roles(user_id, resource_ids_by_role, resource_type)
-      end)
-    end)
+    UserCache.refresh_resource_roles(user_id, resource_type, entries)
   end
 
   defp cache_permissions_roles(permissions) when permissions == %{}, do: {:ok, nil}

@@ -58,6 +58,7 @@ if config_env() == :prod do
     user_dn: System.get_env("LDAP_USER_DN"),
     password: System.get_env("LDAP_PASSWORD"),
     connection_timeout: System.get_env("LDAP_CONNECTION_TIMEOUT"),
+    profile_mapping: System.get_env("LDAP_PROFILE_MAPPING"),
     bind_pattern: System.get_env("LDAP_BIND_PATTERN"),
     search_path: System.get_env("LDAP_SEARCH_PATH"),
     search_field: System.get_env("LDAP_SEARCH_FIELD"),
@@ -72,6 +73,8 @@ if config_env() == :prod do
     password: System.get_env("AD_PASSWORD"),
     connection_timeout: System.get_env("AD_CONNECTION_TIMEOUT"),
     search_path: System.get_env("AD_SEARCH_PATH"),
+    search_field: System.get_env("AD_SEARCH_FIELD", "sAMAccountName"),
+    profile_mapping: System.get_env("AD_PROFILE_MAPPING"),
     sslopts: [cacertfile: System.get_env("AD_CERT_PEM_FILE"), verify: :verify_peer]
 
   config :td_auth, :openid_connect_providers,
@@ -137,7 +140,7 @@ if config_env() == :prod do
       ],
       [
         schedule: System.get_env("ROLE_LOADER_SCHEDULE", "@reboot"),
-        task: {TdAuth.Permissions.RoleLoader, :load_roles, [reload_roles: true]},
+        task: {TdAuth.Permissions.RoleLoader, :load_roles, []},
         run_strategy: Quantum.RunStrategy.Local
       ]
     ]
