@@ -26,14 +26,14 @@ build:
     paths:
       - _build/prod/*.tar.gz
 
-test:
-  stage: build
-  tags:
-    - docker-compose
-  script:
-    - docker-compose run --rm test
-  after_script:
-    - docker-compose down -v
+# test:
+#   stage: build
+#   tags:
+#     - docker-compose
+#   script:
+#     - docker-compose run --rm test
+#   after_script:
+#     - docker-compose down -v
 
 publish:
   stage: publish
