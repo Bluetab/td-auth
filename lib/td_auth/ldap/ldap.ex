@@ -106,7 +106,9 @@ defmodule TdAuth.Ldap.Ldap do
   end
 
   defp build_profile(entry) do
-    mapping = get_ldap_profile_mapping()
+    mapping =
+      get_ldap_profile_mapping()
+      |> IO.inspect(label: "mapping --> ")
 
     Enum.reduce(mapping, %{}, fn {k, v}, acc ->
       attr = Exldap.get_attribute!(entry, v)
