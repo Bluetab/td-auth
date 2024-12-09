@@ -162,7 +162,7 @@ defmodule TdAuth.Permissions.Roles do
   end
 
   defp maybe_refresh_cache({:ok, _} = res) do
-    RoleLoader.refresh_all_user_roles()
+    RoleLoader.refresh()
     res
   end
 
