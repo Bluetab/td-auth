@@ -34,9 +34,7 @@ defmodule TdAuth.Permissions.RoleLoader do
 
   @impl true
   def handle_cast({:refresh_all_user_roles}, state) do
-    {:ok, _} = put_permission_roles()
-    {:ok, _} = put_default_permissions()
-    refresh_all_user_roles()
+    refresh()
     {:noreply, state}
   end
 
@@ -60,6 +58,12 @@ defmodule TdAuth.Permissions.RoleLoader do
     |> Enum.reject(&Enum.empty?(&1.roles))
     |> Map.new(fn %{name: name, roles: roles} -> {name, Enum.map(roles, & &1.name)} end)
     |> cache_permissions_roles()
+  end
+
+  def refresh do
+    {:ok, _} = put_permission_roles()
+    {:ok, _} = put_default_permissions()
+    refresh_all_user_roles()
   end
 
   def refresh_all_user_roles do
