@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- [TD-6991] Put permission roles in cache when roles are edited
+
 ## [6.15.0] 2024-11-27
 
 ### Added
