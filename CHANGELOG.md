@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- [TD-6989] Roolback 6811 and include profile_mapping configuration in runtime
+
 ## [6.15.1] 2024-12-09
 
 ### Fixed

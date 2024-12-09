@@ -1,6 +1,8 @@
 defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   @moduledoc false
   require Logger
+
+  @samaccountname "sAMAccountName"
   @distinguised_name "distinguishedName"
   @user_name "user_name"
   @user_dn "user_dn"
@@ -107,11 +109,11 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
   end
 
   defp ldap_search(conn, user_name) do
-    Exldap.search_field(conn, get_ad_search_path(), get_ad_search_field(), user_name)
+    Exldap.search_field(conn, get_ad_search_path(), @samaccountname, user_name)
   end
 
   defp build_profile(entry) do
-    mapping = get_ad_profile_mapping()
+    mapping = %{"full_name" => "displayName", "email" => "mail"}
 
     Enum.reduce(mapping, %{}, fn {k, v}, acc ->
       attr = get_attribute!(entry, v)
@@ -147,17 +149,6 @@ defmodule TdAuthWeb.AuthProvider.ActiveDirectory do
 
   defp get_ad_search_path do
     Application.get_env(:td_auth, :ad)[:search_path]
-  end
-
-  defp get_ad_search_field do
-    Application.get_env(:td_auth, :ad)[:search_field]
-  end
-
-  defp get_ad_profile_mapping do
-    case Jason.decode(Application.get_env(:td_auth, :ad)[:profile_mapping]) do
-      {:ok, profile} -> profile
-      {:error, _} -> %{full_name: "cn", email: "mail"}
-    end
   end
 
   def get_ad_sslopts do

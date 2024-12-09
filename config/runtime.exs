@@ -58,11 +58,15 @@ if config_env() == :prod do
     user_dn: System.get_env("LDAP_USER_DN"),
     password: System.get_env("LDAP_PASSWORD"),
     connection_timeout: System.get_env("LDAP_CONNECTION_TIMEOUT"),
-    profile_mapping: System.get_env("LDAP_PROFILE_MAPPING"),
     bind_pattern: System.get_env("LDAP_BIND_PATTERN"),
     search_path: System.get_env("LDAP_SEARCH_PATH"),
     search_field: System.get_env("LDAP_SEARCH_FIELD"),
-    validations_file: System.get_env("LDAP_ATTR_VALIDATIONS_FILE")
+    validations_file: System.get_env("LDAP_ATTR_VALIDATIONS_FILE"),
+    profile_mapping: %{
+      user_name: System.get_env("LDAP_MAPPING_USER_NAME", "cn"),
+      full_name: System.get_env("LDAP_MAPPING_FULL_NAME", "givenName"),
+      email: System.get_env("LDAP_MAPPING_EMAIL", "mail")
+    }
 
   config :td_auth, :ad,
     server: System.get_env("AD_SERVER"),
@@ -73,8 +77,6 @@ if config_env() == :prod do
     password: System.get_env("AD_PASSWORD"),
     connection_timeout: System.get_env("AD_CONNECTION_TIMEOUT"),
     search_path: System.get_env("AD_SEARCH_PATH"),
-    search_field: System.get_env("AD_SEARCH_FIELD", "sAMAccountName"),
-    profile_mapping: System.get_env("AD_PROFILE_MAPPING"),
     sslopts: [cacertfile: System.get_env("AD_CERT_PEM_FILE"), verify: :verify_peer]
 
   config :td_auth, :openid_connect_providers,
