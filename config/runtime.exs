@@ -66,7 +66,14 @@ if config_env() == :prod do
       user_name: System.get_env("LDAP_MAPPING_USER_NAME", "cn"),
       full_name: System.get_env("LDAP_MAPPING_FULL_NAME", "givenName"),
       email: System.get_env("LDAP_MAPPING_EMAIL", "mail")
-    }
+    },
+    create_groups: System.get_env("LDAP_CREATE_GROUP", "false") |> String.downcase() == "true",
+    group_fields:
+      System.get_env("LDAP_GROUP_FIELDS", "")
+      |> String.split(",", trim: true),
+    allowed_groups:
+      System.get_env("LDAP_ALLOWED_GROUPS", "")
+      |> String.split(",", trim: true)
 
   config :td_auth, :ad,
     server: System.get_env("AD_SERVER"),
