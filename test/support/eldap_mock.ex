@@ -28,6 +28,51 @@ defmodule TdAuth.Ldap.EldapMock do
     {:noreply, Map.put(attrs, to_charlist(attribute), to_charlist(value))}
   end
 
+  def open(
+        _get_ldap_server_fn,
+        _get_ldap_port_fn,
+        _get_ldap_ssl_fn,
+        _get_ldap_connection_timeout_fn
+      ) do
+    {:ok, self()}
+  end
+
+  def connect(
+        _get_ldap_server_fn,
+        _get_ldap_port_fn,
+        _get_ldap_ssl_fn,
+        _get_ldap_user_dn_fn,
+        _get_ldap_password_fn,
+        _get_ldap_connection_timeout_fn
+      ) do
+    {:ok, self()}
+  end
+
+  def verify_credentials(_conn, _get_ldap_user_dn_fn, _get_ldap_password_fn) do
+    :ok
+  end
+
+  def search_field(_conn, _get_ldap_search_path_fn, _get_ldap_search_field_fn, _user_name) do
+    {:ok,
+     [
+       %Exldap.Entry{
+         object_name: 'cn=Abraham J. Smith,ou=people,dc=bluetab,dc=net',
+         attributes: [
+           {'uid', ['johnsmith']},
+           {'cn', ['Abraham J. Smith']},
+           {'givenName', ['Abraham']},
+           {'mail', ['a.j.smith@truedat.io']},
+           {'objectClass', ['Los Angeles', 'California', 'West Coast']},
+           {'customField', ['dev', 'manager', 'CTO']}
+         ]
+       }
+     ]}
+  end
+
+  def close(_conn) do
+    :ok
+  end
+
   def search(_conn, keywords) do
     attribute =
       keywords
