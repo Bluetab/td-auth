@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- [TD-6865] Automatically create groups based on LDAP
+
 ### Fixed
 
 - [TD-6989] Roolback 6811 and include profile_mapping configuration in runtime

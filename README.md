@@ -8,6 +8,11 @@
 - DB_SSL_CACERTFILE: path of the certification authority cert file "/path/to/ca.crt", required when DB_SSL is true.
 - DB_SSL_VERSION: available versions are tlsv1.2, tlsv1.3 by default is tlsv1.2.
 
+### LDAP groups creation
+- LDAP_CREATE_GROUP: Set to true to enable the creation of LDAP-based groups.
+- LDAP_GROUP_FIELDS: Comma-separated list of fields used to search for groups to assign to a user.
+- LDAP_ALLOWED_GROUPS: Comma-separated list of values used to create groups if they are found.
+
 
 To start your Phoenix server:
 

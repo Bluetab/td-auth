@@ -91,6 +91,7 @@ defmodule TdAuth.Accounts.User do
   defp put_pass_hash(changeset), do: changeset
 
   def check_password(nil, _password), do: Bcrypt.no_user_verify()
+  def check_password(%{password_hash: nil}, _password), do: Bcrypt.no_user_verify()
 
   def check_password(user, password), do: Bcrypt.check_pass(user, password)
 end
