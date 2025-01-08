@@ -22,7 +22,7 @@ defmodule TdAuthWeb.AuthProvider.DefaultProfileMapping do
 
   # Logs a warning if no mapping is defined for the claims
   def map_profile(claims) do
-    Logger.warn("No mapping defined for claims #{inspect(claims)}")
+    Logger.warning("No mapping defined for claims #{inspect(claims)}")
     {:error}
   end
 end

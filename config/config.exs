@@ -44,7 +44,6 @@ config :logger, :console,
 
 # Configuration for Phoenix
 config :phoenix, :json_library, Jason
-config :phoenix_swagger, :json_library, Jason
 
 config :td_cache, :audit,
   service: "td_auth",
@@ -99,11 +98,6 @@ config :td_auth, :ad,
   password: "xyzxyz",
   connection_timeout: "5000",
   search_path: "CN=Users,DC=dns,DC=activedirectory,DC=io"
-
-config :td_auth, :phoenix_swagger,
-  swagger_files: %{
-    "priv/static/swagger.json" => [router: TdAuthWeb.Router]
-  }
 
 config :td_auth, TdAuth.Scheduler,
   jobs: [

@@ -7,83 +7,83 @@ defmodule TdAuthWeb.AuthProvider.SamlTest do
     test "filters groups by regex" do
       attributes = [
         Group: [
-          'Grupo_Truedat_Acceso_Santalucia',
-          'Grupo_Truedat_Acceso_Santalucia_Externo',
-          'Grupo_Truedat_Acceso-guión'
+          ~c"Grupo_Truedat_Acceso_Santalucia",
+          ~c"Grupo_Truedat_Acceso_Santalucia_Externo",
+          ~c"Grupo_Truedat_Acceso-guión"
         ],
-        givenname: 'truedat',
-        role: 'Cuenta Servicio',
-        name: 'truedat'
+        givenname: ~c"truedat",
+        role: ~c"Cuenta Servicio",
+        name: ~c"truedat"
       ]
 
-      reject_roles = ['Externo']
+      reject_roles = [~c"Externo"]
 
       allow_groups = [
-        '^Grupo_Truedat_Acceso[[:alnum:]_]*$'
+        ~c"^Grupo_Truedat_Acceso[[:alnum:]_]*$"
       ]
 
       assert {true, filtered_groups} =
                Saml.accept_attributes?(attributes, reject_roles, allow_groups)
 
-      assert Enum.member?(filtered_groups, 'Grupo_Truedat_Acceso_Santalucia')
-      assert Enum.member?(filtered_groups, 'Grupo_Truedat_Acceso_Santalucia_Externo')
+      assert Enum.member?(filtered_groups, ~c"Grupo_Truedat_Acceso_Santalucia")
+      assert Enum.member?(filtered_groups, ~c"Grupo_Truedat_Acceso_Santalucia_Externo")
 
-      refute Enum.member?(filtered_groups, 'Grupo_Truedat_Acceso-guión')
+      refute Enum.member?(filtered_groups, ~c"Grupo_Truedat_Acceso-guión")
     end
 
     test "regex takes unicode into account" do
       attributes = [
         Group: [
-          'Grupo_Truedat_Acceso_Santalucía',
-          'Grupo_Truedat_Acceso_\u65e5\u672c\u8a9e'
+          ~c"Grupo_Truedat_Acceso_Santalucía",
+          ~c"Grupo_Truedat_Acceso_\u65e5\u672c\u8a9e"
         ],
-        givenname: 'truedat',
-        role: 'Cuenta Servicio',
-        name: 'truedat'
+        givenname: ~c"truedat",
+        role: ~c"Cuenta Servicio",
+        name: ~c"truedat"
       ]
 
-      reject_roles = ['Externo']
+      reject_roles = [~c"Externo"]
 
       allow_groups = [
-        '^Grupo_Truedat_Acceso[[:alnum:]_]*$'
+        ~c"^Grupo_Truedat_Acceso[[:alnum:]_]*$"
       ]
 
       assert {true, filtered_groups} =
                Saml.accept_attributes?(attributes, reject_roles, allow_groups)
 
-      assert Enum.member?(filtered_groups, 'Grupo_Truedat_Acceso_Santalucía')
-      assert Enum.member?(filtered_groups, 'Grupo_Truedat_Acceso_\u65e5\u672c\u8a9e')
+      assert Enum.member?(filtered_groups, ~c"Grupo_Truedat_Acceso_Santalucía")
+      assert Enum.member?(filtered_groups, ~c"Grupo_Truedat_Acceso_\u65e5\u672c\u8a9e")
     end
 
     test "filters groups by several names in allow_groups" do
       attributes = [
         Group: [
-          'Domain Users',
-          'sas',
-          'G_ACCESO_SLSSASP12',
-          'G_Acceso_Cyberark',
-          'g_cyb_truedat_show'
+          ~c"Domain Users",
+          ~c"sas",
+          ~c"G_ACCESO_SLSSASP12",
+          ~c"G_Acceso_Cyberark",
+          ~c"g_cyb_truedat_show"
         ],
-        givenname: 'truedat',
-        role: 'Cuenta Servicio',
-        name: 'truedat'
+        givenname: ~c"truedat",
+        role: ~c"Cuenta Servicio",
+        name: ~c"truedat"
       ]
 
-      reject_roles = ['Externo']
+      reject_roles = [~c"Externo"]
 
       allow_groups = [
-        '^some_group[[:alnum:]_-]*$',
-        '^G_Acceso[[:alnum:]_-]*$',
-        '^g_cyb[[:alnum:]_-]*$'
+        ~c"^some_group[[:alnum:]_-]*$",
+        ~c"^G_Acceso[[:alnum:]_-]*$",
+        ~c"^g_cyb[[:alnum:]_-]*$"
       ]
 
       assert {true, filtered_groups} =
                Saml.accept_attributes?(attributes, reject_roles, allow_groups)
 
-      assert Enum.member?(filtered_groups, 'G_Acceso_Cyberark')
-      assert Enum.member?(filtered_groups, 'g_cyb_truedat_show')
-      refute Enum.member?(filtered_groups, 'Domain Users')
-      refute Enum.member?(filtered_groups, 'sas')
+      assert Enum.member?(filtered_groups, ~c"G_Acceso_Cyberark")
+      assert Enum.member?(filtered_groups, ~c"g_cyb_truedat_show")
+      refute Enum.member?(filtered_groups, ~c"Domain Users")
+      refute Enum.member?(filtered_groups, ~c"sas")
     end
   end
 
@@ -91,38 +91,38 @@ defmodule TdAuthWeb.AuthProvider.SamlTest do
     setup do
       [
         assertion:
-          {:esaml_assertion, '2.0', '2021-07-09T08:17:38.128Z',
-           'https://santalucia.truedat.io/callback',
-           'http://fs.santalucia.es/adfs/services/trust',
-           {:esaml_subject, 'truedat@santalucia.sls.inf', :undefined, :undefined, :undefined,
-            :bearer, '2021-07-09T08:22:38.128Z', []},
+          {:esaml_assertion, ~c"2.0", ~c"2021-07-09T08:17:38.128Z",
+           ~c"https://santalucia.truedat.io/callback",
+           ~c"http://fs.santalucia.es/adfs/services/trust",
+           {:esaml_subject, ~c"truedat@santalucia.sls.inf", :undefined, :undefined, :undefined,
+            :bearer, ~c"2021-07-09T08:22:38.128Z", []},
            [
-             audience: 'https://santalucia.truedat.io',
-             not_on_or_after: '2021-07-09T09:17:38.112Z',
-             not_before: '2021-07-09T08:17:38.112Z'
+             audience: ~c"https://santalucia.truedat.io",
+             not_on_or_after: ~c"2021-07-09T09:17:38.112Z",
+             not_before: ~c"2021-07-09T08:17:38.112Z"
            ],
            [
              Group: [
-               'Domain Users',
-               'sas',
-               'G_ACCESO_SLSSASP12',
-               'G_Acceso_Cyberark',
-               'g_cyb_truedat_show'
+               ~c"Domain Users",
+               ~c"sas",
+               ~c"G_ACCESO_SLSSASP12",
+               ~c"G_Acceso_Cyberark",
+               ~c"g_cyb_truedat_show"
              ],
-             givenname: 'truedat',
-             role: 'Cuenta Servicio',
-             name: 'truedat'
+             givenname: ~c"truedat",
+             role: ~c"Cuenta Servicio",
+             name: ~c"truedat"
            ],
            [
-             authn_context: 'urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport',
-             session_index: '_f60dbd1e-a872-43ab-ad1a-67851fbe6423',
-             authn_instant: '2021-07-09T06:14:20.735Z'
+             authn_context: ~c"urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
+             session_index: ~c"_f60dbd1e-a872-43ab-ad1a-67851fbe6423",
+             authn_instant: ~c"2021-07-09T06:14:20.735Z"
            ]},
-        reject_roles: ['Externo'],
+        reject_roles: [~c"Externo"],
         allow_groups: [
-          '^some_group[[:alnum:]_-]*$',
-          '^G_Acceso[[:alnum:]_-]*$',
-          '^g_cyb[[:alnum:]_-]*$'
+          ~c"^some_group[[:alnum:]_-]*$",
+          ~c"^G_Acceso[[:alnum:]_-]*$",
+          ~c"^g_cyb[[:alnum:]_-]*$"
         ]
       ]
     end
@@ -132,7 +132,7 @@ defmodule TdAuthWeb.AuthProvider.SamlTest do
       reject_roles: reject_roles
     } do
       allow_groups_to_fail = [
-        '^some_group_not_present_in_assertion[[:alnum:]_-]*$'
+        ~c"^some_group_not_present_in_assertion[[:alnum:]_-]*$"
       ]
 
       assert {:error, :rejected} =

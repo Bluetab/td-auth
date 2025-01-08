@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.GroupControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   import TdAuthWeb.Authentication, only: :functions
 
@@ -16,11 +15,10 @@ defmodule TdAuthWeb.GroupControllerTest do
 
   describe "GET /api/groups" do
     @tag authentication: [role: :admin]
-    test "admin can view groups", %{conn: conn, swagger_schema: schema} do
+    test "admin can view groups", %{conn: conn} do
       assert %{"data" => []} =
                conn
                |> get(Routes.group_path(conn, :index))
-               |> validate_resp_schema(schema, "GroupsResponseData")
                |> json_response(:ok)
     end
 
@@ -55,20 +53,18 @@ defmodule TdAuthWeb.GroupControllerTest do
     end
 
     @tag authentication: [role: :service]
-    test "service account can view groups", %{conn: conn, swagger_schema: schema} do
+    test "service account can view groups", %{conn: conn} do
       assert %{"data" => []} =
                conn
                |> get(Routes.group_path(conn, :index))
-               |> validate_resp_schema(schema, "GroupsResponseData")
                |> json_response(:ok)
     end
 
     @tag authentication: [role: :user]
-    test "user account cannot view groups", %{conn: conn, swagger_schema: schema} do
+    test "user account cannot view groups", %{conn: conn} do
       assert %{"errors" => _} =
                conn
                |> get(Routes.group_path(conn, :index))
-               |> validate_resp_schema(schema, "GroupsResponseData")
                |> json_response(:forbidden)
     end
 

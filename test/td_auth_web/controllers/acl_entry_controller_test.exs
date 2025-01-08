@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.AclEntryControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   alias TdCluster.TestHelpers.TdDdMock
 
@@ -18,11 +17,10 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
   describe "GET /api/acl_entries" do
     @tag authentication: [role: :admin]
-    test "admin can view acl entries", %{conn: conn, swagger_schema: schema} do
+    test "admin can view acl entries", %{conn: conn} do
       assert %{"data" => [_acl_entry]} =
                conn
                |> get(acl_entry_path(conn, :index))
-               |> validate_resp_schema(schema, "AclEntriesResponse")
                |> json_response(:ok)
     end
 
@@ -45,20 +43,19 @@ defmodule TdAuthWeb.AclEntryControllerTest do
 
   describe "GET /api/acl_entries/:id" do
     @tag authentication: [role: :admin]
-    test "returns an acl entry", %{conn: conn, acl_entry: acl_entry, swagger_schema: schema} do
+    test "returns an acl entry", %{conn: conn, acl_entry: acl_entry} do
       %{id: id} = acl_entry
 
       assert %{"data" => %{"id" => ^id}} =
                conn
                |> get(acl_entry_path(conn, :show, acl_entry))
-               |> validate_resp_schema(schema, "AclEntryResponse")
                |> json_response(:ok)
     end
   end
 
   describe "POST /api/acl_entries" do
     @tag authentication: [role: :admin]
-    test "renders acl_entry when data is valid", %{conn: conn, swagger_schema: schema} do
+    test "renders acl_entry when data is valid", %{conn: conn} do
       %{id: user_id} = insert(:user)
       %{id: role_id} = insert(:role)
       resource_id = System.unique_integer([:positive])
@@ -75,7 +72,6 @@ defmodule TdAuthWeb.AclEntryControllerTest do
       assert %{"data" => data} =
                conn
                |> post(acl_entry_path(conn, :create), acl_entry: acl_entry_attrs)
-               |> validate_resp_schema(schema, "AclEntryResponse")
                |> json_response(:created)
 
       assert %{

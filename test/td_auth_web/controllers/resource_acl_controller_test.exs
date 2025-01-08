@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.ResourceAclControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   alias TdCluster.TestHelpers.TdDdMock
 
@@ -21,8 +20,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
   describe "GET /api/acl_entries/:resource_type/:resource_id" do
     @tag authentication: [role: :admin]
     test "returns OK and body on success", %{
-      conn: conn,
-      swagger_schema: schema
+      conn: conn
     } do
       resource_type = "domain_or_structure_type"
 
@@ -32,7 +30,6 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       assert %{"_embedded" => embedded, "_links" => _links} =
                conn
                |> get(acl_path(conn, :show, Inflex.pluralize(resource_type), resource_id))
-               |> validate_resp_schema(schema, "ResourceAclEntriesResponse")
                |> json_response(:ok)
 
       assert %{"acl_entries" => [_acl_entry]} = embedded
@@ -123,8 +120,7 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
     @tag authentication: [role: :admin]
     test "adds an entry to a resource acl", %{
       conn: conn,
-      acl_entry: acl_entry,
-      swagger_schema: schema
+      acl_entry: acl_entry
     } do
       %{resource_type: resource_type, resource_id: resource_id} = acl_entry
 
@@ -160,7 +156,6 @@ defmodule TdAuthWeb.ResourceAclControllerTest do
       assert %{"_embedded" => embedded, "_links" => _links} =
                conn
                |> get(location, %{})
-               |> validate_resp_schema(schema, "ResourceAclEntriesResponse")
                |> json_response(:ok)
 
       assert %{"acl_entries" => [_acl_entry1, _acl_entry2]} = embedded

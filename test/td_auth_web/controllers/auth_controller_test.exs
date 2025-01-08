@@ -1,8 +1,6 @@
 defmodule TdAuthWeb.AuthControllerTest do
   use TdAuthWeb.ConnCase
 
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
-
   setup_all do
     config = Application.get_env(:td_auth, :openid_connect_providers)
     start_supervised!({OpenIDConnect.Worker, config})
@@ -14,9 +12,8 @@ defmodule TdAuthWeb.AuthControllerTest do
   end
 
   describe "index" do
-    test "lists all authentication methods", %{conn: conn, swagger_schema: schema} do
+    test "lists all authentication methods", %{conn: conn} do
       conn = get(conn, Routes.auth_path(conn, :index, %{"url" => "pre_login_url"}))
-      validate_resp_schema(conn, schema, "AuthenticationMethodsResponse")
 
       %{"oidc" => url, "auth0" => auth0} = json_response(conn, 200)["data"]
       assert String.starts_with?(url, "https://accounts.google.com/o/oauth2")
