@@ -12,26 +12,10 @@ defmodule TdAuthWeb.SessionController do
   alias TdAuthWeb.AuthProvider.Auth0
   alias TdAuthWeb.AuthProvider.OIDC
   alias TdAuthWeb.ErrorView
-  alias TdAuthWeb.SwaggerDefinitions
+
   alias TdCache.NonceCache
 
   require Logger
-
-  def swagger_definitions do
-    SwaggerDefinitions.session_swagger_definitions()
-  end
-
-  swagger_path :create do
-    description("Creates a user session")
-    produces("application/json")
-
-    parameters do
-      user(:body, Schema.ref(:SessionCreate), "User session create attrs")
-    end
-
-    response(201, "Created", Schema.ref(:Token))
-    response(400, "Client Error")
-  end
 
   def create(conn, %{"SAMLResponse" => _} = params) do
     nonce =
@@ -186,9 +170,10 @@ defmodule TdAuthWeb.SessionController do
   defp authenticate_and_create_session(conn, user_name, password, access_method) do
     user = Accounts.get_user_by_name(user_name)
 
-    case User.check_password(user, password) do
-      {:ok, user} -> create_session(conn, user, access_method)
-      _ -> unauthorized(conn)
+    if User.check_password(user, password) do
+      create_session(conn, user, access_method)
+    else
+      unauthorized(conn)
     end
   end
 
@@ -231,18 +216,6 @@ defmodule TdAuthWeb.SessionController do
 
   def ping(conn, _params) do
     send_resp(conn, :ok, "")
-  end
-
-  swagger_path :refresh do
-    description("Returns new token")
-    produces("application/json")
-
-    parameters do
-      user(:body, Schema.ref(:RefreshSessionCreate), "User token")
-    end
-
-    response(201, "Created", Schema.ref(:Token))
-    response(400, "Client Error")
   end
 
   def refresh(conn, _params) do

@@ -56,14 +56,14 @@ defmodule TdAuth.Ldap.EldapMock do
     {:ok,
      [
        %Exldap.Entry{
-         object_name: 'cn=Abraham J. Smith,ou=people,dc=bluetab,dc=net',
+         object_name: ~c"cn=Abraham J. Smith,ou=people,dc=bluetab,dc=net",
          attributes: [
-           {'uid', ['johnsmith']},
-           {'cn', ['Abraham J. Smith']},
-           {'givenName', ['Abraham']},
-           {'mail', ['a.j.smith@truedat.io']},
-           {'objectClass', ['Los Angeles', 'California', 'West Coast']},
-           {'customField', ['dev', 'manager', 'CTO']}
+           {~c"uid", [~c"johnsmith"]},
+           {~c"cn", [~c"Abraham J. Smith"]},
+           {~c"givenName", [~c"Abraham"]},
+           {~c"mail", [~c"a.j.smith@truedat.io"]},
+           {~c"objectClass", [~c"Los Angeles", ~c"California", ~c"West Coast"]},
+           {~c"customField", [~c"dev", ~c"manager", ~c"CTO"]}
          ]
        }
      ]}

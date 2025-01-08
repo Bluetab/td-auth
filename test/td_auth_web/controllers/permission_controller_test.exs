@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.PermissionControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
@@ -19,7 +18,7 @@ defmodule TdAuthWeb.PermissionControllerTest do
 
   describe "index" do
     @tag authentication: [role: :admin]
-    test "lists all permissions", %{conn: conn, swagger_schema: schema} do
+    test "lists all permissions", %{conn: conn} do
       expected =
         1..5
         |> Enum.map(fn _ -> insert(:permission) end)
@@ -31,7 +30,6 @@ defmodule TdAuthWeb.PermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> get(Routes.permission_path(conn, :index))
-               |> validate_resp_schema(schema, "PermissionsResponse")
                |> json_response(:ok)
 
       assert_lists_equal(
@@ -44,14 +42,13 @@ defmodule TdAuthWeb.PermissionControllerTest do
 
   describe "show" do
     @tag authentication: [role: :admin]
-    test "show permission", %{conn: conn, swagger_schema: schema} do
+    test "show permission", %{conn: conn} do
       %{id: id, name: name, permission_group: %{id: group_id, name: group_name}} =
         insert(:permission)
 
       assert %{"data" => data} =
                conn
                |> get(Routes.permission_path(conn, :show, id))
-               |> validate_resp_schema(schema, "PermissionResponse")
                |> json_response(:ok)
 
       assert %{"id" => ^id, "name" => ^name, "group" => group} = data
@@ -61,7 +58,7 @@ defmodule TdAuthWeb.PermissionControllerTest do
 
   describe "create" do
     @tag authentication: [role: :user]
-    test "non-admin user cannot create permissions", %{conn: conn, swagger_schema: schema} do
+    test "non-admin user cannot create permissions", %{conn: conn} do
       %{id: permission_group_id} =
         insert(:permission_group, name: "#{@custom_prefix}permission_group")
 
@@ -72,14 +69,12 @@ defmodule TdAuthWeb.PermissionControllerTest do
 
       assert conn
              |> post(Routes.permission_path(conn, :create), permission: params)
-             |> validate_resp_schema(schema, "PermissionResponse")
              |> json_response(:forbidden)
     end
 
     @tag authentication: [role: :admin]
     test "create non-custom permission returns error", %{
-      conn: conn,
-      swagger_schema: schema
+      conn: conn
     } do
       %{id: permission_group_id} =
         insert(:permission_group, name: "#{@custom_prefix}permission_group")
@@ -92,14 +87,13 @@ defmodule TdAuthWeb.PermissionControllerTest do
       assert %{"errors" => errors} =
                conn
                |> post(Routes.permission_path(conn, :create), permission: params)
-               |> validate_resp_schema(schema, "PermissionResponse")
                |> json_response(:unprocessable_entity)
 
       assert %{"name" => _name_errors} = errors
     end
 
     @tag authentication: [role: :admin]
-    test "create custom permission", %{conn: conn, swagger_schema: schema} do
+    test "create custom permission", %{conn: conn} do
       %{id: permission_group_id} =
         insert(:permission_group, name: "#{@custom_prefix}permission_group")
 
@@ -111,7 +105,6 @@ defmodule TdAuthWeb.PermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.permission_path(conn, :create), permission: params)
-               |> validate_resp_schema(schema, "PermissionResponse")
                |> json_response(:created)
 
       assert %{"id" => new_permission_id, "name" => "#{@custom_prefix}permission_name"} = data
@@ -119,7 +112,6 @@ defmodule TdAuthWeb.PermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> get(Routes.permission_path(conn, :show, new_permission_id))
-               |> validate_resp_schema(schema, "PermissionResponse")
                |> json_response(:ok)
 
       assert %{"id" => ^new_permission_id, "name" => "#{@custom_prefix}permission_name"} = data

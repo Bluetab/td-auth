@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.UserSearchControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   import TdAuth.TestOperators
 
@@ -12,13 +11,11 @@ defmodule TdAuthWeb.UserSearchControllerTest do
     @tag authentication: [role: :admin]
     test "will return users with essencial information", %{
       conn: conn,
-      swagger_schema: schema,
       user: %{full_name: full_name}
     } do
       assert %{"data" => [user]} =
                conn
                |> post(Routes.user_search_path(conn, :create))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert %{"full_name" => ^full_name} = user
@@ -29,8 +26,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
 
     @tag authentication: [role: :admin]
     test "will not return more results than configured max_result", %{
-      conn: conn,
-      swagger_schema: schema
+      conn: conn
     } do
       more_than_max = @max_results + 5
       1..more_than_max |> Enum.each(fn _ -> insert(:user) end)
@@ -38,7 +34,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert Enum.count(data) == @max_results
@@ -46,8 +41,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
 
     @tag authentication: [role: :admin]
     test "will filter query results", %{
-      conn: conn,
-      swagger_schema: schema
+      conn: conn
     } do
       insert(:user, user_name: "user.1", full_name: "aaaa Ff", email: "cccc@xxx.yy")
       insert(:user, user_name: "user.2", full_name: "bbbb", email: "dddd@xxx.yy")
@@ -55,7 +49,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{query: "aa f"}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert Enum.count(data) == 1
@@ -63,7 +56,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{query: "r.1"}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert Enum.count(data) == 1
@@ -71,7 +63,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{query: ".2"}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert Enum.count(data) == 1
@@ -79,7 +70,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{query: "dd"}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert Enum.count(data) == 1
@@ -87,7 +77,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{query: "zz"}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert Enum.empty?(data)
@@ -95,8 +84,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
 
     @tag authentication: [role: :admin]
     test "will return users using permission filter", %{
-      conn: conn,
-      swagger_schema: schema
+      conn: conn
     } do
       %{id: domain_id_1} = CacheHelpers.put_domain()
       %{id: domain_id_2} = CacheHelpers.put_domain()
@@ -118,7 +106,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{permission: permission.name}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert [user_id_1, user_id_2] ||| Enum.map(data, & &1["id"])
@@ -127,8 +114,7 @@ defmodule TdAuthWeb.UserSearchControllerTest do
     @tag authentication: [role: :user]
     test "will return empty list using permission filter with non admin for different permission than allow_foreign_grant_request",
          %{
-           conn: conn,
-           swagger_schema: schema
+           conn: conn
          } do
       %{id: domain_id_1} = CacheHelpers.put_domain()
       %{id: domain_id_2} = CacheHelpers.put_domain()
@@ -150,7 +136,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{permission: permission.name}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert [] = data
@@ -160,7 +145,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
     test "will return users using permission filter with non admin for permission allow_foreign_grant_request",
          %{
            conn: conn,
-           swagger_schema: schema,
            claims: claims
          } do
       %{id: domain_id_1} = CacheHelpers.put_domain()
@@ -190,7 +174,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{permission: permission.name}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert [%{"id" => ^user_id_1}] = data
@@ -248,7 +231,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
     test "will return users using permission filter with non admin for permission allow_foreign_grant_request filtered by domains",
          %{
            conn: conn,
-           swagger_schema: schema,
            claims: claims
          } do
       %{id: domain_id_1} = CacheHelpers.put_domain()
@@ -283,7 +265,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                    domains: [domain_id_2]
                  })
                )
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert [] = data
@@ -296,7 +277,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                    domains: [domain_id_1]
                  })
                )
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert [%{"id" => ^user_id_1}] = data
@@ -359,7 +339,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
     test "will return users using permission filter with non admin for permission allow_foreign_grant_request filtered by domains and roles",
          %{
            conn: conn,
-           swagger_schema: schema,
            claims: claims
          } do
       %{id: domain_id_1} = CacheHelpers.put_domain()
@@ -405,7 +384,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                    roles: [role_id_1, role_id_2, role_id_3]
                  })
                )
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert [%{"id" => ^user_id_1}] = data
@@ -419,7 +397,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
                    roles: [role_id_2, role_id_3]
                  })
                )
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert [%{"id" => ^user_id_2}] = data
@@ -427,7 +404,6 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.user_search_path(conn, :create, %{permission: permission.name}))
-               |> validate_resp_schema(schema, "UsersSearchResponseData")
                |> json_response(:ok)
 
       assert [user_id_1, user_id_2, user_id_4] ||| Enum.map(data, & &1["id"])

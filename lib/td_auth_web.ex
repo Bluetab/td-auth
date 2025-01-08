@@ -20,13 +20,10 @@ defmodule TdAuthWeb do
   def controller(log \\ :info) do
     quote bind_quoted: [log: log] do
       use Phoenix.Controller, namespace: TdAuthWeb, log: log
-      use PhoenixSwagger
 
       import Plug.Conn
-      import TdAuthWeb.Gettext
 
       alias TdAuthWeb.Router.Helpers, as: Routes
-      alias TdAuthWeb.SwaggerDefinitions
     end
   end
 
@@ -41,7 +38,6 @@ defmodule TdAuthWeb do
         only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
 
       import TdAuthWeb.ErrorHelpers
-      import TdAuthWeb.Gettext
       alias TdAuthWeb.Router.Helpers, as: Routes
     end
   end
@@ -57,7 +53,6 @@ defmodule TdAuthWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import TdAuthWeb.Gettext
     end
   end
 

@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.RolePermissionControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   @custom_prefix Application.compile_env(:td_auth, :custom_permissions_prefix)
 
@@ -29,7 +28,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
          }
     test "add role role-permission relation by permission name", %{
       conn: conn,
-      swagger_schema: schema,
       role: %{id: role_id}
     } do
       %{id: permission_id} = insert(:permission, name: "#{@custom_prefix}permission3")
@@ -41,7 +39,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.role_permission_path(conn, :create, role_id), params)
-               |> validate_resp_schema(schema, "RolePermissionResponse")
                |> json_response(:ok)
 
       assert %{
@@ -52,7 +49,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> get(Routes.role_permission_path(conn, :show, role_id))
-               |> validate_resp_schema(schema, "PermissionsResponse")
                |> json_response(:ok)
 
       assert [
@@ -69,7 +65,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
          }
     test "add role-permission relation by permission ID", %{
       conn: conn,
-      swagger_schema: schema,
       role: %{id: role_id}
     } do
       %{id: permission_id} = insert(:permission, name: "#{@custom_prefix}permission3")
@@ -81,7 +76,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> post(Routes.role_permission_path(conn, :create, role_id), params)
-               |> validate_resp_schema(schema, "RolePermissionResponse")
                |> json_response(:ok)
 
       assert %{
@@ -92,7 +86,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> get(Routes.role_permission_path(conn, :show, role_id))
-               |> validate_resp_schema(schema, "PermissionsResponse")
                |> json_response(:ok)
 
       assert [
@@ -109,7 +102,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
          }
     test "delete role-permission relation by permission name", %{
       conn: conn,
-      swagger_schema: schema,
       role: role
     } do
       params = %{
@@ -123,7 +115,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> get(Routes.role_permission_path(conn, :show, role.id))
-               |> validate_resp_schema(schema, "PermissionsResponse")
                |> json_response(:ok)
 
       assert [
@@ -140,7 +131,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
          }
     test "delete role-permission relation by permission ID", %{
       conn: conn,
-      swagger_schema: schema,
       role: role
     } do
       %{id: permission_to_delete_id} =
@@ -157,7 +147,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
       assert %{"data" => data} =
                conn
                |> get(Routes.role_permission_path(conn, :show, role.id))
-               |> validate_resp_schema(schema, "PermissionsResponse")
                |> json_response(:ok)
 
       assert [
@@ -169,11 +158,10 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
 
     @tag authentication: [role: :admin]
     @tag role: %{name: "test", permissions: ["permission1", "permission2"]}
-    test "list role permissions", %{conn: conn, swagger_schema: schema, role: role} do
+    test "list role permissions", %{conn: conn, role: role} do
       assert %{"data" => data} =
                conn
                |> get(Routes.role_permission_path(conn, :show, role.id))
-               |> validate_resp_schema(schema, "PermissionsResponse")
                |> json_response(:ok)
 
       permission_names = Enum.map(data, & &1["name"])
@@ -182,7 +170,7 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
 
     @tag authentication: [role: :admin]
     @tag role: %{name: "test", permissions: ["permission1", "permission2"]}
-    test "modify role permissions", %{conn: conn, swagger_schema: schema, role: role} do
+    test "modify role permissions", %{conn: conn, role: role} do
       assert %{id: role_id, permissions: [%{id: permission_id1}, %{id: permission_id2}]} = role
       id_params = [%{"id" => permission_id1}, %{"id" => permission_id2}]
 
@@ -191,7 +179,6 @@ defmodule TdAuthWeb.RolePermissionControllerTest do
                |> put(Routes.role_permission_path(conn, :update, role_id),
                  permissions: id_params
                )
-               |> validate_resp_schema(schema, "PermissionsResponse")
                |> json_response(:ok)
 
       assert_lists_equal(data, id_params, &(&1["id"] == &2["id"]))

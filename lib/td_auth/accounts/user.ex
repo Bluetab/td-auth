@@ -84,14 +84,16 @@ defmodule TdAuth.Accounts.User do
   defp put_groups(%Changeset{} = changeset, _existing_groups, _, _), do: changeset
 
   defp put_pass_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
-    hash = Bcrypt.add_hash(password)
-    change(changeset, hash)
+    hash = Bcrypt.hash_pwd_salt(password)
+
+    change(changeset, %{password_hash: hash})
   end
 
   defp put_pass_hash(changeset), do: changeset
 
-  def check_password(nil, _password), do: Bcrypt.no_user_verify()
-  def check_password(%{password_hash: nil}, _password), do: Bcrypt.no_user_verify()
+  def check_password(%{password_hash: pwd_hash}, password)
+      when is_binary(pwd_hash) and is_binary(password),
+      do: Bcrypt.verify_pass(password, pwd_hash)
 
-  def check_password(user, password), do: Bcrypt.check_pass(user, password)
+  def check_password(_, _), do: Bcrypt.no_user_verify()
 end

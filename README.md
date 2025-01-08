@@ -9,16 +9,16 @@
 - DB_SSL_VERSION: available versions are tlsv1.2, tlsv1.3 by default is tlsv1.2.
 
 ### LDAP groups creation
+
 - LDAP_CREATE_GROUP: Set to true to enable the creation of LDAP-based groups.
 - LDAP_GROUP_FIELDS: Comma-separated list of fields used to search for groups to assign to a user.
 - LDAP_ALLOWED_GROUPS: Comma-separated list of values used to create groups if they are found.
 
-
 To start your Phoenix server:
 
-  * Install dependencies with `mix deps.get`
-  * Create and migrate your database with `mix ecto.create && mix ecto.migrate`
-  * Start Phoenix endpoint with `mix phx.server`
+- Install dependencies with `mix deps.get`
+- Create and migrate your database with `mix ecto.create && mix ecto.migrate`
+- Start Phoenix endpoint with `mix phx.server`
 
 Now you can visit [`localhost:4001`](http://localhost:4001) from your browser.
 
@@ -31,7 +31,6 @@ TdAuth is a back-end service developed as part of True Dat project to manage use
 ## Features
 
 - API Rest interface
-- Swagger documention
 - User management
 - Session management
 
@@ -51,7 +50,6 @@ In order to use this software, it is necessary that, depending on the type of fu
 - Distributed PubSub and Presence platform for the Phoenix Framework by [Phoenix Community](http://www.phoenixframework.org/)
 - Phoenix and Ecto integration by [Phoenix Community](http://www.phoenixframework.org/)
 - PostgreSQL driver for Elixir by [elixir-ecto Community](http://hexdocs.pm/postgrex/)
-- Internationalization and localization support for Elixir by [Elixir Community](https://hexdocs.pm/gettext)
 - HTTP server for Erlang/OTP by [Nine Nines](https://ninenines.eu)
 - Static code analysis tool for the Elixir language by [René Föhring](http://credo-ci.org/)
 - Authentication library by [ueberauth](http://blog.overstuffedgorilla.com/)
@@ -61,8 +59,3 @@ In order to use this software, it is necessary that, depending on the type of fu
 - Elixir Plug to add CORS by [Michael Schaefermeyer](https://hex.pm/packages/cors_plug)
 - HTTP client for Elixir by [Eduardo Gurgel Pinho](https://hex.pm/packages/httpoison)
 - Story BDD tool by [Matt Widmann](https://github.com/cabbage-ex/cabbage)
-- Swagger integration to Phoenix framework by [xerions](https://github.com/xerions/phoenix_swagger)
-- Elixir JSON Schema validator by [Jonas Schmidt](https://github.com/jonasschmidt/ex_json_schema)
-
-
-

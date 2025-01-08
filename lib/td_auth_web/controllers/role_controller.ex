@@ -5,20 +5,10 @@ defmodule TdAuthWeb.RoleController do
 
   alias TdAuth.Permissions.Role
   alias TdAuth.Permissions.Roles
-  alias TdAuthWeb.SwaggerDefinitions
 
   require Logger
 
   action_fallback TdAuthWeb.FallbackController
-
-  def swagger_definitions do
-    SwaggerDefinitions.role_swagger_definitions()
-  end
-
-  swagger_path :index do
-    description("List Roles")
-    response(200, "OK", Schema.ref(:RolesResponse))
-  end
 
   def index(conn, _params) do
     claims = conn.assigns[:current_resource]
@@ -27,18 +17,6 @@ defmodule TdAuthWeb.RoleController do
          roles <- Roles.list_roles() do
       render(conn, "index.json", roles: roles)
     end
-  end
-
-  swagger_path :create do
-    description("Creates a Role")
-    produces("application/json")
-
-    parameters do
-      role(:body, Schema.ref(:RoleCreateUpdate), "Role create attrs")
-    end
-
-    response(201, "Created", Schema.ref(:RoleResponse))
-    response(400, "Client Error")
   end
 
   def create(conn, %{"role" => role_params}) do
@@ -53,34 +31,9 @@ defmodule TdAuthWeb.RoleController do
     end
   end
 
-  swagger_path :show do
-    description("Show Role")
-    produces("application/json")
-
-    parameters do
-      id(:path, :integer, "Role ID", required: true)
-    end
-
-    response(200, "OK", Schema.ref(:RoleResponse))
-    response(400, "Client Error")
-  end
-
   def show(conn, %{"id" => id}) do
     role = Roles.get_role!(id)
     render(conn, "show.json", role: role)
-  end
-
-  swagger_path :update do
-    description("Updates Role")
-    produces("application/json")
-
-    parameters do
-      data_domain(:body, Schema.ref(:RoleCreateUpdate), "Role update attrs")
-      id(:path, :integer, "Role ID", required: true)
-    end
-
-    response(200, "OK", Schema.ref(:RoleResponse))
-    response(400, "Client Error")
   end
 
   def update(conn, %{"id" => id, "role" => role_params}) do
@@ -91,18 +44,6 @@ defmodule TdAuthWeb.RoleController do
          {:ok, %{role: role}} <- Roles.update_role(role, role_params) do
       render(conn, "show.json", role: role)
     end
-  end
-
-  swagger_path :delete do
-    description("Delete Role")
-    produces("application/json")
-
-    parameters do
-      id(:path, :integer, "Role ID", required: true)
-    end
-
-    response(204, "OK")
-    response(400, "Client Error")
   end
 
   def delete(conn, %{"id" => id}) do

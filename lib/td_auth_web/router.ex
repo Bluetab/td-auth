@@ -10,10 +10,6 @@ defmodule TdAuthWeb.Router do
     plug(:accepts, ["json"])
   end
 
-  scope "/api/swagger" do
-    forward("/", PhoenixSwagger.Plug.SwaggerUI, otp_app: :td_auth, swagger_file: "swagger.json")
-  end
-
   scope "/api", TdAuthWeb do
     pipe_through(:api_unsecured)
     get("/auth", AuthController, :index)

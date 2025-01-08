@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.SessionControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   import TdAuthWeb.Authentication, only: :functions
 
@@ -31,13 +30,12 @@ defmodule TdAuthWeb.SessionControllerTest do
   describe "create session" do
     setup :create_user
 
-    test "create valid user session", %{conn: conn, swagger_schema: schema} do
+    test "create valid user session", %{conn: conn} do
       assert conn
              |> post(Routes.session_path(conn, :create),
                access_method: "access_method",
                user: @valid_attrs
              )
-             |> validate_resp_schema(schema, "Token")
              |> response(:created)
 
       assert {:ok, [event_attempt, event_success]} = Stream.read(:redix, @stream, transform: true)
@@ -75,7 +73,7 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = Jason.decode!(payload_success)
     end
 
-    test "create session with claims", %{conn: conn, swagger_schema: schema, user: user} do
+    test "create session with claims", %{conn: conn, user: user} do
       permission_fixture(user)
 
       assert %{"token" => token} =
@@ -84,7 +82,6 @@ defmodule TdAuthWeb.SessionControllerTest do
                  access_method: "access_method",
                  user: @valid_attrs
                )
-               |> validate_resp_schema(schema, "Token")
                |> json_response(:created)
 
       assert {:ok, claims} = AccessToken.verify(token)
@@ -157,7 +154,7 @@ defmodule TdAuthWeb.SessionControllerTest do
   describe "create session with Auth0 access token" do
     setup :create_user
 
-    test "create valid non existing user session", %{conn: conn, swagger_schema: schema} do
+    test "create valid non existing user session", %{conn: conn} do
       {:ok, jwt, _full_claims} = AccessToken.encode_and_sign(%{})
       conn = put_auth_headers(conn, jwt)
 
@@ -172,7 +169,6 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       assert conn
              |> post(Routes.session_path(conn, :create), %{auth_realm: "auth0"})
-             |> validate_resp_schema(schema, "Token")
              |> json_response(:created)
 
       user = Accounts.get_user_by_name(profile[:nickname])
@@ -200,7 +196,7 @@ defmodule TdAuthWeb.SessionControllerTest do
              } = Jason.decode!(payload)
     end
 
-    test "create valid existing user session", %{conn: conn, swagger_schema: schema} do
+    test "create valid existing user session", %{conn: conn} do
       {:ok, jwt, _full_claims} = AccessToken.encode_and_sign(%{})
       conn = put_auth_headers(conn, jwt)
 
@@ -215,7 +211,6 @@ defmodule TdAuthWeb.SessionControllerTest do
 
       assert conn
              |> post(Routes.session_path(conn, :create), %{auth_realm: "auth0"})
-             |> validate_resp_schema(schema, "Token")
              |> json_response(:created)
 
       user = Accounts.get_user_by_name(profile[:nickname])
@@ -320,8 +315,7 @@ defmodule TdAuthWeb.SessionControllerTest do
     setup :create_user
 
     test "a refresh token can be exchanged once for a new access token", %{
-      conn: conn,
-      swagger_schema: schema
+      conn: conn
     } do
       %{resp_cookies: resp_cookies} =
         conn1 =
@@ -340,7 +334,6 @@ defmodule TdAuthWeb.SessionControllerTest do
                |> put_auth_headers(token)
                |> put_req_cookie("_td_refresh", refresh_token)
                |> post(Routes.session_path(conn, :refresh))
-               |> validate_resp_schema(schema, "Token")
                |> json_response(:created)
 
       assert %{"errors" => %{"detail" => "Invalid credentials"}} =

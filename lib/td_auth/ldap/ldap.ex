@@ -19,7 +19,7 @@ defmodule TdAuth.Ldap.Ldap do
     case ldap_open() do
       {:ok, conn} ->
         try do
-          ldap_verify(conn)
+          @exldap_module.verify_credentials(conn, get_ldap_user_dn(), get_ldap_password())
         after
           ldap_close(conn)
         end
@@ -41,10 +41,6 @@ defmodule TdAuth.Ldap.Ldap do
 
   defp ldap_close(conn) do
     @exldap_module.close(conn)
-  end
-
-  defp ldap_verify(conn) do
-    @exldap_module.verify_credentials(conn, get_ldap_user_dn(), get_ldap_password())
   end
 
   defp create_profile(user_name, password) do

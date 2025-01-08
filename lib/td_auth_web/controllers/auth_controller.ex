@@ -4,24 +4,8 @@ defmodule TdAuthWeb.AuthController do
   alias TdAuth.Saml.SamlWorker
   alias TdAuthWeb.AuthProvider.Auth0
   alias TdAuthWeb.AuthProvider.OIDC
-  alias TdAuthWeb.SwaggerDefinitions
 
   action_fallback(TdAuthWeb.FallbackController)
-
-  def swagger_definitions do
-    SwaggerDefinitions.auth_swagger_definitions()
-  end
-
-  swagger_path :index do
-    description("List Authentication Methods")
-    produces("application/json")
-
-    parameters do
-      url(:path, :string, "Accessed pre-login URL to redirect after login")
-    end
-
-    response(200, "OK", Schema.ref(:AuthenticationMethodsResponse))
-  end
 
   def index(conn, params) do
     oidc_config =
@@ -77,10 +61,10 @@ defmodule TdAuthWeb.AuthController do
     config
     |> Enum.into(%{})
     |> Map.get(check_field)
-    |> is_nil_or_empty()
+    |> nil_or_empty?()
   end
 
-  defp is_nil_or_empty(nil), do: true
-  defp is_nil_or_empty(""), do: true
-  defp is_nil_or_empty(_), do: false
+  defp nil_or_empty?(nil), do: true
+  defp nil_or_empty?(""), do: true
+  defp nil_or_empty?(_), do: false
 end

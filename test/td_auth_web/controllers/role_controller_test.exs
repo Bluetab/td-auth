@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.RoleControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   setup do
     [role: insert(:role)]
@@ -8,11 +7,10 @@ defmodule TdAuthWeb.RoleControllerTest do
 
   describe "GET /api/roles" do
     @tag authentication: [role: :admin]
-    test "admin can view roles", %{conn: conn, swagger_schema: schema} do
+    test "admin can view roles", %{conn: conn} do
       assert %{"data" => [_role]} =
                conn
                |> get(Routes.role_path(conn, :index))
-               |> validate_resp_schema(schema, "RolesResponse")
                |> json_response(:ok)
     end
 
@@ -42,11 +40,10 @@ defmodule TdAuthWeb.RoleControllerTest do
 
   describe "create role" do
     @tag authentication: [role: :admin]
-    test "renders role when data is valid", %{conn: conn, swagger_schema: schema} do
+    test "renders role when data is valid", %{conn: conn} do
       assert %{"data" => data} =
                conn
                |> post(Routes.role_path(conn, :create), role: %{name: "valid role"})
-               |> validate_resp_schema(schema, "RoleResponse")
                |> json_response(:created)
 
       assert %{"id" => _, "is_default" => false, "name" => "valid role"} = data
@@ -62,16 +59,16 @@ defmodule TdAuthWeb.RoleControllerTest do
   describe "update role" do
     @tag authentication: [role: :admin]
     test "renders role when data is valid", %{
-      conn: conn,
-      swagger_schema: schema
+      conn: conn
     } do
       name = "updated name"
       %{id: id} = role = insert(:role)
 
       assert %{"data" => data} =
                conn
-               |> put(Routes.role_path(conn, :update, role), role: %{name: name, is_default: true})
-               |> validate_resp_schema(schema, "RoleResponse")
+               |> put(Routes.role_path(conn, :update, role),
+                 role: %{name: name, is_default: true}
+               )
                |> json_response(:ok)
 
       assert %{"id" => ^id, "is_default" => true, "name" => ^name} = data
