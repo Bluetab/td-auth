@@ -6,18 +6,8 @@ defmodule TdAuthWeb.AclEntryController do
   alias Inflex
   alias TdAuth.Permissions.AclEntries
   alias TdAuth.Permissions.AclEntry
-  alias TdAuthWeb.SwaggerDefinitions
 
   action_fallback(TdAuthWeb.FallbackController)
-
-  def swagger_definitions do
-    SwaggerDefinitions.acl_entry_swagger_definitions()
-  end
-
-  swagger_path :index do
-    description("List Acl Entries")
-    response(200, "OK", Schema.ref(:AclEntriesResponse))
-  end
 
   def index(conn, _params) do
     claims = conn.assigns[:current_resource]
@@ -26,18 +16,6 @@ defmodule TdAuthWeb.AclEntryController do
          acl_entries <- AclEntries.list_acl_entries() do
       render(conn, "index.json", acl_entries: acl_entries)
     end
-  end
-
-  swagger_path :create do
-    description("Creates an Acl Entry")
-    produces("application/json")
-
-    parameters do
-      acl_entry(:body, Schema.ref(:AclEntryCreateUpdate), "Acl entry create attrs")
-    end
-
-    response(201, "OK", Schema.ref(:AclEntryResponse))
-    response(400, "Client Error")
   end
 
   def create(conn, %{"acl_entry" => acl_entry_params}) do
@@ -53,33 +31,9 @@ defmodule TdAuthWeb.AclEntryController do
     end
   end
 
-  swagger_path :show do
-    description("Show Acl Entry")
-    produces("application/json")
-
-    parameters do
-      id(:path, :integer, "Acl Entry ID", required: true)
-    end
-
-    response(200, "OK", Schema.ref(:AclEntryResponse))
-    response(400, "Client Error")
-  end
-
   def show(conn, %{"id" => id}) do
     acl_entry = AclEntries.get_acl_entry!(id)
     render(conn, "show.json", acl_entry: acl_entry)
-  end
-
-  swagger_path :delete do
-    description("Delete Acl Entry")
-    produces("application/json")
-
-    parameters do
-      id(:path, :integer, "Acl entry ID", required: true)
-    end
-
-    response(204, "OK")
-    response(400, "Client Error")
   end
 
   def delete(conn, %{"id" => id}) do
@@ -90,19 +44,6 @@ defmodule TdAuthWeb.AclEntryController do
          {:ok, %AclEntry{}} <- AclEntries.delete_acl_entry(acl_entry) do
       send_resp(conn, :no_content, "")
     end
-  end
-
-  swagger_path :update do
-    description("Updates an Acl Entry")
-    produces("application/json")
-
-    parameters do
-      acl_entry(:body, Schema.ref(:AclEntryCreateUpdate), "Acl entry update attrs")
-    end
-
-    response(200, "OK", Schema.ref(:AclEntryResponse))
-    response(400, "Client Error")
-    response(403, "Unprocessable Entity")
   end
 
   def update(conn, %{"id" => id, "acl_entry" => acl_entry_params}) do

@@ -199,7 +199,7 @@ defmodule TdAuth.Permissions.Seeds do
     |> Repo.delete_all()
     |> case do
       {0, _} -> :ok
-      {count, names} -> Logger.warn("Deleted #{count} permissions: #{inspect(names)}")
+      {count, names} -> Logger.warning("Deleted #{count} permissions: #{inspect(names)}")
     end
   end
 
@@ -212,7 +212,7 @@ defmodule TdAuth.Permissions.Seeds do
     |> Repo.delete_all()
     |> case do
       {0, _} -> :ok
-      {count, names} -> Logger.warn("Deleted #{count} permission groups: #{inspect(names)}")
+      {count, names} -> Logger.warning("Deleted #{count} permission groups: #{inspect(names)}")
     end
   end
 

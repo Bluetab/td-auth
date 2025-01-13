@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.PasswordControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   alias TdAuth.Accounts.User
 
@@ -21,8 +20,7 @@ defmodule TdAuthWeb.PasswordControllerTest do
     @tag authentication: [role: :admin]
     test "updates user password when data is valid", %{
       conn: conn,
-      user: %User{id: id},
-      swagger_schema: schema
+      user: %User{id: id}
     } do
       params = %{
         "user" => %{
@@ -34,7 +32,6 @@ defmodule TdAuthWeb.PasswordControllerTest do
       assert %{"data" => _} =
                conn
                |> patch(Routes.password_path(conn, :update), params)
-               |> validate_resp_schema(schema, "UserResponse")
                |> json_response(:ok)
     end
 
@@ -74,7 +71,7 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
   describe "update password for users" do
     @tag authentication: [role: :user]
-    test "changes password when password is valid", %{conn: conn, swagger_schema: schema} do
+    test "changes password when password is valid", %{conn: conn} do
       params = %{
         "user" => %{
           "new_password" => @valid_password,
@@ -84,12 +81,11 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
       assert conn
              |> patch(Routes.password_path(conn, :update), params)
-             |> validate_resp_schema(schema, "UserResponse")
              |> response(:ok)
     end
 
     @tag authentication: [role: :admin]
-    test "onws admin password when password is valid", %{conn: conn, swagger_schema: schema} do
+    test "onws admin password when password is valid", %{conn: conn} do
       params = %{
         "user" => %{
           "new_password" => @valid_password,
@@ -99,7 +95,6 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
       assert conn
              |> patch(Routes.password_path(conn, :update), params)
-             |> validate_resp_schema(schema, "UserResponse")
              |> response(:ok)
     end
 
@@ -118,7 +113,7 @@ defmodule TdAuthWeb.PasswordControllerTest do
     end
 
     @tag authentication: [role: :user]
-    test "update user's own password when is valid", %{conn: conn, swagger_schema: schema} do
+    test "update user's own password when is valid", %{conn: conn} do
       params = %{
         "user" => %{
           "new_password" => @valid_password,
@@ -128,7 +123,6 @@ defmodule TdAuthWeb.PasswordControllerTest do
 
       assert conn
              |> patch(Routes.password_path(conn, :update), params)
-             |> validate_resp_schema(schema, "UserResponse")
              |> response(:ok)
     end
 

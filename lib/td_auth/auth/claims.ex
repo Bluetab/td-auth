@@ -21,8 +21,8 @@ defmodule TdAuth.Auth.Claims do
     :jti
   ]
 
-  @spec is_admin?(Plug.Conn.t()) :: boolean
-  def is_admin?(conn) do
+  @spec admin?(Plug.Conn.t()) :: boolean
+  def admin?(conn) do
     case conn.assigns[:current_resource] do
       %{role: "admin"} -> true
       _ -> false

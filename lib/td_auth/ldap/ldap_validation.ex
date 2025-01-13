@@ -18,7 +18,7 @@ defmodule TdAuth.Ldap.LdapValidation do
 
   defp validate_entry(conn, entry, validations) do
     cn = @exldap_module.get_attribute!(entry, "cn")
-    filter = :eldap.substrings('cn', any: cn)
+    filter = :eldap.substrings(~c"cn", any: cn)
     validate_entry(conn, filter, validations, [])
   end
 

@@ -10,23 +10,8 @@ defmodule TdAuthWeb.RolePermissionController do
   alias TdAuth.Permissions.Roles
   alias TdAuthWeb.PermissionView
   alias TdAuthWeb.RolePermissionView
-  alias TdAuthWeb.SwaggerDefinitions
 
   action_fallback TdAuthWeb.FallbackController
-
-  def swagger_definitions do
-    SwaggerDefinitions.permission_swagger_definitions()
-  end
-
-  swagger_path :show do
-    description("List Role Permissions")
-
-    parameters do
-      role_id(:path, :integer, "Role ID", required: true)
-    end
-
-    response(200, "OK", Schema.ref(:PermissionsResponse))
-  end
 
   def show(conn, %{"role_id" => role_id}) do
     permissions =
@@ -37,22 +22,6 @@ defmodule TdAuthWeb.RolePermissionController do
     conn
     |> put_view(PermissionView)
     |> render("index.json", permissions: permissions)
-  end
-
-  swagger_path :create do
-    description("Create a role-permission relation")
-
-    parameters do
-      role_id(:path, :integer, "Role ID", required: true)
-
-      permission(
-        :body,
-        Schema.ref(:PermissionRelation),
-        "Permissions to associate with the role. Use either permission_id or permission_name"
-      )
-    end
-
-    response(200, "OK", Schema.ref(:RolePermissionResponse))
   end
 
   def create(conn, %{"role_id" => role_id, "permission_id" => permission_id}) do
@@ -81,24 +50,6 @@ defmodule TdAuthWeb.RolePermissionController do
     end
   end
 
-  swagger_path :delete do
-    description("Delete a role-permission relation")
-
-    parameters do
-      role_id(:path, :integer, "Role ID", required: true)
-
-      permission(
-        :body,
-        Schema.ref(:PermissionRelation),
-        "Permissions to associate with the role. Use either permission_id or permission_name"
-      )
-    end
-
-    response(204, "No Content")
-    response(403, "Forbidden")
-    response(422, "Unprocessable Entity")
-  end
-
   def delete(conn, %{"role_id" => role_id, "permission_id" => permission_id}) do
     remove_permission(conn, role_id, permission_id)
   end
@@ -119,17 +70,6 @@ defmodule TdAuthWeb.RolePermissionController do
          {:ok, _} <- Roles.remove_permission(role_permission) do
       send_resp(conn, :no_content, "")
     end
-  end
-
-  swagger_path :update do
-    description("Modify Permissions of a Role")
-
-    parameters do
-      role_id(:path, :integer, "Role ID", required: true)
-      permissions(:body, Schema.ref(:AddPermissions), "Permissions to associate with the role")
-    end
-
-    response(200, "OK", Schema.ref(:PermissionsResponse))
   end
 
   def update(conn, %{"role_id" => role_id, "permissions" => perms}) do

@@ -7,20 +7,10 @@ defmodule TdAuthWeb.UserController do
   alias TdAuth.Accounts.User
   alias TdAuth.Auth.Claims
   alias TdAuthWeb.ErrorView
-  alias TdAuthWeb.SwaggerDefinitions
 
   require Logger
 
   action_fallback TdAuthWeb.FallbackController
-
-  def swagger_definitions do
-    SwaggerDefinitions.user_swagger_definitions()
-  end
-
-  swagger_path :index do
-    description("List Users")
-    response(200, "OK", Schema.ref(:UsersResponseData))
-  end
 
   def index(conn, _params) do
     current_resource = conn.assigns[:current_resource]
@@ -40,44 +30,10 @@ defmodule TdAuthWeb.UserController do
     end
   end
 
-  swagger_path :create do
-    description("Creates a User")
-    produces("application/json")
-
-    parameters do
-      user(:body, Schema.ref(:UserCreate), "User create attrs")
-    end
-
-    response(201, "Created", Schema.ref(:UserResponse))
-    response(400, "Client Error")
-  end
-
   def create(conn, %{"user" => user_params}) do
-    with {:can, true} <- {:can, Claims.is_admin?(conn)} do
+    with {:can, true} <- {:can, Claims.admin?(conn)} do
       do_create(conn, user_params)
     end
-  end
-
-  swagger_path :init do
-    description("Creates initial admin user if no users exist")
-    produces("application/json")
-
-    parameters do
-      user(:body, Schema.ref(:UserCreate), "User create attrs")
-    end
-
-    response(
-      201,
-      "Created",
-      Schema.new do
-        properties do
-          user_name(:string, "Username", required: false)
-          password(:object, "Password", required: false)
-        end
-      end
-    )
-
-    response(403, "Forbidden")
   end
 
   def can_init(conn, _params) do
@@ -98,22 +54,10 @@ defmodule TdAuthWeb.UserController do
     end
   end
 
-  swagger_path :show do
-    description("Show User")
-    produces("application/json")
-
-    parameters do
-      id(:path, :integer, "User ID", required: true)
-    end
-
-    response(200, "OK", Schema.ref(:UserResponse))
-    response(400, "Client Error")
-  end
-
   def show(conn, %{"id" => id}) do
     alias TdAuth.Permissions.UserAclMapper
 
-    with {:can, true} <- {:can, Claims.is_admin?(conn)},
+    with {:can, true} <- {:can, Claims.admin?(conn)},
          user <- Accounts.get_user!(id, preload: :groups) do
       acls =
         user
@@ -122,19 +66,6 @@ defmodule TdAuthWeb.UserController do
 
       render(conn, "show.json", user: user, acls: acls)
     end
-  end
-
-  swagger_path :update do
-    description("Updates User")
-    produces("application/json")
-
-    parameters do
-      user(:body, Schema.ref(:UserUpdate), "User update attrs")
-      id(:path, :integer, "User ID", required: true)
-    end
-
-    response(200, "OK", Schema.ref(:UserResponse))
-    response(400, "Client Error")
   end
 
   def update(conn, %{"user" => %{"password" => _password}}) do
@@ -147,27 +78,15 @@ defmodule TdAuthWeb.UserController do
   def update(conn, %{"id" => id, "user" => user_params}) do
     %{user_id: user_id} = conn.assigns[:current_resource]
 
-    with {:can, true} <- {:can, Claims.is_admin?(conn) || id == "#{user_id}"},
+    with {:can, true} <- {:can, Claims.admin?(conn) || id == "#{user_id}"},
          user <- Accounts.get_user!(id),
          {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
       render(conn, "show.json", user: user)
     end
   end
 
-  swagger_path :delete do
-    description("Delete User")
-    produces("application/json")
-
-    parameters do
-      id(:path, :integer, "User ID", required: true)
-    end
-
-    response(200, "OK")
-    response(400, "Client Error")
-  end
-
   def delete(conn, %{"id" => id}) do
-    with {:can, true} <- {:can, Claims.is_admin?(conn)},
+    with {:can, true} <- {:can, Claims.admin?(conn)},
          user <- Accounts.get_user!(id),
          {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")

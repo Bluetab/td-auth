@@ -1,6 +1,5 @@
 defmodule TdAuthWeb.UserControllerTest do
   use TdAuthWeb.ConnCase
-  use PhoenixSwagger.SchemaTest, "priv/static/swagger.json"
 
   import TdAuth.TestOperators
   import TdAuthWeb.Authentication, only: :functions
@@ -38,39 +37,35 @@ defmodule TdAuthWeb.UserControllerTest do
     @tag authentication: [role: :admin]
     test "lists all users with role", %{
       conn: conn,
-      swagger_schema: schema,
       user: %{user_name: user_name}
     } do
       assert %{"data" => data} =
                conn
                |> get(Routes.user_path(conn, :index))
-               |> validate_resp_schema(schema, "UsersResponseData")
                |> json_response(:ok)
 
       assert [%{"user_name" => ^user_name, "role" => "admin"}] = data
     end
 
     @tag authentication: [role: :admin]
-    test "includes role in response", %{conn: conn, swagger_schema: schema} do
+    test "includes role in response", %{conn: conn} do
       insert(:user, role: "service")
 
       assert %{"data" => data} =
                conn
                |> get(Routes.user_path(conn, :index))
-               |> validate_resp_schema(schema, "UsersResponseData")
                |> json_response(:ok)
 
       assert ["admin", "service"] ||| Enum.map(data, & &1["role"])
     end
 
     @tag authentication: [role: :admin]
-    test "includes external_id in response", %{conn: conn, swagger_schema: schema} do
+    test "includes external_id in response", %{conn: conn} do
       insert(:user, external_id: "foo")
 
       assert %{"data" => data} =
                conn
                |> get(Routes.user_path(conn, :index))
-               |> validate_resp_schema(schema, "UsersResponseData")
                |> json_response(:ok)
 
       assert Enum.find(data, fn user -> Map.get(user, "external_id") == "foo" end)
@@ -154,27 +149,27 @@ defmodule TdAuthWeb.UserControllerTest do
     end
 
     @tag authentication: [role: :admin]
-    test "renders user when data is valid", %{conn: conn, swagger_schema: schema} do
+    test "renders user when data is valid", %{conn: conn} do
       conn = post(conn, Routes.user_path(conn, :create), user: @create_attrs)
-      validate_resp_schema(conn, schema, "UserResponse")
+
       assert %{"id" => id} = json_response(conn, :created)["data"]
 
       conn = get(conn, Routes.user_path(conn, :show, id))
-      validate_resp_schema(conn, schema, "UserResponse")
+
       assert %{"id" => ^id, "user_name" => "some user_name"} = json_response(conn, :ok)["data"]
     end
 
     @tag authentication: [role: :admin]
-    test "renders errors when data is invalid", %{conn: conn, swagger_schema: schema} do
+    test "renders errors when data is invalid", %{conn: conn} do
       conn = post(conn, Routes.user_path(conn, :create), user: @invalid_attrs)
-      validate_resp_schema(conn, schema, "UserResponse")
+
       assert json_response(conn, :unprocessable_entity)["errors"] != %{}
     end
   end
 
   describe "get user" do
     @tag authentication: [role: :admin]
-    test "renders user with configured acls", %{conn: conn, swagger_schema: schema} do
+    test "renders user with configured acls", %{conn: conn} do
       role = insert(:role)
       group = insert(:group)
       user = insert(:user, external_id: "get external_id", groups: [group])
@@ -198,7 +193,7 @@ defmodule TdAuthWeb.UserControllerTest do
       )
 
       conn = get(conn, Routes.user_path(conn, :show, user.id))
-      validate_resp_schema(conn, schema, "UserResponse")
+
       user_data = json_response(conn, :ok)["data"]
       assert user_data["external_id"] == user.external_id
       assert Map.has_key?(user_data, "acls")
@@ -224,15 +219,14 @@ defmodule TdAuthWeb.UserControllerTest do
     @tag authentication: [role: :admin]
     test "renders user when data is valid", %{
       conn: conn,
-      swagger_schema: schema,
       user: %User{id: id} = user
     } do
       conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
-      validate_resp_schema(conn, schema, "UserResponse")
+
       assert %{"id" => ^id} = json_response(conn, :ok)["data"]
 
       conn = get(conn, Routes.user_path(conn, :show, id))
-      validate_resp_schema(conn, schema, "UserResponse")
+
       user_data = json_response(conn, :ok)["data"]
       assert user_data["id"] == id && user_data["user_name"] == "some updated user_name"
     end
@@ -279,15 +273,13 @@ defmodule TdAuthWeb.UserControllerTest do
     end
 
     test "creates admin user if neither admin nor user role users exist", %{
-      conn: conn,
-      swagger_schema: schema
+      conn: conn
     } do
       %{id: admin_id} = admin = insert(:user, role: :service)
 
       assert %{"data" => user} =
                conn
                |> post(Routes.user_path(conn, :init), user: @create_attrs)
-               |> validate_resp_schema(schema, "UserResponse")
                |> json_response(:created)
 
       assert %{"id" => id} = user
@@ -296,7 +288,6 @@ defmodule TdAuthWeb.UserControllerTest do
                conn
                |> authenticate(admin)
                |> get(Routes.user_path(conn, :index))
-               |> validate_resp_schema(schema, "UsersResponseData")
                |> json_response(:ok)
 
       ids = Enum.map(data, &Map.get(&1, "id"))

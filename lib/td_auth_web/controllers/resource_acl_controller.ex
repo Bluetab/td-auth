@@ -10,23 +10,6 @@ defmodule TdAuthWeb.ResourceAclController do
 
   action_fallback(TdAuthWeb.FallbackController)
 
-  def swagger_definitions do
-    SwaggerDefinitions.acl_entry_swagger_definitions()
-  end
-
-  swagger_path :show do
-    description("Lists acl entries of a specified resource")
-    produces("application/json")
-
-    parameters do
-      resource_type(:path, :string, "Resource Type", required: true)
-      resource_id(:path, :string, "Resource Id", required: true)
-    end
-
-    response(200, "Ok", Schema.ref(:ResourceAclEntriesResponse))
-    response(400, "Client Error")
-  end
-
   def show(conn, %{"resource_type" => resource_type, "resource_id" => resource_id}) do
     resource_type = Inflex.singularize(resource_type)
 
@@ -38,19 +21,6 @@ defmodule TdAuthWeb.ResourceAclController do
       assigns = with_links(claims, acl_resource, acl_entries)
       render(conn, "show.json", assigns)
     end
-  end
-
-  swagger_path :create do
-    description("Creates or Updates an Acl Entry associated with a resources")
-    produces("application/json")
-
-    parameters do
-      resource_type(:path, :string, "Resource type")
-      resource_id(:path, :integer, "Resource id")
-      acl_entry(:body, Schema.ref(:AclEntryCreateOrUpdate), "Acl entry create or update attrs")
-    end
-
-    response(303, "See Other")
   end
 
   def create(
