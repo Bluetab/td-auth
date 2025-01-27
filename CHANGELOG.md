@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- [TD-6862] Optimize QX permissions
+
 ## [7.0.0] 2025-01-13
 
 ### Changed
