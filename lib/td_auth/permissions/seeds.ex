@@ -78,11 +78,18 @@ defmodule TdAuth.Permissions.Seeds do
       "manage_quality_rule"
     ],
     "quality_control" => [
+      ## view_quality_controls -> View published and versioned quality control and its scores.
       "view_quality_controls",
-      "create_quality_controls",
-      "publish_quality_controls",
-      "deprecate_quality_controls",
-      "execute_quality_controls"
+      # write_quality_controls -> View all quality controls but deprecated (with scores).
+      # Create, edit, send for approval, send to draft.
+      "write_quality_controls",
+      # manage_quality_controls  -> View all quality controls and scores.
+      # All write actions and publish, deprecate, change domain and activate and deactivate.
+      "manage_quality_controls",
+      # execute_quality_controls Create ScoresGroups.
+      "execute_quality_controls",
+      # manage_scores delete scores
+      "manage_scores"
     ],
     "quality_implementation_workflow_management" => [
       # new, edit, submit for approval, delete (draft/rejected)
