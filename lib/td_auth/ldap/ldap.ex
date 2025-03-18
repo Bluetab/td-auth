@@ -164,20 +164,32 @@ defmodule TdAuth.Ldap.Ldap do
     String.to_integer(timeout)
   end
 
-  defp maybe_put_groups(profile, %{attributes: entryAttributes}, true) do
+  defp maybe_put_groups(
+         profile,
+         %{object_name: entryObjectName, attributes: entryAttributes},
+         true
+       ) do
     fields = Application.get_env(:td_auth, :ldap)[:group_fields]
 
     allowed_groups = Application.get_env(:td_auth, :ldap)[:allowed_groups]
 
-    profile_groups =
+    attributes_groups =
       entryAttributes
       |> Enum.filter(fn {key, _} -> Enum.member?(fields, to_string(key)) end)
       |> Enum.flat_map(fn {_, value} -> value end)
       |> Enum.map(&to_string/1)
+
+    param_groups =
+      Regex.scan(~r/,ou=([^,]+)/, List.to_string(entryObjectName))
+      |> Enum.map(fn [_, name] -> name end)
+
+    groups =
+      [attributes_groups, param_groups]
+      |> Enum.concat()
       |> Enum.uniq()
       |> Enum.filter(&Enum.member?(allowed_groups, &1))
 
-    Map.put(profile, :groups, profile_groups)
+    Map.put(profile, :groups, groups)
   end
 
   defp maybe_put_groups(profile, _, _), do: profile

@@ -1,5 +1,11 @@
 # Changelog
 
+## [7.3.0] 2025-03-18
+
+### Changed
+
+- [TD-7126] Enable the creation of LDAP-based groups using params from Distinguished Name.
+
 ## [7.1.0] 2025-02-04
 
 ### Changed
