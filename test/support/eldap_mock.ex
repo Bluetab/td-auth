@@ -56,7 +56,8 @@ defmodule TdAuth.Ldap.EldapMock do
     {:ok,
      [
        %Exldap.Entry{
-         object_name: ~c"cn=Abraham J. Smith,ou=people,dc=bluetab,dc=net",
+         object_name:
+           ~c"cn=Abraham J. Smith,OU=People,ou=PEOPLE,ou=people,ou=Bluetaber,dc=bluetab,dc=net",
          attributes: [
            {~c"uid", [~c"johnsmith"]},
            {~c"cn", [~c"Abraham J. Smith"]},

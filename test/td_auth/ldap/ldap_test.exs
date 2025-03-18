@@ -34,7 +34,7 @@ defmodule TdAuth.Ldap.LdapTest do
     end
 
     test "includes groups for LDAP user", %{ldap_config: ldap_config} do
-      allowed_groups = ["manager", "California"]
+      allowed_groups = ["manager", "California", "people", "Bluetaber"]
 
       new_ldap_config = [
         create_groups: true,
@@ -50,10 +50,14 @@ defmodule TdAuth.Ldap.LdapTest do
 
       assert Enum.member?(groups, "California")
       assert Enum.member?(groups, "manager")
+      assert Enum.member?(groups, "people")
+      assert Enum.member?(groups, "Bluetaber")
       refute Enum.member?(groups, "Los Angeles")
       refute Enum.member?(groups, "West Coast")
       refute Enum.member?(groups, "dev")
       refute Enum.member?(groups, "CTO")
+      refute Enum.member?(groups, "People")
+      refute Enum.member?(groups, "PEOPLE")
     end
   end
 end
