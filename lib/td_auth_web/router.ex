@@ -33,6 +33,8 @@ defmodule TdAuthWeb.Router do
 
     resources("/users/search", UserSearchController, only: [:create], singleton: true)
 
+    post("/users/grant_requestable", UserSearchController, :grant_requestable)
+
     get("/users/agents", UserController, :agents)
     resources("/users", UserController, except: [:new, :edit])
 

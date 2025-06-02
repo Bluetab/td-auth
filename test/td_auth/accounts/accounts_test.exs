@@ -2,6 +2,7 @@ defmodule TdAuth.AccountsTest do
   use TdAuth.DataCase
 
   alias TdAuth.Accounts
+  alias TdAuth.CacheHelpers
 
   setup_all do
     start_supervised!(TdAuth.Accounts.UserLoader)
@@ -289,6 +290,544 @@ defmodule TdAuth.AccountsTest do
                %TdAuth.Permissions.Permission{} = perm
                %TdAuth.Permissions.Role{} = acl.role
              end)
+    end
+  end
+
+  describe "get_grantable_users/2" do
+    test "returns users for all allowed requester and requestable domains" do
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_2: %{id: user_2_id, full_name: user_2_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      single_params = %{
+        "structures_domains" => [domain_1_id]
+      }
+
+      single_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, single_params)
+
+      multi_params = %{
+        "structures_domains" => [domain_1_id, domain_2_id]
+      }
+
+      multi_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, multi_params)
+
+      assert single_data == multi_data
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_2_id, full_name: ^user_2_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name},
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] = single_data |> Enum.sort_by(& &1.id)
+    end
+
+    test "returns only users that meet all domains" do
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_3_id: domain_3_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_3_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name},
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1.id)
+    end
+
+    test "returns only admin users if any requestable user don't meet all domains" do
+      %{
+        requester_user: %{id: requester_user_id},
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_4_id: domain_4_id,
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_4_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1.id)
+    end
+
+    test "returns empty list if any requestable don't meet all domains" do
+      %{
+        requester_user: %{id: requester_user_id},
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_4_id: domain_4_id
+      } =
+        grant_request_setup(false)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_4_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [] = data
+    end
+
+    test "returns list if allow_foreign_grant_request is in default role" do
+      CacheHelpers.put_default_permissions([:allow_foreign_grant_request])
+
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_4_id: domain_4_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_2: %{id: user_2_id, full_name: user_2_full_name},
+        user_3: %{id: user_3_id, full_name: user_3_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_4_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_2_id, full_name: ^user_2_full_name},
+               %{id: ^user_3_id, full_name: ^user_3_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name},
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] =
+               data
+               |> Enum.sort_by(& &1.id)
+    end
+
+    @tag authentication: [role: "admin"]
+    test "returns list if requester is admin" do
+      %{
+        domain_5_id: domain_5_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      params = %{
+        "structures_domains" => [domain_5_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name},
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1.id)
+    end
+
+    @tag authentication: [role: "service"]
+    test "returns list if requester is service" do
+      %{
+        domain_3_id: domain_3_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      params = %{
+        "structures_domains" => [domain_3_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name},
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1.id)
+    end
+
+    @tag authentication: [role: "agent"]
+    test "returns list if requester is agent" do
+      %{
+        domain_3_id: domain_3_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      params = %{
+        "structures_domains" => [domain_3_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name},
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1.id)
+    end
+
+    test "returns list if create_foreign_grant_request is in default role" do
+      CacheHelpers.put_default_permissions([:create_foreign_grant_request])
+
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_5_id: domain_5_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_5_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name},
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1.id)
+    end
+
+    @tag authentication: [role: :user]
+    test "returns list if both permissions are in default role" do
+      CacheHelpers.put_default_permissions([
+        :create_foreign_grant_request,
+        :allow_foreign_grant_request
+      ])
+
+      %{
+        domain_6_id: domain_6_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_2: %{id: user_2_id, full_name: user_2_full_name},
+        user_3: %{id: user_3_id, full_name: user_3_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(true)
+
+      params = %{
+        "structures_domains" => [domain_6_id]
+      }
+
+      data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_2_id, full_name: ^user_2_full_name},
+               %{id: ^user_3_id, full_name: ^user_3_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name},
+               %{id: ^user_admin_id, full_name: ^user_admin_full_name}
+             ] =
+               data
+               |> Enum.sort_by(& &1.id)
+    end
+
+    test "returns users with params" do
+      %{
+        domain_1_id: domain_1_id,
+        domain_3_id: domain_3_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        role: %{id: role_id}
+      } =
+        grant_request_setup(true)
+
+      query_params = %{
+        "structures_domains" => [domain_1_id],
+        "query" => "user 1"
+      }
+
+      query_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, query_params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name}
+             ] = query_data
+
+      role_params = %{
+        "structures_domains" => [domain_1_id],
+        "roles" => [role_id]
+      }
+
+      role_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, role_params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name}
+             ] = role_data |> Enum.sort_by(& &1.id)
+
+      domain_params = %{
+        "structures_domains" => [domain_1_id],
+        "filter_domains" => [domain_3_id]
+      }
+
+      domain_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, domain_params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name}
+             ] = domain_data |> Enum.sort_by(& &1.id)
+
+      all_params = %{
+        "structures_domains" => [domain_1_id],
+        "roles" => [role_id],
+        "query" => user_1_full_name,
+        "filter_domains" => [domain_3_id]
+      }
+
+      all_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, all_params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name}
+             ] = all_data
+    end
+
+    test "returns users with params but allow_foreign_grant_request is in default role" do
+      CacheHelpers.put_default_permissions([:allow_foreign_grant_request])
+
+      %{
+        domain_4_id: domain_4_id,
+        domain_5_id: domain_5_id,
+        requester_user: %{id: requester_user_id},
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        role: %{id: role_id}
+      } =
+        grant_request_setup(true)
+
+      query_params = %{
+        "structures_domains" => [domain_4_id],
+        "query" => "user 1"
+      }
+
+      query_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, query_params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name}
+             ] = query_data
+
+      role_params = %{
+        "structures_domains" => [domain_4_id],
+        "roles" => [role_id]
+      }
+
+      role_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, role_params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name}
+             ] = role_data |> Enum.sort_by(& &1.id)
+
+      domain_params = %{
+        "structures_domains" => [domain_4_id],
+        "filter_domains" => [domain_5_id]
+      }
+
+      domain_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, domain_params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name},
+               %{id: ^user_agent_id, full_name: ^user_agent_full_name},
+               %{id: ^user_service_id, full_name: ^user_service_full_name}
+             ] = domain_data |> Enum.sort_by(& &1.id)
+
+      all_params = %{
+        "structures_domains" => [domain_4_id],
+        "roles" => [role_id],
+        "query" => user_1_full_name,
+        "filter_domains" => [domain_5_id]
+      }
+
+      all_data =
+        TdAuth.Accounts.get_requestable_users(requester_user_id, all_params)
+
+      assert [
+               %{id: ^user_1_id, full_name: ^user_1_full_name}
+             ] = all_data
+    end
+
+    defp grant_request_setup(generate_special_users) do
+      %{id: domain_1_id} = CacheHelpers.put_domain()
+      %{id: domain_2_id} = CacheHelpers.put_domain()
+      %{id: domain_3_id} = CacheHelpers.put_domain()
+      %{id: domain_4_id} = CacheHelpers.put_domain()
+      %{id: domain_5_id} = CacheHelpers.put_domain()
+      %{id: domain_6_id} = CacheHelpers.put_domain()
+
+      requester_user = insert(:user, full_name: "requester user")
+
+      permission = insert(:permission, name: "allow_foreign_grant_request")
+
+      %{name: role_1_name} =
+        role_1 =
+        insert(:role,
+          name: "requestable role",
+          permissions: [permission]
+        )
+
+      %{name: role_2_name} =
+        role_2 =
+        insert(:role,
+          name: "lorem ipsum",
+          permissions: [permission]
+        )
+
+      CacheHelpers.put_roles_by_permission(%{
+        "allow_foreign_grant_request" => [role_1_name, role_2_name]
+      })
+
+      %{id: user_1_id} = user_1 = insert(:user, full_name: "requestable user 1")
+
+      insert(:acl_entry, user_id: user_1_id, role: role_1, resource_id: domain_1_id)
+      insert(:acl_entry, user_id: user_1_id, role: role_1, resource_id: domain_2_id)
+      insert(:acl_entry, user_id: user_1_id, role: role_1, resource_id: domain_3_id)
+      insert(:acl_entry, user_id: user_1_id, role: role_1, resource_id: domain_5_id)
+
+      %{id: user_2_id} = user_2 = insert(:user, full_name: "requestable user 2")
+
+      insert(:acl_entry, user_id: user_2_id, role: role_2, resource_id: domain_1_id)
+      insert(:acl_entry, user_id: user_2_id, role: role_2, resource_id: domain_2_id)
+
+      user_3 = insert(:user, full_name: "non requestable user")
+
+      %{id: user_agent_id} = user_agent = insert(:user, full_name: "agent user")
+      insert(:acl_entry, user_id: user_agent_id, role: role_1, resource_id: domain_1_id)
+      insert(:acl_entry, user_id: user_agent_id, role: role_1, resource_id: domain_2_id)
+      insert(:acl_entry, user_id: user_agent_id, role: role_1, resource_id: domain_3_id)
+      insert(:acl_entry, user_id: user_agent_id, role: role_1, resource_id: domain_5_id)
+
+      %{id: user_service_id} = user_service = insert(:user, full_name: "service user")
+      insert(:acl_entry, user_id: user_service_id, role: role_1, resource_id: domain_1_id)
+      insert(:acl_entry, user_id: user_service_id, role: role_1, resource_id: domain_2_id)
+      insert(:acl_entry, user_id: user_service_id, role: role_1, resource_id: domain_3_id)
+      insert(:acl_entry, user_id: user_service_id, role: role_1, resource_id: domain_5_id)
+
+      user_admin =
+        if generate_special_users do
+          insert(:user, full_name: "admin user", role: "admin")
+        else
+          nil
+        end
+
+      CacheHelpers.put_acl("domain", domain_1_id, role_1_name, [
+        user_1_id,
+        user_agent_id,
+        user_service_id
+      ])
+
+      CacheHelpers.put_acl("domain", domain_2_id, role_1_name, [
+        user_1_id,
+        user_agent_id,
+        user_service_id
+      ])
+
+      CacheHelpers.put_acl("domain", domain_3_id, role_1_name, [
+        user_1_id,
+        user_agent_id,
+        user_service_id
+      ])
+
+      CacheHelpers.put_acl("domain", domain_5_id, role_1_name, [
+        user_1_id,
+        user_agent_id,
+        user_service_id
+      ])
+
+      CacheHelpers.put_acl("domain", domain_1_id, role_2_name, [user_2_id])
+      CacheHelpers.put_acl("domain", domain_2_id, role_2_name, [user_2_id])
+
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_3_id: domain_3_id,
+        domain_4_id: domain_4_id,
+        domain_5_id: domain_5_id,
+        domain_6_id: domain_6_id,
+        requester_user: requester_user,
+        user_1: user_1,
+        user_2: user_2,
+        user_3: user_3,
+        user_agent: user_agent,
+        user_service: user_service,
+        user_admin: user_admin,
+        role: role_1
+      }
     end
   end
 end
