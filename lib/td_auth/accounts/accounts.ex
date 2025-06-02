@@ -9,6 +9,7 @@ defmodule TdAuth.Accounts do
   alias TdAuth.Map.Helpers
   alias TdAuth.Permissions.{AclEntries, AclEntry, AclLoader, Permission, RolePermission}
   alias TdAuth.Repo
+  alias TdCache.Permissions
 
   def user_exists? do
     User
@@ -469,4 +470,65 @@ defmodule TdAuth.Accounts do
   end
 
   defp put_groups(params), do: params
+
+  def get_requestable_users(user_id, params) do
+    User
+    |> prepare_request_joins(params)
+    |> avoid_requester_user(user_id)
+    |> apply_filters(params)
+    |> select_fields
+    |> Repo.all()
+    |> filter_by_structures_domains(params)
+  end
+
+  defp prepare_request_joins(queryable, filter_clauses) do
+    Enum.reduce_while(filter_clauses, queryable, fn
+      {"filter_domains", _}, q -> {:halt, users_groups_acl_join(q)}
+      {"roles", _}, q -> {:halt, users_groups_acl_join(q)}
+      _, q -> {:cont, q}
+    end)
+  end
+
+  defp avoid_requester_user(q, user_id), do: where(q, [u], u.id != ^user_id)
+
+  defp apply_filters(queryable, filters) do
+    filters
+    |> Enum.reduce(queryable, fn
+      {"query", query}, q ->
+        querylike = "%#{query}%"
+
+        where(
+          q,
+          [u],
+          ilike(u.full_name, ^querylike) or ilike(u.email, ^querylike) or
+            ilike(u.user_name, ^querylike)
+        )
+
+      {"roles", role_ids}, q ->
+        where(q, [ae: ae], ae.role_id in ^role_ids)
+
+      {"filter_domains", domain_ids}, q ->
+        where(q, [ae: ae], ae.resource_id in ^domain_ids)
+
+      _, q ->
+        q
+    end)
+    |> group_by([u], u.id)
+  end
+
+  defp select_fields(queryable) do
+    select(queryable, [u], %{id: u.id, full_name: u.full_name, role: u.role})
+  end
+
+  defp filter_by_structures_domains(users, %{"structures_domains" => structures_domains}) do
+    Enum.filter(users, fn %{id: id, role: role} ->
+      permitted_domains =
+        Permissions.permitted_domain_ids_by_user_id(id, :allow_foreign_grant_request)
+
+      Enum.member?([:admin], role) or
+        Enum.all?(structures_domains, fn domain ->
+          domain in permitted_domains
+        end)
+    end)
+  end
 end

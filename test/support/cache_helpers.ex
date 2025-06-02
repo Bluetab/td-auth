@@ -6,6 +6,8 @@ defmodule TdAuth.CacheHelpers do
   import ExUnit.Callbacks, only: [on_exit: 1]
   import TdAuth.Factory
 
+  alias TdCache.AclCache
+  alias TdCache.AclCache.Keys
   alias TdCache.Permissions
   alias TdCache.Redix
   alias TdCache.TaxonomyCache
@@ -44,6 +46,13 @@ defmodule TdAuth.CacheHelpers do
         %{"jti" => session_id, "exp" => exp},
         %{} = domain_ids_by_permission
       ) do
+    on_exit(fn ->
+      ["KEYS", "session:*"]
+      |> Redix.command!()
+      |> Enum.map(&["DEL", &1])
+      |> Redix.transaction_pipeline()
+    end)
+
     put_sessions_permissions(session_id, exp, domain_ids_by_permission)
   end
 
@@ -53,5 +62,39 @@ defmodule TdAuth.CacheHelpers do
     Permissions.cache_session_permissions!(session_id, exp, %{
       "domain" => domain_ids_by_permission
     })
+  end
+
+  def put_acl(resource_type, resource_id, role, user_ids) do
+    key = Keys.acl_role_users_key(resource_type, resource_id, role)
+
+    on_exit(fn -> Redix.command!(["DEL", key]) end)
+
+    put_user_ids(user_ids)
+    AclCache.set_acl_role_users(resource_type, resource_id, role, user_ids)
+  end
+
+  def put_user_ids(user_ids) when is_list(user_ids) do
+    key = UserCache.ids_key()
+    on_exit(fn -> Redix.command!(["SREM", key | List.wrap(user_ids)]) end)
+    Redix.command!(["SADD", key | List.wrap(user_ids)])
+  end
+
+  def put_roles_by_permission(roles_by_permission) do
+    on_exit(fn ->
+      ["KEYS", "permission:*:roles"]
+      |> Redix.command!()
+      |> Enum.map(&["DEL", &1])
+      |> Redix.transaction_pipeline()
+    end)
+
+    Permissions.put_permission_roles(roles_by_permission)
+  end
+
+  def put_default_permissions(permissions) when is_list(permissions) do
+    on_exit(fn ->
+      Permissions.put_default_permissions([])
+    end)
+
+    Permissions.put_default_permissions(permissions)
   end
 end

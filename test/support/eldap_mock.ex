@@ -48,6 +48,10 @@ defmodule TdAuth.Ldap.EldapMock do
     {:ok, self()}
   end
 
+  def verify_credentials(_conn, _user_dn, "invalidPassword") do
+    {:error, :invalid_credentials}
+  end
+
   def verify_credentials(_conn, _get_ldap_user_dn_fn, _get_ldap_password_fn) do
     :ok
   end
