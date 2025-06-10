@@ -1,11 +1,11 @@
 # Changelog
 
-## [Unreleased]
+## [7.6.0] 2025-06-10
 
 ### Added
 
 - [TD-7176] Add Grant Request logic for foreign requests
-  
+
 ## [7.5.0] 2025-04-30
 
 ### Fixed
