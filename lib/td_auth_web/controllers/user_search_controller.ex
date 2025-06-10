@@ -1,6 +1,8 @@
 defmodule TdAuthWeb.UserSearchController do
   use TdAuthWeb, :controller
 
+  import Canada, only: [can?: 2]
+
   alias TdAuth.Accounts
 
   alias TdCache.Permissions
@@ -24,6 +26,41 @@ defmodule TdAuthWeb.UserSearchController do
 
     users = Accounts.list_users(criteria)
 
+    conn
+    |> put_view(TdAuthWeb.UserView)
+    |> render("search.json", users: users)
+  end
+
+  def grant_requestable(conn, params) do
+    %{user_id: user_id} = claims = conn.assigns[:current_resource]
+    params = Map.take(params, ["structures_domains", "filter_domains", "query", "roles"])
+    domain_ids = Map.get(params, "structures_domains", [])
+
+    with {:can, true} <- {:can, can?(claims, in_any_domain(:view_data_structure))},
+         {:can, true} <- {:can, can?(claims, in_any_domain(:create_foreign_grant_request))},
+         {:valid_params, %{"structures_domains" => [_ | _]}} <- {:valid_params, params},
+         {:can_every_domain, true} <-
+           {:can_every_domain,
+            can?(
+              claims,
+              in_every_domain(%{
+                permission: :create_foreign_grant_request,
+                domains: domain_ids
+              })
+            )} do
+      users = Accounts.get_requestable_users(user_id, params)
+
+      rende_users(conn, users)
+    else
+      {type, _} when type in [:valid_params, :can_every_domain] ->
+        rende_users(conn, [])
+
+      error ->
+        error
+    end
+  end
+
+  defp rende_users(conn, users) do
     conn
     |> put_view(TdAuthWeb.UserView)
     |> render("search.json", users: users)

@@ -33,6 +33,11 @@ defmodule TdAuth.Ldap.LdapTest do
              } = user_data
     end
 
+    test "returns error for invalid credentials" do
+      assert {:ldap_error, %{type: :invalid_credentials}} =
+               Ldap.authenticate("johnsmith", "invalidPassword")
+    end
+
     test "includes groups for LDAP user", %{ldap_config: ldap_config} do
       allowed_groups = ["manager", "California", "people", "Bluetaber"]
 

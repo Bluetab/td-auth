@@ -409,4 +409,735 @@ defmodule TdAuthWeb.UserSearchControllerTest do
       assert [user_id_1, user_id_2, user_id_4] ||| Enum.map(data, & &1["id"])
     end
   end
+
+  describe "POST /api/users/grant_requestable" do
+    @tag authentication: [role: "user"]
+    test "returns users for all allowed requester and requestable domains", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_2: %{id: user_2_id, full_name: user_2_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      single_params = %{
+        "structures_domains" => [domain_1_id]
+      }
+
+      assert %{"data" => single_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), single_params)
+               |> json_response(:ok)
+
+      multi_params = %{
+        "structures_domains" => [domain_1_id, domain_2_id]
+      }
+
+      assert %{"data" => multi_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), multi_params)
+               |> json_response(:ok)
+
+      assert single_data == multi_data
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_2_id, "full_name" => ^user_2_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name},
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] = single_data |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns only users that meet all domains", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_3_id: domain_3_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_3_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name},
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns only admin users if any requestable user don't meet all domains",
+         %{
+           conn: conn,
+           claims: claims
+         } do
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_4_id: domain_4_id,
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_4_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns empty list if any requestable don't meet all domains", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_4_id: domain_4_id
+      } =
+        grant_request_setup(claims, false)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_4_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [] = data
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns list if allow_foreign_grant_request is in default role", %{
+      conn: conn,
+      claims: claims
+    } do
+      CacheHelpers.put_default_permissions([:allow_foreign_grant_request])
+
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_4_id: domain_4_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_2: %{id: user_2_id, full_name: user_2_full_name},
+        user_3: %{id: user_3_id, full_name: user_3_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_4_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_2_id, "full_name" => ^user_2_full_name},
+               %{"id" => ^user_3_id, "full_name" => ^user_3_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name},
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] =
+               data
+               |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns empty list if requester don't meet all domains", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_5_id: domain_5_id
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_5_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [] = data
+    end
+
+    @tag authentication: [role: "admin"]
+    test "returns list if requester is admin", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{
+        domain_5_id: domain_5_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_5_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name},
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: "service"]
+    test "returns list if requester is service", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{
+        domain_3_id: domain_3_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_3_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name},
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: "agent"]
+    test "returns list if requester is agent", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{
+        domain_3_id: domain_3_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_3_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name},
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns list if create_foreign_grant_request is in default role", %{
+      conn: conn,
+      claims: claims
+    } do
+      CacheHelpers.put_default_permissions([:create_foreign_grant_request])
+
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_5_id: domain_5_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_1_id, domain_2_id, domain_5_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name},
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] = data |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: :user]
+    test "returns list if both permissions are in default role", %{
+      conn: conn,
+      claims: claims
+    } do
+      CacheHelpers.put_default_permissions([
+        :create_foreign_grant_request,
+        :allow_foreign_grant_request
+      ])
+
+      %{
+        domain_6_id: domain_6_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_2: %{id: user_2_id, full_name: user_2_full_name},
+        user_3: %{id: user_3_id, full_name: user_3_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        user_admin: %{id: user_admin_id, full_name: user_admin_full_name}
+      } =
+        grant_request_setup(claims, true)
+
+      params = %{
+        "structures_domains" => [domain_6_id]
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_2_id, "full_name" => ^user_2_full_name},
+               %{"id" => ^user_3_id, "full_name" => ^user_3_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name},
+               %{"id" => ^user_admin_id, "full_name" => ^user_admin_full_name}
+             ] =
+               data
+               |> Enum.sort_by(& &1["id"])
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns empty list if no domains param or empty domains list", %{
+      conn: conn,
+      claims: claims
+    } do
+      grant_request_setup(claims, true)
+
+      params = %{}
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [] = data
+
+      params = %{
+        "structures_domains" => []
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [] = data
+    end
+
+    @tag authentication: [role: "admin"]
+    test "returns empty list if no domains param or empty domains list for admin", %{
+      conn: conn,
+      claims: claims
+    } do
+      grant_request_setup(claims, true)
+
+      params = %{}
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [] = data
+
+      params = %{
+        "structures_domains" => []
+      }
+
+      assert %{"data" => data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), params)
+               |> json_response(:ok)
+
+      assert [] = data
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns users with params", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{
+        domain_1_id: domain_1_id,
+        domain_3_id: domain_3_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        role: %{id: role_id}
+      } =
+        grant_request_setup(claims, true)
+
+      query_params = %{
+        "structures_domains" => [domain_1_id],
+        "query" => "user 1"
+      }
+
+      assert %{"data" => query_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), query_params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name}
+             ] = query_data
+
+      role_params = %{
+        "structures_domains" => [domain_1_id],
+        "roles" => [role_id]
+      }
+
+      assert %{"data" => role_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), role_params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name}
+             ] = role_data |> Enum.sort_by(& &1["id"])
+
+      domain_params = %{
+        "structures_domains" => [domain_1_id],
+        "filter_domains" => [domain_3_id]
+      }
+
+      assert %{"data" => domain_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), domain_params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name}
+             ] = domain_data |> Enum.sort_by(& &1["id"])
+
+      all_params = %{
+        "structures_domains" => [domain_1_id],
+        "roles" => [role_id],
+        "query" => user_1_full_name,
+        "filter_domains" => [domain_3_id]
+      }
+
+      assert %{"data" => all_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), all_params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name}
+             ] = all_data
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns users with params but allow_foreign_grant_request is in default role", %{
+      conn: conn,
+      claims: claims
+    } do
+      CacheHelpers.put_default_permissions([:allow_foreign_grant_request])
+
+      %{
+        domain_4_id: domain_4_id,
+        domain_5_id: domain_5_id,
+        user_1: %{id: user_1_id, full_name: user_1_full_name},
+        user_agent: %{id: user_agent_id, full_name: user_agent_full_name},
+        user_service: %{id: user_service_id, full_name: user_service_full_name},
+        role: %{id: role_id}
+      } =
+        grant_request_setup(claims, true)
+
+      query_params = %{
+        "structures_domains" => [domain_4_id],
+        "query" => "user 1"
+      }
+
+      assert %{"data" => query_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), query_params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name}
+             ] = query_data
+
+      role_params = %{
+        "structures_domains" => [domain_4_id],
+        "roles" => [role_id]
+      }
+
+      assert %{"data" => role_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), role_params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name}
+             ] = role_data |> Enum.sort_by(& &1["id"])
+
+      domain_params = %{
+        "structures_domains" => [domain_4_id],
+        "filter_domains" => [domain_5_id]
+      }
+
+      assert %{"data" => domain_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), domain_params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name},
+               %{"id" => ^user_agent_id, "full_name" => ^user_agent_full_name},
+               %{"id" => ^user_service_id, "full_name" => ^user_service_full_name}
+             ] = domain_data |> Enum.sort_by(& &1["id"])
+
+      all_params = %{
+        "structures_domains" => [domain_4_id],
+        "roles" => [role_id],
+        "query" => user_1_full_name,
+        "filter_domains" => [domain_5_id]
+      }
+
+      assert %{"data" => all_data} =
+               conn
+               |> post(Routes.user_search_path(conn, :grant_requestable), all_params)
+               |> json_response(:ok)
+
+      assert [
+               %{"id" => ^user_1_id, "full_name" => ^user_1_full_name}
+             ] = all_data
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns unauthorized if user has no view_data_structure permission", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{id: domain_1_id} = CacheHelpers.put_domain()
+
+      CacheHelpers.put_session_permissions(claims, %{
+        "create_foreign_grant_request" => [domain_1_id]
+      })
+
+      params = %{
+        "structures_domains" => [domain_1_id]
+      }
+
+      assert conn
+             |> post(Routes.user_search_path(conn, :grant_requestable), params)
+             |> json_response(:forbidden)
+    end
+
+    @tag authentication: [role: "user"]
+    test "returns unauthorized if user has no create_foreign_grant_request permission", %{
+      conn: conn,
+      claims: claims
+    } do
+      %{id: domain_1_id} = CacheHelpers.put_domain()
+
+      CacheHelpers.put_session_permissions(claims, %{
+        "view_data_structure" => [domain_1_id]
+      })
+
+      params = %{
+        "structures_domains" => [domain_1_id]
+      }
+
+      assert conn
+             |> post(Routes.user_search_path(conn, :grant_requestable), params)
+             |> json_response(:forbidden)
+    end
+
+    defp grant_request_setup(claims, generate_special_users) do
+      %{id: domain_1_id} = CacheHelpers.put_domain()
+      %{id: domain_2_id} = CacheHelpers.put_domain()
+      %{id: domain_3_id} = CacheHelpers.put_domain()
+      %{id: domain_4_id} = CacheHelpers.put_domain()
+      %{id: domain_5_id} = CacheHelpers.put_domain()
+      %{id: domain_6_id} = CacheHelpers.put_domain()
+
+      CacheHelpers.put_session_permissions(claims, %{
+        "create_foreign_grant_request" => [domain_1_id, domain_2_id, domain_3_id, domain_4_id],
+        "view_data_structure" => [domain_6_id]
+      })
+
+      permission = insert(:permission, name: "allow_foreign_grant_request")
+
+      %{name: role_1_name} =
+        role_1 =
+        insert(:role,
+          name: "requestable role",
+          permissions: [permission]
+        )
+
+      %{name: role_2_name} =
+        role_2 =
+        insert(:role,
+          name: "lorem ipsum",
+          permissions: [permission]
+        )
+
+      CacheHelpers.put_roles_by_permission(%{
+        "allow_foreign_grant_request" => [role_1_name, role_2_name]
+      })
+
+      %{id: user_1_id} = user_1 = insert(:user, full_name: "requestable user 1")
+
+      insert(:acl_entry, user_id: user_1_id, role: role_1, resource_id: domain_1_id)
+      insert(:acl_entry, user_id: user_1_id, role: role_1, resource_id: domain_2_id)
+      insert(:acl_entry, user_id: user_1_id, role: role_1, resource_id: domain_3_id)
+      insert(:acl_entry, user_id: user_1_id, role: role_1, resource_id: domain_5_id)
+
+      %{id: user_2_id} = user_2 = insert(:user, full_name: "requestable user 2")
+
+      insert(:acl_entry, user_id: user_2_id, role: role_2, resource_id: domain_1_id)
+      insert(:acl_entry, user_id: user_2_id, role: role_2, resource_id: domain_2_id)
+
+      user_3 = insert(:user, full_name: "non requestable user")
+
+      %{id: user_agent_id} = user_agent = insert(:user, full_name: "agent user")
+      insert(:acl_entry, user_id: user_agent_id, role: role_1, resource_id: domain_1_id)
+      insert(:acl_entry, user_id: user_agent_id, role: role_1, resource_id: domain_2_id)
+      insert(:acl_entry, user_id: user_agent_id, role: role_1, resource_id: domain_3_id)
+      insert(:acl_entry, user_id: user_agent_id, role: role_1, resource_id: domain_5_id)
+
+      %{id: user_service_id} = user_service = insert(:user, full_name: "service user")
+      insert(:acl_entry, user_id: user_service_id, role: role_1, resource_id: domain_1_id)
+      insert(:acl_entry, user_id: user_service_id, role: role_1, resource_id: domain_2_id)
+      insert(:acl_entry, user_id: user_service_id, role: role_1, resource_id: domain_3_id)
+      insert(:acl_entry, user_id: user_service_id, role: role_1, resource_id: domain_5_id)
+
+      user_admin =
+        if generate_special_users do
+          insert(:user, full_name: "admin user", role: "admin")
+        else
+          nil
+        end
+
+      CacheHelpers.put_acl("domain", domain_1_id, role_1_name, [
+        user_1_id,
+        user_agent_id,
+        user_service_id
+      ])
+
+      CacheHelpers.put_acl("domain", domain_2_id, role_1_name, [
+        user_1_id,
+        user_agent_id,
+        user_service_id
+      ])
+
+      CacheHelpers.put_acl("domain", domain_3_id, role_1_name, [
+        user_1_id,
+        user_agent_id,
+        user_service_id
+      ])
+
+      CacheHelpers.put_acl("domain", domain_5_id, role_1_name, [
+        user_1_id,
+        user_agent_id,
+        user_service_id
+      ])
+
+      CacheHelpers.put_acl("domain", domain_1_id, role_2_name, [user_2_id])
+      CacheHelpers.put_acl("domain", domain_2_id, role_2_name, [user_2_id])
+
+      %{
+        domain_1_id: domain_1_id,
+        domain_2_id: domain_2_id,
+        domain_3_id: domain_3_id,
+        domain_4_id: domain_4_id,
+        domain_5_id: domain_5_id,
+        domain_6_id: domain_6_id,
+        user_1: user_1,
+        user_2: user_2,
+        user_3: user_3,
+        user_agent: user_agent,
+        user_service: user_service,
+        user_admin: user_admin,
+        role: role_1
+      }
+    end
+  end
 end

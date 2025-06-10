@@ -42,6 +42,36 @@ defmodule TdBg.Canada.Abilities do
       authorized?(claims, :delete_acl_entry, domain_id)
     end
 
+    def can?(%Claims{jti: jti}, :in_any_domain, permission) do
+      jti
+      |> Permissions.permitted_domain_ids(permission)
+      |> case do
+        [_ | _] -> true
+        _ -> false
+      end
+    end
+
+    def can?(%Claims{jti: jti}, :in_every_domain, %{
+          permission: permission,
+          domains: domains
+        }) do
+      jti
+      |> Permissions.permitted_domain_ids(permission)
+      |> then(
+        &Enum.reduce_while(domains, {:ok, []}, fn domain_id, {:ok, acc} ->
+          if domain_id in &1 do
+            {:cont, {:ok, [domain_id | acc]}}
+          else
+            {:halt, {:error, :not_permitted}}
+          end
+        end)
+      )
+      |> case do
+        {:ok, [_ | _]} -> true
+        _ -> false
+      end
+    end
+
     def can?(claims, action, %{resource_type: "structure", resource_id: structure_id})
         when action in [:create, :update, :delete] do
       {:ok, %{data_structure: %{domain_ids: domain_ids}}} =
