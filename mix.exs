@@ -66,7 +66,7 @@ defmodule TdAuth.Mixfile do
       {:openid_connect, "~> 0.2.2"},
       {:esaml, "~> 4.6"},
       {:quantum, "~> 3.5.3"},
-      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "7.4.0"},
+      {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "7.11.1"},
       {:td_cluster, git: "https://github.com/Bluetab/td-cluster.git", tag: "7.4.0"},
       {:credo, "~> 1.7.11", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4.5", only: :dev, runtime: false},
