@@ -32,3 +32,4 @@ td_auth-*.tar
 .DS_Store
 .elixir_ls
 TODO.*
+.env

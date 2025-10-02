@@ -1,9 +1,6 @@
 defmodule TdAuth.CacheConfigTest do
   use ExUnit.Case
 
-  alias TdCache.Audit
-  alias TdCache.EventStream.Publisher
-
   setup do
     original_audit_config = Application.get_env(:td_cache, :audit, [])
     original_event_stream_config = Application.get_env(:td_cache, :event_stream, [])

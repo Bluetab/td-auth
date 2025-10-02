@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- [TD-6370] Update library to allow OIDC without Client Secret
+
 ### Changed
 
 - [TD-7401] Update `td-cache` version
