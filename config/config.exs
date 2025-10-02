@@ -49,6 +49,11 @@ config :td_cache, :audit,
   service: "td_auth",
   stream: "audit:events"
 
+config :td_cache, :event_stream,
+  consumer_id: "default",
+  consumer_group: "auth",
+  streams: []
+
 # Truedat JWT access token and refreh token
 # 10 minutes
 config :td_auth, TdAuth.Auth.AccessToken, ttl_seconds: 600

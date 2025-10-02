@@ -4,6 +4,10 @@ config :td_auth, allow_proxy_login: System.get_env("TD_AUTH_ALLOW_PROXY_LOGIN", 
 
 config :td_cluster, groups: [:auth]
 
+config :td_cache, :audit, maxlen: System.get_env("REDIS_AUDIT_STREAM_MAXLEN", "100")
+
+config :td_cache, :event_stream, maxlen: System.get_env("REDIS_STREAM_MAXLEN", "100")
+
 # Configure your database
 if config_env() == :prod do
   get_ssl_option = fn env_var, option_key ->
