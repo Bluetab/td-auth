@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.11.0] 2025-10-13
+
+### Added
+
+- [TD-6370] Update library to allow OIDC without Client Secret
+
+### Changed
+
+- [TD-7401] Update `td-cache` version
+
 ## [7.7.0] 2025-06-30
 
 ### Added
