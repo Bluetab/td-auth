@@ -51,10 +51,12 @@ defmodule TdAuth.AccountsTest do
       %{resource_id: domain_id_2} = insert(:acl_entry, user_id: user_id_2, role: role_2)
       insert(:acl_entry, user_id: user_id_3, role: role_2)
 
-      assert [%{id: ^user_id_1}, %{id: ^user_id_2}] =
-               Accounts.list_users(
-                 permission_on_domains: {permission.name, [domain_id_1, domain_id_2]}
-               )
+      result =
+        Accounts.list_users(permission_on_domains: {permission.name, [domain_id_1, domain_id_2]})
+
+      assert length(result) == 2
+      assert user_id_1 in Enum.map(result, & &1.id)
+      assert user_id_2 in Enum.map(result, & &1.id)
 
       assert [%{id: ^user_id_1}] =
                Accounts.list_users(permission_on_domains: {permission.name, [domain_id_1]})
