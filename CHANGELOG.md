@@ -1,5 +1,11 @@
 # Changelog
 
+## [7.12.0] 2025-10-31
+
+### Added
+
+- [TD-7636] Handle group creation on OIDC authentication
+
 ## [7.11.0] 2025-10-13
 
 ### Added

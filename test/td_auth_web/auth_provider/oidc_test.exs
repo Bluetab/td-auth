@@ -36,5 +36,29 @@ defmodule TdAuthWeb.AuthProvider.OIDCTest do
       assert hash == :crypto.hash(:sha256, verifier)
       assert String.length(verifier) == 128
     end
+
+    test "includes groups for OIDC user" do
+      allowed_groups = ["people", "Bluetaber"]
+
+      oidc_config = [
+        create_groups: true,
+        group_fields: ["groups"],
+        allowed_groups: allowed_groups
+      ]
+
+      Application.put_env(:td_auth, TdAuthWeb.AuthProvider.OIDC, oidc_config)
+
+      assert {:ok, %{groups: groups}} =
+               OIDC.map_profile(%{
+                 "groups" => ["CTO", "manager", "Bluetaber"],
+                 "name" => "John Doe",
+                 "email" => "john.doe@example.com"
+               })
+
+      assert Enum.member?(groups, "Bluetaber")
+      refute Enum.member?(groups, "CTO")
+      refute Enum.member?(groups, "manager")
+      refute Enum.member?(groups, "people")
+    end
   end
 end
