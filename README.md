@@ -20,6 +20,12 @@
 - LDAP_GROUP_FIELDS: Comma-separated list of fields used to search for groups to assign to a user.
 - LDAP_ALLOWED_GROUPS: Comma-separated list of values used to create groups if they are found.
 
+### OIDC groups creation
+
+- OIDC_CREATE_GROUP: Set to true to enable the creation of OIDC-based groups.
+- OIDC_GROUP_FIELDS: Comma-separated list of fields used to search for groups to assign to a user.
+- OIDC_ALLOWED_GROUPS: Comma-separated list of values used to create groups if they are found.
+
 To start your Phoenix server:
 
 - Install dependencies with `mix deps.get`

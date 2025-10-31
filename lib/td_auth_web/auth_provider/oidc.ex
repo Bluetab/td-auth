@@ -90,7 +90,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
 
   defp validate_nonce(_map_or_nil), do: {:error, :invalid_nonce}
 
-  defp map_profile(claims) do
+  def map_profile(claims) do
     :td_auth
     |> Application.get_env(__MODULE__, [])
     |> Keyword.get(:profile_mapping)
@@ -104,6 +104,7 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
       nil ->
         DefaultProfileMapping.map_profile(claims)
     end
+    |> maybe_put_groups(claims, Application.get_env(:td_auth, __MODULE__)[:create_groups])
   end
 
   # Obtains a bearer token from request headers
@@ -125,4 +126,26 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
 
     NonceCache.create_nonce("", length, 1)
   end
+
+  defp maybe_put_groups(
+         {:ok, profile},
+         claims,
+         true
+       ) do
+    fields = Application.get_env(:td_auth, __MODULE__)[:group_fields]
+
+    allowed_groups = Application.get_env(:td_auth, __MODULE__)[:allowed_groups]
+
+    groups =
+      claims
+      |> Enum.filter(fn {key, _} -> key in fields end)
+      |> Enum.flat_map(fn {_, value} -> value end)
+      |> Enum.uniq()
+      |> Enum.filter(&Enum.member?(allowed_groups, &1))
+
+    profile = Map.put(profile, :groups, groups)
+    {:ok, profile}
+  end
+
+  defp maybe_put_groups(profile, _, _), do: profile
 end
