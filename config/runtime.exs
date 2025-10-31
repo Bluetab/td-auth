@@ -144,7 +144,14 @@ if config_env() == :prod do
     profile_mapping: System.get_env("OIDC_PROFILE_MAPPING"),
     code_challenge_method: System.get_env("PKCE_CODE_CHALLENGE_METHOD"),
     code_verifier_length:
-      System.get_env("PKCE_CODE_VERIFIER_LENGTH", "128") |> String.to_integer()
+      System.get_env("PKCE_CODE_VERIFIER_LENGTH", "128") |> String.to_integer(),
+    create_groups: System.get_env("OIDC_CREATE_GROUP", "false") |> String.downcase() == "true",
+    group_fields:
+      System.get_env("OIDC_GROUP_FIELDS", "")
+      |> String.split(",", trim: true),
+    allowed_groups:
+      System.get_env("OIDC_ALLOWED_GROUPS", "")
+      |> String.split(",", trim: true)
 
   config :td_auth, TdAuth.HttpClient,
     proxy:
