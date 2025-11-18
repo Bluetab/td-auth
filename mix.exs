@@ -6,7 +6,7 @@ defmodule TdAuth.Mixfile do
       app: :td_auth,
       version:
         case System.get_env("APP_VERSION") do
-          nil -> "7.12.0-local"
+          nil -> "7.12.1-local"
           v -> v
         end,
       elixir: "~> 1.18",
@@ -64,7 +64,7 @@ defmodule TdAuth.Mixfile do
       {:inflex, "~> 2.1"},
       {:exldap, "~> 0.6.3"},
       {:openid_connect,
-       git: "https://github.com/Bluetab/openid_connect.git", branch: "fix/v0.2.2"},
+       git: "https://github.com/Bluetab/openid_connect.git", branch: "fix/v0.2.3"},
       {:esaml, "~> 4.6"},
       {:quantum, "~> 3.5.3"},
       {:td_cache, git: "https://github.com/Bluetab/td-cache.git", tag: "7.11.1"},
