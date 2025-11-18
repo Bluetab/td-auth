@@ -26,6 +26,10 @@
 - OIDC_GROUP_FIELDS: Comma-separated list of fields used to search for groups to assign to a user.
 - OIDC_ALLOWED_GROUPS: Comma-separated list of values used to create groups if they are found.
 
+- OIDC_SSL: must be set to "true" to use the following configurations
+- OIDC_SSL_CACERTFILE: Certificate file
+- OIDC_SSL_VERIFY: defaults to "verify_none" if OIDC_SSL is set to true. can be "verify_peer"
+
 To start your Phoenix server:
 
 - Install dependencies with `mix deps.get`
