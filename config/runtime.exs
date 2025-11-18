@@ -117,6 +117,31 @@ if config_env() == :prod do
       response_type: System.get_env("OIDC_RESPONSE_TYPE", "id_token")
     ]
 
+  optional_ssl_options =
+    case System.get_env("OIDC_SSL") do
+      "true" ->
+        cacertfile =
+          case System.get_env("OIDC_SSL_CACERTFILE", "generated") do
+            "generated" -> :certifi.cacertfile()
+            file -> file
+          end
+
+        [
+          ssl: [
+            cacertfile: cacertfile,
+            verify:
+              System.get_env("OIDC_SSL_VERIFY", "verify_none")
+              |> String.downcase()
+              |> String.to_atom()
+          ]
+        ]
+
+      _ ->
+        []
+    end
+
+  config :openid_connect, :ssl_options, optional_ssl_options
+
   config :td_auth, :saml,
     contact_email: System.get_env("SAML_CONTACT_EMAIL"),
     contact_name: System.get_env("SAML_CONTACT_NAME"),
