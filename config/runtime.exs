@@ -118,22 +118,14 @@ if config_env() == :prod do
     ]
 
   optional_ssl_options =
-    case System.get_env("OIDC_SSL") do
-      "true" ->
-        cacertfile =
-          case System.get_env("OIDC_SSL_CACERTFILE", "generated") do
-            "generated" -> :certifi.cacertfile()
-            file -> file
-          end
+    case System.get_env("OIDC_SSL_VERIFY") do
+      "verify_none" ->
+        [verify: :verify_none]
 
+      "verify_peer" ->
         [
-          ssl: [
-            cacertfile: cacertfile,
-            verify:
-              System.get_env("OIDC_SSL_VERIFY", "verify_none")
-              |> String.downcase()
-              |> String.to_atom()
-          ]
+          verify: :verify_peer,
+          cacertfile: System.get_env("OIDC_SSL_CACERTFILE")
         ]
 
       _ ->

@@ -1,5 +1,11 @@
 # Changelog
 
+## [7.12.2] 2025-11-20
+
+### Fixed
+
+- [TD-7693] Configuration for SSL options on OIDC
+
 ## [7.12.1] 2025-11-18
 
 ### Added
