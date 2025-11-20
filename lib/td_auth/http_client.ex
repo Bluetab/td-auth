@@ -7,6 +7,16 @@ defmodule TdAuth.HttpClient do
 
   alias TdAuth.Map.Helpers
 
+  def process_request_url(url) do
+    :td_auth
+    |> Application.get_env(__MODULE__, [])
+    |> Keyword.get(:url_prefix)
+    |> case do
+      nil -> url
+      url_prefix -> url_prefix <> url
+    end
+  end
+
   def process_request_options(options) do
     :td_auth
     |> Application.get_env(__MODULE__, [])
@@ -26,6 +36,10 @@ defmodule TdAuth.HttpClient do
     Helpers.to_map(hackney_opts)
     |> maybe_put_cacertfile(options)
   end
+
+  defp put_option({:ssl, []}, options), do: options
+
+  defp put_option({:ssl, ssl_opts}, options), do: Keyword.put_new(options, :ssl, ssl_opts)
 
   defp put_option(_, options), do: options
 

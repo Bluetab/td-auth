@@ -117,23 +117,6 @@ if config_env() == :prod do
       response_type: System.get_env("OIDC_RESPONSE_TYPE", "id_token")
     ]
 
-  optional_ssl_options =
-    case System.get_env("OIDC_SSL_VERIFY") do
-      "verify_none" ->
-        [verify: :verify_none]
-
-      "verify_peer" ->
-        [
-          verify: :verify_peer,
-          cacertfile: System.get_env("OIDC_SSL_CACERTFILE")
-        ]
-
-      _ ->
-        []
-    end
-
-  config :openid_connect, :ssl_options, optional_ssl_options
-
   config :td_auth, :saml,
     contact_email: System.get_env("SAML_CONTACT_EMAIL"),
     contact_name: System.get_env("SAML_CONTACT_NAME"),
@@ -170,6 +153,21 @@ if config_env() == :prod do
       System.get_env("OIDC_ALLOWED_GROUPS", "")
       |> String.split(",", trim: true)
 
+  optional_ssl_options =
+    case System.get_env("HTTP_SSL_VERIFY") do
+      "verify_none" ->
+        [verify: :verify_none]
+
+      "verify_peer" ->
+        [
+          verify: :verify_peer,
+          cacertfile: System.get_env("HTTP_SSL_CACERTFILE")
+        ]
+
+      _ ->
+        []
+    end
+
   config :td_auth, TdAuth.HttpClient,
     proxy:
       {System.get_env("PROXY_HOST"), System.get_env("PROXY_PORT", "80") |> String.to_integer()},
@@ -178,7 +176,9 @@ if config_env() == :prod do
       ssl_options: [
         cacertfile: System.get_env("CACERTFILE")
       ]
-    ]
+    ],
+    ssl: optional_ssl_options,
+    url_prefix: System.get_env("HTTP_URL_PREFIX")
 
   config :td_auth, TdAuth.Scheduler,
     jobs: [

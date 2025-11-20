@@ -1,5 +1,11 @@
 # Changelog
 
+## [7.12.3] 2025-11-20
+
+### Fixed
+
+- [TD-7693] Remove OIDC config in favor of TdAuth.HttpClient
+
 ## [7.12.2] 2025-11-20
 
 ### Fixed
