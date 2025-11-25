@@ -1,5 +1,11 @@
 # Changelog
 
+## [7.12.4] 2025-11-25
+
+### Changed
+
+- [TD-7693] Allow regex configuration for OIDC_ALLOWED_GROUPS
+
 ## [7.12.3] 2025-11-20
 
 ### Fixed
@@ -17,7 +23,6 @@
 ### Added
 
 - [TD-7693] Add configuration for SSL options on OIDC
-
 
 ## [7.12.0] 2025-10-31
 

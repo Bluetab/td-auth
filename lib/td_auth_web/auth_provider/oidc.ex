@@ -141,7 +141,15 @@ defmodule TdAuthWeb.AuthProvider.OIDC do
       |> Enum.filter(fn {key, _} -> key in fields end)
       |> Enum.flat_map(fn {_, value} -> value end)
       |> Enum.uniq()
-      |> Enum.filter(&Enum.member?(allowed_groups, &1))
+      |> Enum.filter(fn group ->
+        Enum.empty?(allowed_groups) or
+          Enum.any?(
+            allowed_groups,
+            fn group_allowed ->
+              String.match?(to_string(group), ~r/#{group_allowed}/u)
+            end
+          )
+      end)
 
     profile = Map.put(profile, :groups, groups)
     {:ok, profile}
