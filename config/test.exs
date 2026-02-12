@@ -2,7 +2,7 @@ import Config
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :td_auth, TdAuthWeb.Endpoint, server: true
+config :td_auth, TdAuthWeb.Endpoint, server: false
 
 # Configure your database
 config :td_auth, TdAuth.Repo,
