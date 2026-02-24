@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.2.0] 2026-02-24
+
+### Added
+
+- [TD-7696] 
+- [TD-7861] 
+  - New permisssion `link_quality_control_to_concept`
+  - New permission `link_quality_control_to_structure`
+
 ## [7.12.4] 2025-11-25
 
 ### Changed

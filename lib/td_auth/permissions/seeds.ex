@@ -89,7 +89,9 @@ defmodule TdAuth.Permissions.Seeds do
       # execute_quality_controls Create ScoresGroups.
       "execute_quality_controls",
       # manage_scores delete scores
-      "manage_scores"
+      "manage_scores",
+      "link_quality_control_to_concept",
+      "link_quality_control_to_structure"
     ],
     "quality_implementation_workflow_management" => [
       # new, edit, submit for approval, delete (draft/rejected)
